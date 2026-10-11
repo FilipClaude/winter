@@ -1,11 +1,43 @@
+import { lazy, Suspense, useEffect } from 'react';
+import { useSettings } from './hooks/useSettings';
+import { useRoute } from './router';
+import { TodayScreen } from './screens/today/TodayScreen';
+import { Snowfall } from './shell/Snowfall';
+import { TabBar } from './shell/TabBar';
+import { UpdatePrompt } from './shell/UpdatePrompt';
+import { OverlayProvider } from './ui/OverlayProvider';
+
+const TrainingScreen = lazy(() => import('./screens/training/TrainingScreen'));
+const SchoolScreen = lazy(() => import('./screens/school/SchoolScreen'));
+const BodyScreen = lazy(() => import('./screens/body/BodyScreen'));
+const ReviewScreen = lazy(() => import('./screens/review/ReviewScreen'));
+const HabitsScreen = lazy(() => import('./screens/habits/HabitsScreen'));
+const SettingsScreen = lazy(() => import('./screens/settings/SettingsScreen'));
+
 export function App() {
+  const route = useRoute();
+  const settings = useSettings();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [route.id]);
+
   return (
-    <main style={{ padding: 'calc(var(--safe-top) + var(--space-8)) var(--space-5)', position: 'relative' }}>
-      <p style={{ color: 'var(--color-text-2)', fontSize: 'var(--text-sm)' }}>Winter</p>
-      <h1 className="num" style={{ fontSize: 'var(--text-hero)', letterSpacing: 'var(--tracking-display)' }}>
-        11.10.
-      </h1>
-      <p style={{ color: 'var(--color-accent)' }}>Grundgerüst steht.</p>
-    </main>
+    <OverlayProvider>
+      <Snowfall enabled={settings.snow} />
+      <UpdatePrompt />
+      <main className="app">
+        <Suspense fallback={<div className="screen" style={{ minHeight: '100dvh' }} />}>
+          {route.id === 'heute' && <TodayScreen date={route.param} />}
+          {route.id === 'training' && <TrainingScreen />}
+          {route.id === 'schule' && <SchoolScreen />}
+          {route.id === 'koerper' && <BodyScreen />}
+          {route.id === 'rueckblick' && <ReviewScreen />}
+          {route.id === 'habits' && <HabitsScreen />}
+          {route.id === 'einstellungen' && <SettingsScreen />}
+        </Suspense>
+      </main>
+      <TabBar active={route.id} />
+    </OverlayProvider>
   );
 }

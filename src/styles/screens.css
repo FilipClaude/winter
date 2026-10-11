@@ -1,0 +1,282 @@
+/* Screen-spezifische Gestaltung. Ausschließlich Tokens. */
+
+/* ---------- Heute: Datum ---------- */
+.today-hero {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: var(--space-1) 0 var(--space-3);
+}
+
+.today-hero__day {
+  font-size: calc(var(--text-hero) * 1.25);
+  font-weight: 200;
+  line-height: 0.85;
+  letter-spacing: -0.06em;
+  color: var(--color-text);
+  min-width: 1.3ch;
+}
+
+.today-hero__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: normal;
+}
+
+.today-hero__weekday {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+}
+
+.today-hero__month {
+  font-size: var(--text-sm);
+  color: var(--color-text-3);
+}
+
+.today-hero__nav {
+  display: flex;
+  margin-right: calc(-1 * var(--space-3));
+}
+
+/* ---------- Heute: Tagesring ---------- */
+.ring-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.ring-card__pct {
+  font-size: var(--text-3xl);
+  font-weight: 300;
+  letter-spacing: var(--tracking-display);
+}
+
+.ring-card__parts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.ring-card__parts li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-empty {
+  margin-top: var(--space-3);
+}
+
+/* ---------- Wasser ---------- */
+.glasses {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 3px;
+}
+
+.glasses i {
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid var(--color-line-strong);
+  transition:
+    background var(--dur) var(--ease-out),
+    border-color var(--dur);
+}
+
+.glasses i.on {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.glasses__undo {
+  margin: var(--space-2) 0 calc(-1 * var(--space-2)) calc(-1 * var(--space-3));
+}
+
+.journal-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-line;
+}
+
+/* ---------- Fristen ---------- */
+.deadline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-1) var(--space-3) var(--space-4);
+  border-radius: var(--radius-l);
+  border: 1px solid var(--color-accent-32);
+  background: var(--color-surface);
+}
+
+.deadline__icon {
+  flex: none;
+  color: var(--color-accent);
+}
+
+.deadline__level {
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+  font-weight: var(--weight-semibold);
+  color: var(--color-accent);
+}
+
+.deadline__title {
+  font-weight: var(--weight-medium);
+  margin: 2px 0;
+}
+
+.deadline__when {
+  font-size: var(--text-xs);
+  color: var(--color-text-2);
+}
+
+.deadline--nah {
+  border-color: var(--color-warn-28);
+}
+
+.deadline--nah .deadline__icon,
+.deadline--nah .deadline__level {
+  color: var(--color-warn);
+}
+
+.deadline--kritisch,
+.deadline--ueberfaellig {
+  border-color: var(--color-warn);
+  background: linear-gradient(var(--color-warn-12), var(--color-warn-12)), var(--color-surface);
+}
+
+.deadline--kritisch .deadline__icon,
+.deadline--kritisch .deadline__level,
+.deadline--ueberfaellig .deadline__icon,
+.deadline--ueberfaellig .deadline__level {
+  color: var(--color-warn);
+}
+
+.deadline--ueberfaellig .deadline__icon {
+  animation: pulse 1.8s var(--ease-in-out) infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* ---------- Schnellerfassung ---------- */
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.quick-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 88px;
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--radius-m);
+  border: var(--hairline);
+  background: var(--color-surface-2);
+  font-size: var(--text-xs);
+  color: var(--color-text);
+  text-align: center;
+  transition:
+    background var(--dur-fast),
+    transform var(--dur-fast);
+}
+
+.quick-tile svg {
+  color: var(--color-accent);
+}
+
+.quick-tile:active {
+  background: var(--color-surface-3);
+  transform: scale(0.97);
+}
+
+/* ---------- Gym-Editor ---------- */
+.gym-ex {
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  background: var(--color-surface-2);
+}
+
+.gym-sets {
+  display: grid;
+  grid-template-columns: 28px 1fr 1fr 44px;
+  gap: var(--space-2);
+  align-items: center;
+  margin: var(--space-1) 0 var(--space-1);
+}
+
+.gym-sets .input {
+  min-height: 42px;
+  padding: 0 var(--space-3);
+  text-align: center;
+}
+
+/* ---------- Timer ---------- */
+.timer-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-color: var(--color-accent-32);
+}
+
+.timer-card__time {
+  font-size: var(--text-hero);
+  font-weight: 200;
+  color: var(--color-accent);
+}
+
+/* ---------- Range ---------- */
+.range {
+  width: 100%;
+  height: var(--touch);
+  accent-color: var(--color-accent);
+  background: transparent;
+}
+
+/* ---------- Checkbox (nativ, getönt) ---------- */
+.checkbox {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--color-accent);
+  flex: none;
+}
+
+/* ---------- Update-Hinweis ---------- */
+.update-prompt {
+  position: fixed;
+  z-index: var(--z-toast);
+  left: 0;
+  right: 0;
+  top: calc(var(--safe-top) + var(--space-2));
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+.update-prompt .banner {
+  background: var(--color-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  backdrop-filter: var(--blur-glass);
+}
