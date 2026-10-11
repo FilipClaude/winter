@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { addDays } from '../date';
 import type { Match, Session } from '../../db/schemas';
-import { detectPRs, estimated1RM, loadRatio, seasonOf, seasonStats, sessionLoad } from './training';
+import {
+  detectPRs,
+  estimated1RM,
+  exerciseBests,
+  loadRatio,
+  seasonOf,
+  seasonStats,
+  sessionLoad,
+} from './training';
 
 const T = '2026-10-11';
 
@@ -94,6 +102,33 @@ describe('Gym: Bestleistungen', () => {
       gym('b', '2026-10-02', [[5, 80]], ' kniebeuge '),
     ]);
     expect(marks).toHaveLength(0);
+  });
+
+  it('Körpergewichtsübungen: mehr Wiederholungen = PR, Bestwert in Wdh.', () => {
+    const marks = detectPRs([
+      gym('a', '2026-10-01', [[6, 0]], 'Nordic Curls'),
+      gym(
+        'b',
+        '2026-10-05',
+        [
+          [8, 0],
+          [7, 0],
+        ],
+        'Nordic Curls',
+      ),
+    ]);
+    expect(marks).toEqual([{ sessionId: 'b', exerciseIndex: 0, setIndex: 0, kinds: ['wdh'] }]);
+    const best = exerciseBests([
+      {
+        date: '2026-10-01',
+        gym: { exercises: [{ name: 'Nordic Curls', sets: [{ reps: 6, weightKg: 0 }] }] },
+      },
+      {
+        date: '2026-10-05',
+        gym: { exercises: [{ name: 'Nordic Curls', sets: [{ reps: 8, weightKg: 0 }] }] },
+      },
+    ]);
+    expect(best[0]).toMatchObject({ e1rm: 0, reps: 8, date: '2026-10-05' });
   });
 
   it('chronologisch, nicht nach Eingabereihenfolge', () => {

@@ -89,7 +89,8 @@ export function normalizeExercise(name: string): string {
   return name.trim().toLocaleLowerCase('de-DE').replace(/\s+/g, ' ');
 }
 
-export type PRKind = 'gewicht' | '1rm';
+/** gewicht = schwerster Satz, 1rm = bestes geschätztes Maximum, wdh = meiste Wdh. ohne Zusatzgewicht. */
+export type PRKind = 'gewicht' | '1rm' | 'wdh';
 export interface PRMark {
   sessionId: string;
   exerciseIndex: number;
@@ -108,7 +109,7 @@ export function detectPRs(sessions: Pick<Session, 'id' | 'date' | 'createdAt' | 
     .sort((a, b) =>
       a.date === b.date ? a.createdAt.localeCompare(b.createdAt) : a.date.localeCompare(b.date),
     );
-  const best = new Map<string, { weight: number; e1rm: number }>();
+  const best = new Map<string, { weight: number; e1rm: number; bodyReps: number }>();
   const marks = new Map<string, PRMark>();
 
   for (const s of ordered) {
@@ -121,6 +122,8 @@ export function detectPRs(sessions: Pick<Session, 'id' | 'date' | 'createdAt' | 
       const topWeight = top((x) => x.weightKg);
       const topE1 = top((x) => estimated1RM(x.weightKg, x.reps));
       const e1 = estimated1RM(topE1.set.weightKg, topE1.set.reps);
+      const body = valid.filter(({ set }) => set.weightKg === 0);
+      const topBody = body.length > 0 ? body.reduce((a, b) => (b.set.reps > a.set.reps ? b : a)) : null;
       const prev = best.get(key);
       if (prev) {
         const add = (setIndex: number, kind: PRKind) => {
@@ -131,19 +134,24 @@ export function detectPRs(sessions: Pick<Session, 'id' | 'date' | 'createdAt' | 
         };
         if (topWeight.set.weightKg > prev.weight) add(topWeight.setIndex, 'gewicht');
         if (e1 > prev.e1rm) add(topE1.setIndex, '1rm');
+        if (topBody && topBody.set.reps > prev.bodyReps) add(topBody.setIndex, 'wdh');
       }
       best.set(key, {
         weight: Math.max(prev?.weight ?? 0, topWeight.set.weightKg),
         e1rm: Math.max(prev?.e1rm ?? 0, e1),
+        bodyReps: Math.max(prev?.bodyReps ?? 0, topBody?.set.reps ?? 0),
       });
     });
   }
   return [...marks.values()];
 }
 
-/** Bestwerte je Übung (für die Übersicht). */
+/**
+ * Bestwerte je Übung (für die Übersicht). Bei Übungen mit Gewicht zählt das geschätzte 1RM,
+ * bei reinen Körpergewichtsübungen (0 kg) die meisten Wiederholungen.
+ */
 export function exerciseBests(sessions: Pick<Session, 'date' | 'gym'>[]) {
-  const out = new Map<string, { name: string; weight: number; e1rm: number; date: ISODate }>();
+  const out = new Map<string, { name: string; weight: number; e1rm: number; reps: number; date: ISODate }>();
   for (const s of sessions) {
     for (const ex of s.gym?.exercises ?? []) {
       const key = normalizeExercise(ex.name);
@@ -151,14 +159,20 @@ export function exerciseBests(sessions: Pick<Session, 'date' | 'gym'>[]) {
         if (set.reps <= 0) continue;
         const e1 = estimated1RM(set.weightKg, set.reps);
         const cur = out.get(key);
-        if (!cur || e1 > cur.e1rm)
-          out.set(key, { name: ex.name.trim(), weight: set.weightKg, e1rm: e1, date: s.date });
+        const better = !cur || e1 > cur.e1rm || (e1 === 0 && cur.e1rm === 0 && set.reps > cur.reps);
+        if (better)
+          out.set(key, {
+            name: ex.name.trim(),
+            weight: set.weightKg,
+            e1rm: e1,
+            reps: set.reps,
+            date: s.date,
+          });
       }
     }
   }
   return [...out.values()].sort((a, b) => a.name.localeCompare(b.name, 'de'));
 }
-
 // ---------- Spiele: Saisonstatistik ----------
 
 /** Fußballsaison: 1. Juli bis 30. Juni. "2026/27". */

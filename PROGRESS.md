@@ -88,3 +88,20 @@
 - Test zählte die Legende als Heatmap-Zellen mit → Selektor eingegrenzt.
 - Visuell: Leere Kennzahlen zeigten Einheiten hinter „–“ → werden jetzt ausgeblendet.
 
+## Phase 7 – Health, Backup/Export, Einstellungen, Demo ✓
+**Fertig:**
+- Health: `HealthSource`-Interface mit drei Quellen (Zwischenablage, Text, Datei). Toleranter Parser für JSON v1 (Strings, Komma, Tausenderpunkt, deutsches Datum, typografische Anführungszeichen, Meter, mehrere Tage), klare deutsche Fehlermeldungen. „Werte einfügen“ wird nach `visibilitychange` hervorgehoben. Import schreibt nur die Health-Tabelle. `HEALTH-SHORTCUT.md` mit ehrlich markierten Unsicherheiten.
+- Backup: Export in zwei Schritten (erstellen → teilen/herunterladen, wegen der iOS-Nutzergeste), Import mit vollständiger Zod-Prüfung jedes Datensatzes, Vorschau „X Einträge werden importiert“ und Ersetzen in einer Transaktion. Migrationsgerüst (`migrateBackup`), Schutz vor Sicherungen aus neueren Versionen. Erinnerung nach 7 Tagen auf Heute und in den Einstellungen.
+- Markdown-Export für Obsidian: Tag (`JJJJ-MM-TT.md`, wie die täglichen Notizen im Vault) und Woche (`JJJJ-KWnn.md`), Frontmatter `datum`/`tags`, Abschnitte Aufgaben/Notizen/Training (Gym als Tabelle wie in der Vault-Vorlage), dazu Zahlen. Vorschau, Kopieren, Datei.
+- Einstellungen: Ziele (inkl. Glasgröße und Tagesring-Bausteine), Fächer (umbenennen, sortieren, archivieren, neu), Kurzbefehl-Name, Speicherstatus mit `persist()`-Anfrage und Belegung, Demo-Schalter, Schneefall, „Alle Daten löschen“ mit Bestätigung durch Eingabe.
+- Demo-Daten: deterministisch (Seed), 4 Wochen, 298 Einträge, jeder mit `demo: 1`, jeder besteht die Zod-Prüfung. Echte Health-/Tageswerte werden nicht überschrieben. Ausschalten löscht exakt die Demo-Einträge. Hinweis „Demo-Daten aktiv“ auf Heute.
+
+**Geprüft:** typecheck ✓ · lint ✓ · 101 Unit-Tests ✓ · build ✓ · 38 E2E ✓ (neu: Health per Text, Zwischenablage und Datei; Re-Import überschreibt nur Health, manueller Schlaf bleibt; kaputte Daten → Meldung; **Backup → alles löschen → Import → alles wieder da**; fremde Datei abgelehnt; Markdown Tag/Woche + Download; Demo an → alle Screens → aus = alles weg). Screenshots aller Screens mit Demo-Daten angesehen.
+
+**Gefundene und behobene Fehler:**
+- **Bug:** Nach dem Wiederherstellen eines Backups kam die Erinnerung „Noch kein Backup“. Jetzt übernimmt der Import den Backup-Zeitpunkt, mit Unit-Test.
+- **Bug:** Der Health-Hinweis widersprach angezeigten Health-Werten. Er prüft jetzt, ob für heute tatsächlich Health-Daten existieren.
+- **Bug (beim Selbst-Review):** Der Wochen-Dateiname nutzte das Kalenderjahr statt des ISO-Wochenjahrs (30.12.2024 = 2025-KW01). Erledigte Aufgaben wurden nach UTC- statt nach Berliner Tag zugeordnet. Beides behoben, mit Tests.
+- **Bug:** Körpergewichtsübungen zeigten „0,0 kg 1RM“ und konnten keine PRs erzeugen. Jetzt gibt es einen Wiederholungs-PR (`wdh`) und den Bestwert in Wdh., mit Test.
+- UI: Der Demo-Schalter reagierte erst nach dem Schreiben → jetzt optimistisch. Bei Fristen auf Heute wurde der Titel vom langen Modulnamen abgeschnitten → Titel zuerst, Modul darunter.
+
