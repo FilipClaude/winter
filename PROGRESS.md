@@ -74,3 +74,17 @@
 
 **Selbst-Review:** Überfällige Fristen bleiben bis zum Abhaken dauerhaft oben auf Heute; es gibt keinen Weg, sie unbemerkt verschwinden zu lassen. Klausuren ohne Punkte, deren Datum vorbei ist, erscheinen unter „Vergangen“ mit dem Hinweis „Punkte offen“.
 
+## Phase 6 – Habits, Stimmung, Journal, Rückblick ✓
+**Fertig:**
+- Habits: täglich oder an Wochentagen, Starttag, Streak (aktuell und Rekord), Heatmap über 18 Wochen in 4 Eisblau-Stufen mit Legende, 30-Tage-Quote, Archivieren und Löschen.
+- Stimmung/Energie und Journal (seit Phase 3 auf Heute, plus Schnellerfassung).
+- Rückblick: Woche/Monat mit Blättern; Kennzahlen (Lernzeit, Load, Ø Schlaf, Ø Protein, Habit-Quote, Ø Stimmung); Verläufe: Stimmung/Energie (Linie), Lernzeit, Load, Schlaf mit Ziel.
+- Zusammenhänge über 90 Tage: Schlaf ↔ Stimmung (Schwelle 7,5 h), Load ↔ Energie am Folgetag (Median-Schwelle), Lernzeit 14 Tage vor einer Klausur ↔ Punkte. Mindestens 4 Punkte je Gruppe, sonst ein ehrlicher Hinweis mit den tatsächlichen Zahlen. Korrelation wird nur in Worten eingeordnet und erst ab n ≥ 8. Dazu der Hinweis „keine Ursachen“.
+- Saisonübersicht Fußball mit Toren und Assists pro Spiel.
+
+**Geprüft:** typecheck ✓ · lint ✓ · 85 Unit-Tests ✓ (neu: Tagesreihen mit null statt 0, Periodensummen, die drei Zusammenhänge inkl. exakter Formulierung) · build ✓ · 4 neue E2E ✓. Screenshots angesehen: Habits leer und mit Daten, Rückblick leer.
+
+**Gefundene und behobene Fehler:**
+- Test zählte die Legende als Heatmap-Zellen mit → Selektor eingegrenzt.
+- Visuell: Leere Kennzahlen zeigten Einheiten hinter „–“ → werden jetzt ausgeblendet.
+

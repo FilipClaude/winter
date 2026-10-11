@@ -202,7 +202,7 @@ export function Stat({ value, label, unit }: { value: ReactNode; label: string; 
     <div>
       <div className="stat__value">
         {value}
-        {unit && <span className="unit">{unit}</span>}
+        {unit && value !== '–' && <span className="unit">{unit}</span>}
       </div>
       <div className="stat__label">{label}</div>
     </div>

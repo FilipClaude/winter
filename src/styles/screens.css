@@ -287,6 +287,58 @@
   color: var(--color-text-2);
 }
 
+/* ---------- Habits ---------- */
+.streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 44px;
+  justify-content: flex-end;
+  font-size: var(--text-lg);
+}
+
+.heat-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.heat-legend .heatmap__cell {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+}
+
+/* ---------- Rückblick ---------- */
+.period-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.period-nav__label {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+  text-align: center;
+}
+
+.insight {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.insight__text {
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+}
+
+.insight--thin .insight__text {
+  color: var(--color-text-2);
+  font-size: var(--text-sm);
+}
+
 /* ---------- Range ---------- */
 .range {
   width: 100%;
