@@ -56,13 +56,14 @@ export function studyMinutesInRange(
   return sessions.filter((s) => s.date >= from && s.date <= to).reduce((a, s) => a + s.minutes, 0);
 }
 
-export function studyMinutesThisWeek(sessions: Pick<StudySession, 'date' | 'minutes'>[], today: ISODate): number {
+export function studyMinutesThisWeek(
+  sessions: Pick<StudySession, 'date' | 'minutes'>[],
+  today: ISODate,
+): number {
   return studyMinutesInRange(sessions, startOfWeek(today), today);
 }
 
-export function studyBySubject(
-  sessions: Pick<StudySession, 'subjectId' | 'minutes'>[],
-): Map<string, number> {
+export function studyBySubject(sessions: Pick<StudySession, 'subjectId' | 'minutes'>[]): Map<string, number> {
   const m = new Map<string, number>();
   for (const s of sessions) m.set(s.subjectId, (m.get(s.subjectId) ?? 0) + s.minutes);
   return m;

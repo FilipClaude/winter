@@ -9,7 +9,10 @@ export interface SheetSpec {
 export interface OverlayApi {
   openSheet: (spec: SheetSpec) => void;
   closeSheet: () => void;
-  toast: (message: string, opts?: { tone?: 'accent' | 'warn'; action?: { label: string; run: () => void } }) => void;
+  toast: (
+    message: string,
+    opts?: { tone?: 'accent' | 'warn'; action?: { label: string; run: () => void } },
+  ) => void;
 }
 
 export const OverlayContext = createContext<OverlayApi | null>(null);

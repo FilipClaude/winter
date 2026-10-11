@@ -255,7 +255,15 @@ export type Settings = z.infer<typeof zSettings>;
 
 export const DEFAULT_SETTINGS: Settings = {
   goals: { proteinG: 140, kcal: 2900, waterGlasses: 10, studyMin: 90, sleepH: 8, steps: 10_000 },
-  weekPlan: { '1': ['football'], '2': ['gym'], '3': ['football'], '4': ['gym'], '5': ['football'], '6': ['match'], '7': ['recovery'] },
+  weekPlan: {
+    '1': ['football'],
+    '2': ['gym'],
+    '3': ['football'],
+    '4': ['gym'],
+    '5': ['football'],
+    '6': ['match'],
+    '7': ['recovery'],
+  },
   glassMl: 250,
   snow: true,
   shortcutName: 'Winter Health',

@@ -11,7 +11,11 @@ export function sleepMinutes(startISO: string, endISO: string): number {
  * Liegt die Bettzeit nach der Aufwachzeit (23:30 → 07:00), war das Zubettgehen am Vortag.
  * Liegt sie davor (00:30 → 08:00 oder Mittagsschlaf 14:00 → 15:00), am selben Tag.
  */
-export function sleepFromWallTimes(wakeDate: ISODate, bed: string, wake: string): { start: string; end: string } {
+export function sleepFromWallTimes(
+  wakeDate: ISODate,
+  bed: string,
+  wake: string,
+): { start: string; end: string } {
   const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
   const bedDate = toMin(bed) >= toMin(wake) ? addDays(wakeDate, -1) : wakeDate;
   return { start: zonedToInstant(bedDate, bed), end: zonedToInstant(wakeDate, wake) };
@@ -26,7 +30,10 @@ export interface EffectiveSleep {
 }
 
 /** Manueller Eintrag hat immer Vorrang vor Health-Werten. */
-export function effectiveSleep(manual: Sleep | undefined, health: HealthDay | undefined): EffectiveSleep | null {
+export function effectiveSleep(
+  manual: Sleep | undefined,
+  health: HealthDay | undefined,
+): EffectiveSleep | null {
   if (manual) {
     return {
       start: manual.start,

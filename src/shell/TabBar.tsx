@@ -28,7 +28,13 @@ export function TabBar({ active }: { active: RouteId }) {
       <nav className="tabbar" aria-label="Hauptnavigation">
         <div className="tabbar__inner">
           {TABS.map((t) => (
-            <button key={t.id} type="button" className="tab" aria-current={active === t.id ? 'page' : undefined} onClick={() => navigate(t.id)}>
+            <button
+              key={t.id}
+              type="button"
+              className="tab"
+              aria-current={active === t.id ? 'page' : undefined}
+              onClick={() => navigate(t.id)}
+            >
               <t.icon size={22} strokeWidth={1.5} aria-hidden />
               <span>{t.label}</span>
             </button>

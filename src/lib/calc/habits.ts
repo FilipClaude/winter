@@ -16,7 +16,11 @@ export interface Streak {
  * Streaks zählen nur geplante Tage. Nicht geplante Tage unterbrechen nichts.
  * Ein heute noch offener Habit bricht den aktuellen Streak nicht (der Tag läuft noch).
  */
-export function habitStreak(habit: Pick<Habit, 'schedule' | 'startDate'>, checked: Set<ISODate>, today: ISODate): Streak {
+export function habitStreak(
+  habit: Pick<Habit, 'schedule' | 'startDate'>,
+  checked: Set<ISODate>,
+  today: ISODate,
+): Streak {
   let current = 0;
   let cursor = today;
   if (isScheduled(habit, today) && !checked.has(today)) cursor = addDays(today, -1);
@@ -74,7 +78,10 @@ export function dailyCompletion(
   const out = new Map<ISODate, number | null>();
   for (const d of days) {
     const planned = habits.filter((h) => isScheduled(h, d));
-    out.set(d, planned.length === 0 ? null : planned.filter((h) => done.has(`${h.id}|${d}`)).length / planned.length);
+    out.set(
+      d,
+      planned.length === 0 ? null : planned.filter((h) => done.has(`${h.id}|${d}`)).length / planned.length,
+    );
   }
   return out;
 }

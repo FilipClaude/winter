@@ -45,7 +45,12 @@ export function Ring({
   const c = 2 * Math.PI * r;
   const v = Math.min(1, Math.max(0, Number.isFinite(value) ? value : 0));
   return (
-    <div className="ring" style={{ width: size, height: size }} role="img" aria-label={`${label}: ${Math.round(v * 100)} %`}>
+    <div
+      className="ring"
+      style={{ width: size, height: size }}
+      role="img"
+      aria-label={`${label}: ${Math.round(v * 100)} %`}
+    >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
         <circle className="ring__track" cx={size / 2} cy={size / 2} r={r} strokeWidth={1} />
         <circle

@@ -17,7 +17,11 @@ export function sessionLoad(durationMin: number, rpe: number): number {
 }
 
 /** Summe der Load im Zeitraum [from, to] (inklusive). */
-export function loadInRange(sessions: Pick<Session, 'date' | 'durationMin' | 'rpe'>[], from: ISODate, to: ISODate) {
+export function loadInRange(
+  sessions: Pick<Session, 'date' | 'durationMin' | 'rpe'>[],
+  from: ISODate,
+  to: ISODate,
+) {
   return sessions
     .filter((s) => s.date >= from && s.date <= to)
     .reduce((sum, s) => sum + sessionLoad(s.durationMin, s.rpe), 0);
@@ -43,17 +47,24 @@ export const MIN_HISTORY_DAYS = 21;
  * Grobe Orientierung, keine medizinische Aussage. Schwellen nach gängiger Sportpraxis:
  * < 0,8 niedrig · 0,8–1,3 im Rahmen · 1,3–1,5 erhöht · > 1,5 starker Sprung.
  */
-export function loadRatio(sessions: Pick<Session, 'date' | 'durationMin' | 'rpe'>[], today: ISODate): LoadRatio {
+export function loadRatio(
+  sessions: Pick<Session, 'date' | 'durationMin' | 'rpe'>[],
+  today: ISODate,
+): LoadRatio {
   const acute = loadInRange(sessions, addDays(today, -6), today);
   const chronicTotal = loadInRange(sessions, addDays(today, -27), today);
   const chronic = Math.round(chronicTotal / 4);
   const past = sessions.filter((s) => s.date <= today);
-  const earliest = past.reduce<ISODate | null>((min, s) => (min === null || s.date < min ? s.date : min), null);
+  const earliest = past.reduce<ISODate | null>(
+    (min, s) => (min === null || s.date < min ? s.date : min),
+    null,
+  );
   if (earliest === null || diffDays(earliest, today) < MIN_HISTORY_DAYS || chronic === 0) {
     return { acute, chronic, ratio: null, status: 'zu-wenig-daten' };
   }
   const ratio = Math.round((acute / chronic) * 100) / 100;
-  const status: LoadStatus = ratio < 0.8 ? 'niedrig' : ratio <= 1.3 ? 'ok' : ratio <= 1.5 ? 'erhoeht' : 'hoch';
+  const status: LoadStatus =
+    ratio < 0.8 ? 'niedrig' : ratio <= 1.3 ? 'ok' : ratio <= 1.5 ? 'erhoeht' : 'hoch';
   return { acute, chronic, ratio, status };
 }
 
@@ -94,7 +105,9 @@ export function detectPRs(sessions: Pick<Session, 'id' | 'date' | 'createdAt' | 
   const ordered = sessions
     .filter((s) => s.gym)
     .slice()
-    .sort((a, b) => (a.date === b.date ? a.createdAt.localeCompare(b.createdAt) : a.date.localeCompare(b.date)));
+    .sort((a, b) =>
+      a.date === b.date ? a.createdAt.localeCompare(b.createdAt) : a.date.localeCompare(b.date),
+    );
   const best = new Map<string, { weight: number; e1rm: number }>();
   const marks = new Map<string, PRMark>();
 
@@ -138,7 +151,8 @@ export function exerciseBests(sessions: Pick<Session, 'date' | 'gym'>[]) {
         if (set.reps <= 0) continue;
         const e1 = estimated1RM(set.weightKg, set.reps);
         const cur = out.get(key);
-        if (!cur || e1 > cur.e1rm) out.set(key, { name: ex.name.trim(), weight: set.weightKg, e1rm: e1, date: s.date });
+        if (!cur || e1 > cur.e1rm)
+          out.set(key, { name: ex.name.trim(), weight: set.weightKg, e1rm: e1, date: s.date });
       }
     }
   }

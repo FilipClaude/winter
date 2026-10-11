@@ -247,6 +247,46 @@
   color: var(--color-accent);
 }
 
+/* ---------- Wochenplan ---------- */
+.week-plan {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.week-plan__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-radius: var(--radius-s);
+  border: 1px solid transparent;
+}
+
+.week-plan__day.is-today {
+  border-color: var(--color-accent-32);
+  background: var(--color-accent-08);
+}
+
+.week-plan__wd {
+  font-size: var(--text-xs);
+  color: var(--color-text-3);
+}
+
+.is-today .week-plan__wd {
+  color: var(--color-accent);
+}
+
+.week-plan__items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 20px;
+  color: var(--color-text-2);
+}
+
 /* ---------- Range ---------- */
 .range {
   width: 100%;

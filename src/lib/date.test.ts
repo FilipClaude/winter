@@ -37,7 +37,12 @@ describe('Kalendertage in Europe/Berlin', () => {
   it('diffDays und dateRange', () => {
     expect(diffDays('2026-10-01', '2026-10-31')).toBe(30);
     expect(diffDays('2026-10-31', '2026-10-01')).toBe(-30);
-    expect(dateRange('2026-10-24', '2026-10-27')).toEqual(['2026-10-24', '2026-10-25', '2026-10-26', '2026-10-27']);
+    expect(dateRange('2026-10-24', '2026-10-27')).toEqual([
+      '2026-10-24',
+      '2026-10-25',
+      '2026-10-26',
+      '2026-10-27',
+    ]);
   });
 
   it('Wochentage, Wochenstart und KW', () => {

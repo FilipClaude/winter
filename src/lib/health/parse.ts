@@ -30,8 +30,7 @@ export interface HealthPayload {
 }
 
 export type HealthParseResult =
-  | { ok: true; days: HealthPayload[]; warnings: string[] }
-  | { ok: false; error: string };
+  { ok: true; days: HealthPayload[]; warnings: string[] } | { ok: false; error: string };
 
 /** "8.423" → 8423 · "6,1" → 6.1 · "1.234,5" → 1234.5 · " 12 " → 12 */
 export function parseLooseNumber(value: unknown, integer: boolean): number | undefined | null {
@@ -68,7 +67,10 @@ export function parseInstant(value: unknown): string | null {
     if (!isISODate(date)) return null;
     return zonedToInstant(date, `${(h ?? '').padStart(2, '0')}:${mi ?? ''}`);
   }
-  if (z.iso.datetime({ offset: true, local: false }).safeParse(v).success || /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(v)) {
+  if (
+    z.iso.datetime({ offset: true, local: false }).safeParse(v).success ||
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(v)
+  ) {
     const t = new Date(v);
     return Number.isNaN(t.getTime()) ? null : t.toISOString();
   }
@@ -104,7 +106,11 @@ const zRaw = z
 
 const zSleepObj = z.object({ start: z.unknown(), end: z.unknown() }).loose();
 
-function parseOne(raw: unknown, today: ISODate, idx: string): { day: HealthPayload; warnings: string[] } | string {
+function parseOne(
+  raw: unknown,
+  today: ISODate,
+  idx: string,
+): { day: HealthPayload; warnings: string[] } | string {
   const r = zRaw.safeParse(raw);
   if (!r.success) return `${idx}Erwartet wird ein JSON-Objekt wie {"v":1,"date":"2026-10-11","steps":8423}.`;
   const o = r.data;
@@ -112,7 +118,8 @@ function parseOne(raw: unknown, today: ISODate, idx: string): { day: HealthPaylo
 
   if (o.v !== undefined) {
     const v = parseLooseNumber(o.v, true);
-    if (v !== HEALTH_SCHEMA_VERSION) return `${idx}Unbekannte Schema-Version "${String(o.v)}". Unterstützt: ${HEALTH_SCHEMA_VERSION}.`;
+    if (v !== HEALTH_SCHEMA_VERSION)
+      return `${idx}Unbekannte Schema-Version "${String(o.v)}". Unterstützt: ${HEALTH_SCHEMA_VERSION}.`;
   }
 
   let date: ISODate;
@@ -188,13 +195,17 @@ function parseOne(raw: unknown, today: ISODate, idx: string): { day: HealthPaylo
 /** Parst Text aus Zwischenablage, Textfeld oder Datei. Wirft nie. */
 export function parseHealthText(text: string, today: ISODate = todayISO()): HealthParseResult {
   const trimmed = text.trim().replace(/^\uFEFF/, '');
-  if (trimmed === '') return { ok: false, error: 'Die Zwischenablage ist leer. Wurde der Kurzbefehl ausgeführt?' };
+  if (trimmed === '')
+    return { ok: false, error: 'Die Zwischenablage ist leer. Wurde der Kurzbefehl ausgeführt?' };
   let json: unknown;
   try {
     // iOS ersetzt in manchen Feldern gerade Anführungszeichen durch typografische.
     json = JSON.parse(trimmed.replace(/[\u201c\u201d\u201e]/g, '"'));
   } catch {
-    return { ok: false, error: 'Kein gültiges JSON. Inhalt beginnt mit: ' + JSON.stringify(trimmed.slice(0, 40)) };
+    return {
+      ok: false,
+      error: 'Kein gültiges JSON. Inhalt beginnt mit: ' + JSON.stringify(trimmed.slice(0, 40)),
+    };
   }
   const items = Array.isArray(json) ? json : [json];
   if (items.length === 0) return { ok: false, error: 'Die Liste ist leer.' };

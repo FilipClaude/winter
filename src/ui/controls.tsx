@@ -1,5 +1,14 @@
 import { Check, Minus, Plus } from 'lucide-react';
-import { useEffect, useId, useRef, useState, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
+} from 'react';
 import { formatNumberDE, parseNumberDE } from '../lib/number';
 import { IconButton } from './primitives';
 
@@ -17,7 +26,12 @@ export function Segmented<T extends string>({
   return (
     <div className="segmented" role="group" aria-label={label}>
       {options.map((o) => (
-        <button key={o.value} type="button" aria-pressed={o.value === value} onClick={() => onChange(o.value)}>
+        <button
+          key={o.value}
+          type="button"
+          aria-pressed={o.value === value}
+          onClick={() => onChange(o.value)}
+        >
           {o.label}
         </button>
       ))}
@@ -82,17 +96,37 @@ export function Stepper({
 }) {
   return (
     <div className="stepper">
-      <IconButton icon={Minus} label={`${label} verringern`} variant="outline" disabled={value <= min} onClick={() => onChange(Math.max(min, value - step))} />
+      <IconButton
+        icon={Minus}
+        label={`${label} verringern`}
+        variant="outline"
+        disabled={value <= min}
+        onClick={() => onChange(Math.max(min, value - step))}
+      />
       <div className="stepper__value num" aria-live="polite">
         {children ?? value}
       </div>
-      <IconButton icon={Plus} label={`${label} erhöhen`} variant="outline" disabled={value >= max} onClick={() => onChange(Math.min(max, value + step))} />
+      <IconButton
+        icon={Plus}
+        label={`${label} erhöhen`}
+        variant="outline"
+        disabled={value >= max}
+        onClick={() => onChange(Math.min(max, value + step))}
+      />
     </div>
   );
 }
 
 /** Checkbox, die beim Abhaken kurz „einfriert“. */
-export function FrostCheck({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
+export function FrostCheck({
+  checked,
+  onChange,
+  label,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+}) {
   const [freeze, setFreeze] = useState(false);
   const timer = useRef<number | undefined>(undefined);
   useEffect(() => () => window.clearTimeout(timer.current), []);
@@ -124,14 +158,30 @@ export function FrostCheck({ checked, onChange, label }: { checked: boolean; onC
 
 // ---------- Formularfelder ----------
 
-function FieldShell({ label, hint, error, id, children }: { label: string; hint?: ReactNode; error?: string | undefined; id: string; children: ReactNode }) {
+function FieldShell({
+  label,
+  hint,
+  error,
+  id,
+  children,
+}: {
+  label: string;
+  hint?: ReactNode;
+  error?: string | undefined;
+  id: string;
+  children: ReactNode;
+}) {
   return (
     <div className="field">
       <label className="field__label" htmlFor={id}>
         {label}
       </label>
       {children}
-      {error ? <span className="field__error">{error}</span> : hint ? <span className="field__hint">{hint}</span> : null}
+      {error ? (
+        <span className="field__error">{error}</span>
+      ) : hint ? (
+        <span className="field__hint">{hint}</span>
+      ) : null}
     </div>
   );
 }
@@ -147,7 +197,12 @@ export function TextField({ label, hint, error, onValue, className, ...rest }: T
   const id = useId();
   return (
     <FieldShell label={label} hint={hint} error={error} id={id}>
-      <input id={id} className={`input ${className ?? ''}`} onChange={(e) => onValue(e.target.value)} {...rest} />
+      <input
+        id={id}
+        className={`input ${className ?? ''}`}
+        onChange={(e) => onValue(e.target.value)}
+        {...rest}
+      />
     </FieldShell>
   );
 }
@@ -181,9 +236,14 @@ export function NumberField({
     setText(value === '' ? '' : formatNumberDE(value));
   }
   const n = parseNumberDE(text);
-  const error = text !== '' && (n === null || (min !== undefined && n < min) || (max !== undefined && n > max) || (!decimal && n !== null && !Number.isInteger(n)))
-    ? `Bitte eine ${decimal ? 'Zahl' : 'ganze Zahl'}${min !== undefined && max !== undefined ? ` von ${min} bis ${max}` : ''} eingeben`
-    : undefined;
+  const error =
+    text !== '' &&
+    (n === null ||
+      (min !== undefined && n < min) ||
+      (max !== undefined && n > max) ||
+      (!decimal && n !== null && !Number.isInteger(n)))
+      ? `Bitte eine ${decimal ? 'Zahl' : 'ganze Zahl'}${min !== undefined && max !== undefined ? ` von ${min} bis ${max}` : ''} eingeben`
+      : undefined;
   return (
     <FieldShell label={label} hint={hint} error={error} id={id}>
       <input
@@ -210,7 +270,11 @@ export function NumberField({
   );
 }
 
-type TextAreaProps = Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> & { label: string; onValue: (v: string) => void; hint?: ReactNode };
+type TextAreaProps = Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> & {
+  label: string;
+  onValue: (v: string) => void;
+  hint?: ReactNode;
+};
 
 export function TextArea({ label, onValue, hint, ...rest }: TextAreaProps) {
   const id = useId();

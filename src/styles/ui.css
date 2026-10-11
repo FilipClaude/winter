@@ -501,7 +501,8 @@ textarea.input {
 }
 
 select.input {
-  background-image: linear-gradient(45deg, transparent 50%, var(--color-text-3) 50%),
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-text-3) 50%),
     linear-gradient(135deg, var(--color-text-3) 50%, transparent 50%);
   background-position:
     calc(100% - 20px) 21px,
@@ -996,6 +997,155 @@ button.list-item:active {
   inset: 0;
   z-index: var(--z-snow);
   pointer-events: none;
+}
+
+/* ---------- Charts ---------- */
+.chart {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chart svg {
+  display: block;
+  overflow: visible;
+}
+
+.chart__axis {
+  stroke: var(--color-line-strong);
+  stroke-width: 1;
+}
+
+.chart__grid {
+  stroke: var(--color-line);
+  stroke-width: 1;
+}
+
+.chart__goal {
+  stroke: var(--color-text-3);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.chart__bar {
+  fill: var(--color-accent-32);
+  transition: fill var(--dur);
+}
+
+.chart__bar--hi {
+  fill: var(--color-accent);
+}
+
+.chart__bar--warn {
+  fill: var(--color-warn);
+}
+
+.chart__line {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 1.75;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart__line--2 {
+  stroke: var(--color-text-3);
+  stroke-dasharray: 4 3;
+  stroke-width: 1.25;
+}
+
+.chart__area-stop {
+  stop-color: var(--color-accent);
+}
+
+.chart__labels {
+  display: grid;
+  font-size: 10px;
+  color: var(--color-text-3);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.chart__labels span {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.chart__labels b {
+  font-weight: var(--weight-medium);
+  color: var(--color-text-2);
+}
+
+.chart__labels .hi {
+  color: var(--color-accent);
+}
+
+.chart__caption {
+  font-size: var(--text-xs);
+  color: var(--color-text-3);
+}
+
+.heatmap {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 3px;
+}
+
+.heatmap__col {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.heatmap__cell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: var(--color-surface-3);
+}
+
+.heatmap__cell--off {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--color-line);
+}
+
+.heatmap__cell.l1 {
+  background: var(--color-accent-16);
+}
+
+.heatmap__cell.l2 {
+  background: var(--color-accent-32);
+}
+
+.heatmap__cell.l3 {
+  background: var(--color-accent-56);
+}
+
+.heatmap__cell.l4 {
+  background: var(--color-accent);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4) var(--space-2);
+}
+
+.stat__value {
+  font-size: var(--text-2xl);
+  font-weight: 300;
+  letter-spacing: var(--tracking-display);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat__label {
+  font-size: var(--text-xs);
+  color: var(--color-text-3);
 }
 
 /* ---------- Diverses ---------- */

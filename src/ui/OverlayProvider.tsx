@@ -22,7 +22,10 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
   const openSheet = useCallback((spec: SheetSpec) => setSheet({ ...spec, key: ++seq.current }), []);
   const toast = useCallback<OverlayApi['toast']>((message, opts) => {
     const id = ++seq.current;
-    setToasts((t) => [...t.slice(-2), { id, message, tone: opts?.tone ?? 'accent', ...(opts?.action ? { action: opts.action } : {}) }]);
+    setToasts((t) => [
+      ...t.slice(-2),
+      { id, message, tone: opts?.tone ?? 'accent', ...(opts?.action ? { action: opts.action } : {}) },
+    ]);
     window.setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), opts?.action ? 5000 : 2600);
   }, []);
 
@@ -44,7 +47,11 @@ export function OverlayProvider({ children }: { children: ReactNode }) {
               transition={{ duration: 0.2 }}
               role="status"
             >
-              {t.tone === 'warn' ? <AlertTriangle size={18} strokeWidth={1.75} aria-hidden /> : <Check size={18} strokeWidth={2} aria-hidden />}
+              {t.tone === 'warn' ? (
+                <AlertTriangle size={18} strokeWidth={1.75} aria-hidden />
+              ) : (
+                <Check size={18} strokeWidth={2} aria-hidden />
+              )}
               <span className="grow">{t.message}</span>
               {t.action && (
                 <button

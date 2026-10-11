@@ -50,7 +50,15 @@ export function buildDefaults(now = new Date().toISOString()) {
     order: i,
   }));
   const mealTemplates: MealTemplate[] = [
-    { id: uid(), createdAt: now, updatedAt: now, name: 'Skyr + Haferflocken', kcal: 420, proteinG: 38, order: 0 },
+    {
+      id: uid(),
+      createdAt: now,
+      updatedAt: now,
+      name: 'Skyr + Haferflocken',
+      kcal: 420,
+      proteinG: 38,
+      order: 0,
+    },
   ];
   return { subjects, exerciseTemplates, mealTemplates };
 }

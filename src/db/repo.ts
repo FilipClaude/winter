@@ -105,14 +105,27 @@ export async function saveSettings(patch: Partial<Settings>): Promise<Settings> 
 
 export function emptyDay(date: ISODate): Day {
   const now = nowISO();
-  return { id: date, date, createdAt: now, updatedAt: now, water: 0, note: '', good: '', better: '', tomorrow: '' };
+  return {
+    id: date,
+    date,
+    createdAt: now,
+    updatedAt: now,
+    water: 0,
+    note: '',
+    good: '',
+    better: '',
+    tomorrow: '',
+  };
 }
 
 export async function getDay(date: ISODate): Promise<Day> {
   return (await db.days.get(date)) ?? emptyDay(date);
 }
 
-export async function updateDay(date: ISODate, patch: Partial<Omit<Day, 'id' | 'date' | 'createdAt'>>): Promise<Day> {
+export async function updateDay(
+  date: ISODate,
+  patch: Partial<Omit<Day, 'id' | 'date' | 'createdAt'>>,
+): Promise<Day> {
   return db.transaction('rw', db.days, async () => {
     const cur = await getDay(date);
     const next = validate(zDay, { ...cur, ...patch, id: date, date, updatedAt: nowISO() });
@@ -148,7 +161,9 @@ export async function deleteMeal(id: string): Promise<void> {
   await db.meals.delete(id);
 }
 
-export async function saveMealTemplate(input: WithOptionalMeta<Omit<MealTemplate, 'order'>> & { order?: number }) {
+export async function saveMealTemplate(
+  input: WithOptionalMeta<Omit<MealTemplate, 'order'>> & { order?: number },
+) {
   const order = input.order ?? (await db.mealTemplates.count());
   const t = validate(zMealTemplate, stamp({ ...input, order }));
   await db.mealTemplates.put(t);
@@ -178,7 +193,8 @@ async function rememberExercise(name: string, sets: GymSet[]): Promise<void> {
   const existing = all.find((t) => normalizeExercise(t.name) === normalizeExercise(name));
   const lastSets = sets.filter((x) => x.reps > 0);
   if (existing) {
-    if (lastSets.length > 0) await db.exerciseTemplates.update(existing.id, { lastSets, updatedAt: nowISO() });
+    if (lastSets.length > 0)
+      await db.exerciseTemplates.update(existing.id, { lastSets, updatedAt: nowISO() });
     return;
   }
   const t = validate(zExerciseTemplate, stamp({ name: name.trim(), lastSets, order: all.length }));
@@ -267,7 +283,16 @@ export async function stopTimer(now = new Date()): Promise<number> {
   await db.transaction('rw', db.studySessions, db.kv, async () => {
     for (const seg of segments) {
       await db.studySessions.put(
-        validate(zStudySession, stamp({ date: seg.date, subjectId: t.subjectId, start: seg.start, end: seg.end, minutes: seg.minutes })),
+        validate(
+          zStudySession,
+          stamp({
+            date: seg.date,
+            subjectId: t.subjectId,
+            start: seg.start,
+            end: seg.end,
+            minutes: seg.minutes,
+          }),
+        ),
       );
     }
     await db.kv.delete('timer');

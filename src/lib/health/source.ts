@@ -17,7 +17,8 @@ export class ClipboardSource implements HealthSource {
   readonly id = 'kurzbefehl';
   readonly label = 'Zwischenablage';
   async read(): Promise<string> {
-    if (!navigator.clipboard?.readText) throw new Error('Dieser Browser erlaubt kein Lesen der Zwischenablage. Bitte unten einfügen.');
+    if (!navigator.clipboard?.readText)
+      throw new Error('Dieser Browser erlaubt kein Lesen der Zwischenablage. Bitte unten einfügen.');
     return navigator.clipboard.readText();
   }
 }
@@ -48,8 +49,7 @@ export class FileSource implements HealthSource {
 }
 
 export type HealthImportResult =
-  | { ok: true; saved: HealthDay[]; warnings: string[] }
-  | { ok: false; error: string };
+  { ok: true; saved: HealthDay[]; warnings: string[] } | { ok: false; error: string };
 
 /** Liest aus einer Quelle, validiert und speichert. Wirft nie – Fehler kommen als Ergebnis zurück. */
 export async function importFrom(source: HealthSource): Promise<HealthImportResult> {

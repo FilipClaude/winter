@@ -73,7 +73,12 @@ describe('Training', () => {
       durationMin: 60,
       rpe: 7,
       note: '',
-      gym: { exercises: [{ name: 'kniebeuge', sets: [{ reps: 5, weightKg: 80 }] }, { name: 'Face Pulls', sets: [{ reps: 15, weightKg: 20 }] }] },
+      gym: {
+        exercises: [
+          { name: 'kniebeuge', sets: [{ reps: 5, weightKg: 80 }] },
+          { name: 'Face Pulls', sets: [{ reps: 15, weightKg: 20 }] },
+        ],
+      },
     });
     const all = await db.exerciseTemplates.toArray();
     expect(all.find((t) => t.name === 'Kniebeuge')?.lastSets).toEqual([{ reps: 5, weightKg: 80 }]);
@@ -87,15 +92,25 @@ describe('Training', () => {
       durationMin: 30,
       rpe: 5,
       note: '',
-      match: { opponent: 'X', goalsFor: 0, goalsAgainst: 0, minutes: 0, goals: 0, assists: 0, shots: 0, rating: 5, reflection: '' },
+      match: {
+        opponent: 'X',
+        goalsFor: 0,
+        goalsAgainst: 0,
+        minutes: 0,
+        goals: 0,
+        assists: 0,
+        shots: 0,
+        rating: 5,
+        reflection: '',
+      },
     });
     expect((await db.sessions.get(s.id))?.match).toBeUndefined();
   });
 
   it('lehnt unplausible Werte ab', async () => {
-    await expect(saveSession({ date: '2026-10-11', type: 'gym', durationMin: 0, rpe: 11, note: '' })).rejects.toThrow(
-      ValidationError,
-    );
+    await expect(
+      saveSession({ date: '2026-10-11', type: 'gym', durationMin: 0, rpe: 11, note: '' }),
+    ).rejects.toThrow(ValidationError);
   });
 });
 
@@ -142,7 +157,12 @@ describe('Lern-Timer', () => {
 
 describe('Habits', () => {
   it('Abhaken ist umschaltbar', async () => {
-    const h = await saveHabit({ name: 'Dehnen', schedule: { kind: 'daily' }, archived: false, startDate: '2026-10-01' });
+    const h = await saveHabit({
+      name: 'Dehnen',
+      schedule: { kind: 'daily' },
+      archived: false,
+      startDate: '2026-10-01',
+    });
     expect(await toggleHabit(h.id, '2026-10-11')).toBe(true);
     expect(await db.habitChecks.count()).toBe(1);
     expect(await toggleHabit(h.id, '2026-10-11')).toBe(false);

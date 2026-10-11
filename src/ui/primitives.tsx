@@ -10,7 +10,15 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   icon?: LucideIcon;
 };
 
-export function Button({ variant = 'secondary', size = 'm', block, icon: Icon, className, children, ...rest }: ButtonProps) {
+export function Button({
+  variant = 'secondary',
+  size = 'm',
+  block,
+  icon: Icon,
+  className,
+  children,
+  ...rest
+}: ButtonProps) {
   const cls = ['btn', `btn--${variant}`, size === 's' && 'btn--s', block && 'btn--block', className]
     .filter(Boolean)
     .join(' ');
@@ -29,8 +37,20 @@ type IconButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   iconSize?: number;
 };
 
-export function IconButton({ icon: Icon, label, variant = 'plain', iconSize = 20, className, ...rest }: IconButtonProps) {
-  const cls = ['icon-btn', variant === 'outline' && 'icon-btn--outline', variant === 'accent' && 'icon-btn--accent', className]
+export function IconButton({
+  icon: Icon,
+  label,
+  variant = 'plain',
+  iconSize = 20,
+  className,
+  ...rest
+}: IconButtonProps) {
+  const cls = [
+    'icon-btn',
+    variant === 'outline' && 'icon-btn--outline',
+    variant === 'accent' && 'icon-btn--accent',
+    className,
+  ]
     .filter(Boolean)
     .join(' ');
   return (
@@ -52,7 +72,17 @@ interface CardProps {
   testId?: string;
 }
 
-export function Card({ label, icon: Icon, action, children, warn, onClick, className, ariaLabel, testId }: CardProps) {
+export function Card({
+  label,
+  icon: Icon,
+  action,
+  children,
+  warn,
+  onClick,
+  className,
+  ariaLabel,
+  testId,
+}: CardProps) {
   const cls = ['card', warn && 'card--warn', onClick && 'card--button', className].filter(Boolean).join(' ');
   const head = (label || action) && (
     <div className="card__head">
@@ -104,7 +134,17 @@ export function SectionTitle({ children, action }: { children: ReactNode; action
   );
 }
 
-export function EmptyState({ icon: Icon, title, children, action }: { icon: LucideIcon; title: string; children?: ReactNode; action?: ReactNode }) {
+export function EmptyState({
+  icon: Icon,
+  title,
+  children,
+  action,
+}: {
+  icon: LucideIcon;
+  title: string;
+  children?: ReactNode;
+  action?: ReactNode;
+}) {
   return (
     <div className="empty">
       <Icon size={28} strokeWidth={1.25} aria-hidden />
@@ -129,7 +169,11 @@ export function Banner({
   testId?: string;
 }) {
   return (
-    <div className={`banner ${tone !== 'plain' ? `banner--${tone}` : ''}`} role={tone === 'warn' ? 'alert' : undefined} data-testid={testId}>
+    <div
+      className={`banner ${tone !== 'plain' ? `banner--${tone}` : ''}`}
+      role={tone === 'warn' ? 'alert' : undefined}
+      data-testid={testId}
+    >
       <Icon size={18} strokeWidth={1.75} aria-hidden />
       <div className="grow">{children}</div>
       {action}
@@ -140,12 +184,37 @@ export function Banner({
 export function ProgressBar({ value, warn, label }: { value: number; warn?: boolean; label?: string }) {
   const pct = Math.round(Math.min(1, Math.max(0, value)) * 100);
   return (
-    <div className={`bar ${warn ? 'bar--warn' : ''}`} role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={label}>
+    <div
+      className={`bar ${warn ? 'bar--warn' : ''}`}
+      role="progressbar"
+      aria-valuenow={pct}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label={label}
+    >
       <div className="bar__fill" style={{ width: `${pct}%` }} />
     </div>
   );
 }
 
-export function Badge({ children, tone = 'accent' }: { children: ReactNode; tone?: 'accent' | 'warn' | 'muted' }) {
+export function Stat({ value, label, unit }: { value: ReactNode; label: string; unit?: string }) {
+  return (
+    <div>
+      <div className="stat__value">
+        {value}
+        {unit && <span className="unit">{unit}</span>}
+      </div>
+      <div className="stat__label">{label}</div>
+    </div>
+  );
+}
+
+export function Badge({
+  children,
+  tone = 'accent',
+}: {
+  children: ReactNode;
+  tone?: 'accent' | 'warn' | 'muted';
+}) {
   return <span className={`badge ${tone !== 'accent' ? `badge--${tone}` : ''}`}>{children}</span>;
 }

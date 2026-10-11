@@ -58,7 +58,16 @@ describe('Noten', () => {
 
   it('Punkte → Note', () => {
     expect([15, 14, 13, 12, 10, 7, 5, 4, 1, 0].map(pointsToGrade)).toEqual([
-      '1+', '1', '1−', '2+', '2−', '3−', '4', '4−', '5−', '6',
+      '1+',
+      '1',
+      '1−',
+      '2+',
+      '2−',
+      '3−',
+      '4',
+      '4−',
+      '5−',
+      '6',
     ]);
     expect(pointsToDecimalGrade(11)).toBe(2);
     expect(pointsToDecimalGrade(15)).toBe(0.7);
@@ -97,7 +106,10 @@ describe('Fristen', () => {
 
 describe('Habits und Streaks', () => {
   const T = '2026-10-11'; // Sonntag
-  const daily: Pick<Habit, 'schedule' | 'startDate'> = { schedule: { kind: 'daily' }, startDate: '2026-09-01' };
+  const daily: Pick<Habit, 'schedule' | 'startDate'> = {
+    schedule: { kind: 'daily' },
+    startDate: '2026-09-01',
+  };
 
   it('zählt aufeinanderfolgende Tage, offener heutiger Tag bricht nicht', () => {
     const checked = new Set([addDays(T, -1), addDays(T, -2), addDays(T, -3)]);
@@ -127,7 +139,10 @@ describe('Habits und Streaks', () => {
   });
 
   it('Quote und Heatmap', () => {
-    const habits = [{ id: 'a', ...daily }, { id: 'b', schedule: { kind: 'weekdays' as const, days: [7] }, startDate: '2026-09-01' }];
+    const habits = [
+      { id: 'a', ...daily },
+      { id: 'b', schedule: { kind: 'weekdays' as const, days: [7] }, startDate: '2026-09-01' },
+    ];
     const checks = [
       { habitId: 'a', date: T },
       { habitId: 'b', date: T },
@@ -168,8 +183,14 @@ describe('Tagesring', () => {
 describe('Zusammenhänge', () => {
   it('Gruppenvergleich mit Mindestanzahl', () => {
     const pairs: [number, number][] = [
-      [8, 4], [8.5, 5], [7.8, 4], [9, 4],
-      [6, 3], [6.5, 2], [7, 3], [5.5, 3],
+      [8, 4],
+      [8.5, 5],
+      [7.8, 4],
+      [9, 4],
+      [6, 3],
+      [6.5, 2],
+      [7, 3],
+      [5.5, 3],
     ];
     const c = compareByThreshold(pairs, 7.5);
     expect(c.enough).toBe(true);
@@ -179,8 +200,20 @@ describe('Zusammenhänge', () => {
   });
 
   it('Korrelation ehrlich beschrieben', () => {
-    expect(pearson([[1, 1], [2, 2], [3, 3]])).toBeCloseTo(1);
-    expect(pearson([[1, 1], [1, 2], [1, 3]])).toBeNull();
+    expect(
+      pearson([
+        [1, 1],
+        [2, 2],
+        [3, 3],
+      ]),
+    ).toBeCloseTo(1);
+    expect(
+      pearson([
+        [1, 1],
+        [1, 2],
+        [1, 3],
+      ]),
+    ).toBeNull();
     expect(describeCorrelation(0.9, 5)).toBe('zu wenig Daten für eine Aussage');
     expect(describeCorrelation(0.1, 20)).toBe('kein erkennbarer Zusammenhang');
     expect(describeCorrelation(-0.5, 20)).toBe('mäßiger negativer Zusammenhang');

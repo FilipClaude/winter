@@ -23,7 +23,11 @@ const clamp01 = (n: number) => (Number.isFinite(n) ? Math.min(1, Math.max(0, n))
  * Tagesring: Durchschnitt der aktiven Teilziele, jedes gedeckelt auf 100 %.
  * Ziele mit Wert 0 oder deaktiviert zählen nicht. Habits zählen nur, wenn heute welche geplant sind.
  */
-export function dayRing(input: RingInput, goals: Goals, enabled: Settings['ring']): { parts: RingPart[]; total: number } {
+export function dayRing(
+  input: RingInput,
+  goals: Goals,
+  enabled: Settings['ring'],
+): { parts: RingPart[]; total: number } {
   const parts: RingPart[] = [];
   if (enabled.habits && input.habitsPlanned > 0) {
     parts.push({

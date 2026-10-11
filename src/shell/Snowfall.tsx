@@ -22,7 +22,8 @@ export function Snowfall({ enabled }: { enabled: boolean }) {
     if (!active || !el) return;
     const ctx = el.getContext('2d');
     if (!ctx) return;
-    const color = getComputedStyle(document.documentElement).getPropertyValue('--color-frost').trim() || 'white';
+    const color =
+      getComputedStyle(document.documentElement).getPropertyValue('--color-frost').trim() || 'white';
     let w = 0;
     let h = 0;
     let flakes: Flake[] = [];

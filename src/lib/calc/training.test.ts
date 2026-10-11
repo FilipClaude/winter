@@ -71,17 +71,28 @@ describe('Gym: Bestleistungen', () => {
 
   it('erste Einheit ist Basis, Steigerung wird markiert', () => {
     const marks = detectPRs([
-      gym('a', '2026-10-01', [[5, 80], [5, 80]]),
-      gym('b', '2026-10-04', [[5, 85], [3, 90]]),
+      gym('a', '2026-10-01', [
+        [5, 80],
+        [5, 80],
+      ]),
+      gym('b', '2026-10-04', [
+        [5, 85],
+        [3, 90],
+      ]),
     ]);
     expect(marks.filter((m) => m.sessionId === 'a')).toHaveLength(0);
-    const kinds = marks.filter((m) => m.sessionId === 'b').flatMap((m) => m.kinds.map((k) => `${m.setIndex}:${k}`));
+    const kinds = marks
+      .filter((m) => m.sessionId === 'b')
+      .flatMap((m) => m.kinds.map((k) => `${m.setIndex}:${k}`));
     expect(kinds).toContain('1:gewicht'); // 90 kg
     expect(kinds).toContain('0:1rm'); // 85×5 = 99,2 > 90×3 = 99,0
   });
 
   it('gleiche Leistung ist kein PR, Groß-/Kleinschreibung egal', () => {
-    const marks = detectPRs([gym('a', '2026-10-01', [[5, 80]]), gym('b', '2026-10-02', [[5, 80]], ' kniebeuge ')]);
+    const marks = detectPRs([
+      gym('a', '2026-10-01', [[5, 80]]),
+      gym('b', '2026-10-02', [[5, 80]], ' kniebeuge '),
+    ]);
     expect(marks).toHaveLength(0);
   });
 
@@ -93,7 +104,18 @@ describe('Gym: Bestleistungen', () => {
 
 describe('Saisonstatistik', () => {
   const m = (p: Partial<Match>): { match: Match } => ({
-    match: { opponent: 'X', goalsFor: 1, goalsAgainst: 1, minutes: 90, goals: 0, assists: 0, shots: 0, rating: 6, reflection: '', ...p },
+    match: {
+      opponent: 'X',
+      goalsFor: 1,
+      goalsAgainst: 1,
+      minutes: 90,
+      goals: 0,
+      assists: 0,
+      shots: 0,
+      rating: 6,
+      reflection: '',
+      ...p,
+    },
   });
 
   it('Saison läuft Juli bis Juni', () => {
