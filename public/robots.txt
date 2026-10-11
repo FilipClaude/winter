@@ -1,0 +1,3 @@
+# Winter ist eine private App – nicht indexieren.
+User-agent: *
+Disallow: /

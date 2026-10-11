@@ -141,3 +141,27 @@ test('Aufgabe anlegen und abhaken', async ({ page }) => {
   await expect(page.getByTestId('todo-list')).toContainText('Alles erledigt');
   await expect(page.getByRole('region', { name: 'Erledigte Aufgaben' })).toContainText('Englisch Essay');
 });
+
+test('Vergessener Timer (> 6 h) wird gemeldet und lässt sich verwerfen', async ({ page }) => {
+  await page.goto('/#/schule');
+  await expect(page.getByRole('button', { name: 'Lernen starten' })).toBeVisible();
+  // Timer direkt in IndexedDB setzen: Start vor 7 Stunden
+  await page.evaluate(
+    (startedAt) =>
+      new Promise<void>((resolve, reject) => {
+        const req = indexedDB.open('winter');
+        req.onsuccess = () => {
+          const tx = req.result.transaction('kv', 'readwrite');
+          tx.objectStore('kv').put({ key: 'timer', value: { subjectId: 'x', startedAt } });
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        };
+        req.onerror = () => reject(req.error);
+      }),
+    new Date(Date.now() - 7 * 3_600_000).toISOString(),
+  );
+  await page.reload();
+  await expect(page.getByTestId('timer-forgotten')).toContainText('seit über 7 h');
+  await page.getByTestId('timer-forgotten').getByRole('button', { name: 'Verwerfen' }).click();
+  await expect(page.getByRole('button', { name: 'Lernen starten' })).toBeVisible();
+});

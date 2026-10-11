@@ -123,3 +123,44 @@
 
 **Performance:** Haupt-JS ca. 134 kB gzip plus 71 kB gemeinsamer Chunk (React, motion, Zod, Dexie). Die Screens laden lazy (je 2–12 kB gzip). Precache ca. 840 KiB inkl. Schriften und Icons. Nach dem ersten Laden kommt alles aus dem Cache.
 
+## Phase 9 – Abschluss-Audit ✓
+**Durchgeführt:**
+- Kompletter Lauf: typecheck ✓ · lint (0 Warnungen) ✓ · Prettier ✓ · **162 Unit-Tests** ✓ · Build ✓ · **44 E2E-Tests** ✓ (43 iPhone-Viewport + 1 Offline). Jeder E2E-Test startet in einem frischen Browserkontext, also **ohne Daten**. Die Leerzustände aller Screens sind damit abgedeckt und per Screenshot geprüft.
+- **Offline-Test** (Projekt `offline`, echter Service Worker gegen `vite preview`): Seite wird vom Service Worker kontrolliert → Netz aus → Neuladen → alle Tabs inkl. lazy geladener Screens → Wasser eintragen → Neuladen ohne Netz → Wert bleibt → Schriften aus dem Cache. ✓
+- **Installierbarkeit** über das Chrome-DevTools-Protokoll: `Page.getInstallabilityErrors` leer, Manifest ohne Fehler. ✓ (Lighthouse 12 hat keine eigene PWA-Kategorie mehr.)
+- **Lighthouse** (mobil, gedrosseltes 4G, `npm run lighthouse`): Performance **94** · Barrierefreiheit **100** · Best Practices **100** · SEO 91 (nur `robots.txt`; jetzt bewusst „nicht indexieren“, siehe DECISIONS #18). FCP 2,3 s, LCP 2,6 s, TBT 60 ms, CLS 0,015. Das gilt für den ersten Aufruf; danach kommt alles aus dem Cache.
+- **axe WCAG 2.1 AA:** alle Screens und zwei Sheets ohne schwere Verstöße.
+- `npm audit --omit=dev`: 0 Schwachstellen.
+
+**Letzter Fund im Selbst-Review:** Ein vergessener Lern-Timer hätte tagelange Lernzeit gebucht → Warnung ab 6 h mit „Verwerfen“, E2E-Test.
+
+---
+
+## Ehrliche Zusammenfassung
+
+### Was funktioniert (getestet)
+- Alle Module aus dem Auftrag: Heute (Tagesring, Karten, Wischen), Training (Load, akut:chronisch, Gym mit Vorlagen und PRs, Spiele und Saisonstatistik, Wochenplan), Körper (Ernährung mit Vorlagen, Wasser, Schlaf, Health-Verlauf), Schule (Timer, Aufgaben, Klausuren, Notenschnitt, FernUni-Fristen mit 14/7/2-Tage-Warnung), Habits (Streaks, Heatmap), Stimmung/Energie, Journal, Rückblick (Woche/Monat, Zusammenhänge, Saison), Einstellungen, Backup/Import, Markdown-Export, Demo-Daten.
+- Offline-Betrieb, Installierbarkeit (Chromium), Update-Hinweis.
+- Zeitlogik inklusive Zeitumstellung, Mitternacht, Jahreswechsel und ISO-Wochen (Unit-Tests).
+- Health-Import-Logik und alle drei Wege (Zwischenablage, Text, Datei) im Browser.
+
+### Was ich nicht testen konnte
+- **Den echten Kurzbefehl am iPhone.** Die deutschen Aktionsnamen in `HEALTH-SHORTCUT.md` sind teils als *unsicher* markiert. Ob ein Wörterbuch beim Kopieren wirklich als JSON in der Zwischenablage landet, zeigt erst der Test am Gerät. Der Parser ist deshalb bewusst tolerant, und es gibt Textfeld und Datei als Ausweg.
+- **Safari/WebKit auf iOS:** Getestet wurde in Chromium mit iPhone-Viewport. Nicht geprüft sind Standalone-Modus, Splashscreens, Safe-Areas an einer echten Notch, das „Einfügen“-Popup von iOS, das Teilen-Menü beim Backup, `storage.persist()` und die Rückkehr aus der Kurzbefehle-App (`visibilitychange`).
+- Verhalten bei sehr großen Datenmengen über Jahre. Der Rückblick lädt alle Einträge; bei ein paar tausend Einträgen ist das unkritisch, nach mehreren Jahren sollte man es beobachten.
+
+### Bekannte Grenzen
+- iOS kann Website-Daten löschen, wenn die App lange nicht genutzt wird oder der Speicher knapp ist. Gegenmaßnahmen: `persist()`, Backup-Erinnerung nach 7 Tagen. Ein Backup-Export bleibt trotzdem Pflicht.
+- Daten hängen an der Domain. Ein Hosting-Wechsel heißt: Backup exportieren und an der neuen Adresse importieren.
+- Der Backup-Import ersetzt alles, er führt nicht zusammen.
+
+### Ideen für Version 2
+1. **Automatisches Backup** in iCloud Drive über einen zweiten Kurzbefehl (z. B. wöchentlich per Automation).
+2. Health-Import **per Automation**: Der Kurzbefehl läuft z. B. morgens automatisch und legt eine Datei ab, Winter liest sie beim Öffnen ein.
+3. **Benachrichtigungen** für Fristen (Web Push ist auf iOS ab 16.4 für Homescreen-Apps möglich, braucht aber einen kleinen Push-Server).
+4. Sync zwischen Geräten (verschlüsselt, z. B. über einen eigenen kleinen Server hinter `HealthSource`-ähnlichem Interface).
+5. Trainingsplan-Vorlagen (Gym-Splits) und Satz-Timer.
+6. Obsidian-Export direkt in den Vault-Ordner (über die Obsidian-URL-Schemes oder einen Kurzbefehl).
+7. Bundle verkleinern: `zod/mini` statt Zod für die Laufzeitvalidierung und motion nur in den Sheets laden.
+8. WebKit-Lauf der E2E-Tests (`npx playwright install webkit`) als zusätzliche Annäherung an Safari.
+
