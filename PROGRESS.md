@@ -59,3 +59,18 @@
 
 **Offen:** Die Last-Warnung „hoch“ ist nur per Unit-Test geprüft. Der E2E-Test folgt mit den Demo-Daten (Phase 7).
 
+## Phase 5 – Schule & FernUni ✓
+**Fertig:**
+- Lern-Timer: Karte oben, läuft über die gespeicherte Startzeit weiter, Stopp speichert, an Mitternacht geteilt. Lernzeit lässt sich auch nachtragen.
+- Aufgaben: offen/erledigt, Fälligkeit, überfällig in Warnfarbe, Frost-Checkbox.
+- Klausuren: anstehend mit Countdown und Lernstand, Fortschrittsbalken in Warnfarbe bei ≤ 3 Tagen und < 60 %. Notenschnitt pro Fach und gesamt in Punkten, mit Note mit Tendenz und Notenschnitt nach KMK-Formel.
+- FernUni: Module mit Nummer, Fristen (Einsendearbeit/Prüfung/sonstige, optional Uhrzeit), Warn-Badges, erledigt/wieder öffnen. Modul löschen mit Rückfrage.
+- Lernzeit-Statistik: Woche, Ø 4 Wochen, 14-Tage-Chart, Verteilung nach Fach.
+- Heute-Screen: Fristen-Karten in drei Warnstufen (≤ 14 Tage Eisblau-Rand, ≤ 7 Tage Warnrand, ≤ 2 Tage und überfällig Warnfläche, überfällig pulsiert, `role=alert`), direkt abhakbar.
+
+**Geprüft:** typecheck ✓ · lint ✓ · build ✓ · 6 neue E2E ✓ (Timer übersteht Neuladen; Lernzeit nachtragen → pro Fach 1 h 15 min; vier Fristen → genau 3 Warnungen in den richtigen Stufen, 30 Tage noch nicht; Abhaken entfernt die Warnung; überfällige Frist bleibt sichtbar; Notenschnitt 10,7 und 12,0; Countdown auf Heute; Aufgabe anlegen/abhaken). Screenshots angesehen: Heute mit Fristen, Timer, Klausuren, Lernzeit, FernUni, Aufgaben.
+
+**Gefundene Fehler:** keine in dieser Phase.
+
+**Selbst-Review:** Überfällige Fristen bleiben bis zum Abhaken dauerhaft oben auf Heute; es gibt keinen Weg, sie unbemerkt verschwinden zu lassen. Klausuren ohne Punkte, deren Datum vorbei ist, erscheinen unter „Vergangen“ mit dem Hinweis „Punkte offen“.
+
