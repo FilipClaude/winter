@@ -127,7 +127,10 @@
 }
 
 .card--button {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
   width: 100%;
   text-align: left;
   transition:
@@ -378,7 +381,7 @@
 }
 
 .segmented button {
-  min-height: 38px;
+  min-height: var(--touch);
   border-radius: calc(var(--radius-m) - 4px);
   font-size: var(--text-sm);
   color: var(--color-text-2);
@@ -1149,6 +1152,17 @@ button.list-item:active {
 }
 
 /* ---------- Diverses ---------- */
+.route-fade {
+  animation: route-in var(--dur) var(--ease-out);
+}
+
+@keyframes route-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
 .divider {
   height: 1px;
   background: var(--color-line);

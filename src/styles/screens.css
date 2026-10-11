@@ -69,6 +69,30 @@
   gap: var(--space-2);
 }
 
+.ring-card__parts .mono {
+  white-space: nowrap;
+}
+
+@media (max-width: 359px) {
+  .ring-card {
+    gap: var(--space-3);
+  }
+
+  .ring-card .ring,
+  .ring-card .ring svg {
+    width: 104px !important;
+    height: 104px !important;
+  }
+
+  .ring-card__pct {
+    font-size: var(--text-2xl);
+  }
+
+  .today-hero__day {
+    font-size: var(--text-hero);
+  }
+}
+
 .ring-card__parts li {
   display: flex;
   flex-direction: column;

@@ -68,13 +68,11 @@ test('Health: Zwischenablage nach Rückkehr und Datei-Import', async ({ page, co
   await page.getByTestId('health-paste').click();
   await expect(page.getByTestId('health-result')).toContainText('7.777 Schritte');
 
-  await page
-    .getByTestId('health-file')
-    .setInputFiles({
-      name: 'winter-health.json',
-      mimeType: 'application/json',
-      buffer: Buffer.from(health(9999)),
-    });
+  await page.getByTestId('health-file').setInputFiles({
+    name: 'winter-health.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(health(9999)),
+  });
   await expect(page.getByTestId('health-result')).toContainText('9.999 Schritte');
 });
 

@@ -78,6 +78,12 @@ function Sheet({ spec, onClose }: { spec: SheetSpec & { key: number }; onClose: 
   const drag = useDragControls();
   const panel = useRef<HTMLDivElement>(null);
 
+  // Fokus nach dem Schließen dorthin zurück, wo er vorher war (Tastatur/VoiceOver).
+  useEffect(() => {
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    return () => previous?.focus({ preventScroll: true });
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();

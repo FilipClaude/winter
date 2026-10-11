@@ -105,3 +105,21 @@
 - **Bug:** Körpergewichtsübungen zeigten „0,0 kg 1RM“ und konnten keine PRs erzeugen. Jetzt gibt es einen Wiederholungs-PR (`wdh`) und den Bestwert in Wdh., mit Test.
 - UI: Der Demo-Schalter reagierte erst nach dem Schreiben → jetzt optimistisch. Bei Fristen auf Heute wurde der Titel vom langen Modulnamen abgeschnitten → Titel zuerst, Modul darunter.
 
+## Phase 8 – Feinschliff ✓
+**Fertig:**
+- Animationen: Screen-Wechsel mit kurzer Überblendung (200 ms), Tagesring füllt sich beim Laden, Zahlen zählen hoch, Frost-Checkbox, federnde Sheets. Alles aus bei „Bewegung reduzieren“.
+- Barrierefreiheit: axe-Audit (WCAG 2.1 AA) für alle 7 Screens plus Schnellerfassung und Trainings-Sheet, alle mit Demo-Daten, ohne schwere Verstöße. Seitentitel pro Screen. Fokus kehrt nach dem Schließen eines Sheets zurück. Segment-Buttons auf 44 px.
+- Design-Disziplin automatisiert: Ein Test durchsucht den gesamten UI-Code nach Hex-, rgb()- und hsl()-Farben außerhalb von `tokens.css`.
+- Layout: Desktop zentriert (≤ 480 px Spalte, getestet), kein horizontales Scrollen bei 320 px auf allen Screens (getestet). Tagesring bei schmalen Geräten verkleinert.
+- Hosting-Konfiguration (`vercel.json`, `public/_headers`: `sw.js` nie cachen), `DEPLOY.md`, `README.md`.
+
+**Geprüft:** typecheck ✓ · lint ✓ · 162 Unit-Tests ✓ · build ✓ · 42 E2E ✓ (neu: axe, Seitentitel, Desktop, 320 px). Screenshots angesehen: Desktop, 320 px.
+
+**Gefundene und behobene Fehler:**
+- Fallback-Farbe `'white'` im Schneefall (vom neuen Farb-Test gefunden) → entfernt.
+- Bei 320 px brachen die Werte im Tagesring um → nowrap, kleinerer Ring.
+- Karten-Buttons zentrierten ihren Inhalt vertikal (Schlaf-Label tiefer als Schritte) → Flex-Spalte oben ausgerichtet.
+- axe meldete einen Kontrastverstoß, der nur während der Überblendung auftrat (halbe Deckkraft). Der Audit misst jetzt mit reduzierter Bewegung, die Tokens selbst sind per Kontrast-Test abgesichert.
+
+**Performance:** Haupt-JS ca. 134 kB gzip plus 71 kB gemeinsamer Chunk (React, motion, Zod, Dexie). Die Screens laden lazy (je 2–12 kB gzip). Precache ca. 840 KiB inkl. Schriften und Icons. Nach dem ersten Laden kommt alles aus dem Cache.
+

@@ -44,6 +44,13 @@ export function Ring({
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const v = Math.min(1, Math.max(0, Number.isFinite(value) ? value : 0));
+  // Beim ersten Anzeigen ruhig von 0 aus füllen (CSS-Transition auf stroke-dashoffset).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  const shownV = mounted ? v : 0;
   return (
     <div
       className="ring"
@@ -60,8 +67,8 @@ export function Ring({
           r={r}
           strokeWidth={stroke}
           strokeDasharray={c}
-          strokeDashoffset={c * (1 - v)}
-          style={{ opacity: v === 0 ? 0 : 1 }}
+          strokeDashoffset={c * (1 - shownV)}
+          style={{ opacity: shownV === 0 ? 0 : 1 }}
         />
       </svg>
       <div className="ring__center">{children}</div>
