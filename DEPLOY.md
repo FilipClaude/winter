@@ -18,7 +18,7 @@ git push -u origin main
 
 Der Commit-Autor ist lokal `Filip <filip@winter.local>`. Wenn du deine GitHub-E-Mail sehen willst: `git config user.email "…"`.
 
-## Schritt 2 – GitHub Pages einschalten (einmalig)
+## Schritt 2 – GitHub Pages einschalten (erledigt am 12.10.2026: Repository öffentlich, Pages mit Quelle „GitHub Actions“, App live)
 
 1. **Sichtbarkeit:** GitHub Pages ist im kostenlosen Plan nur für **öffentliche** Repositories verfügbar. Entweder:
    - Repository öffentlich machen: **Settings → General → ganz unten „Danger Zone“ → Change visibility → Public**. Öffentlich ist nur der **Code**. Deine Daten liegen ausschließlich auf deinem iPhone und landen nie auf GitHub.

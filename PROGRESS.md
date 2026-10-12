@@ -134,6 +134,12 @@
 
 **Letzter Fund im Selbst-Review:** Ein vergessener Lern-Timer hätte tagelange Lernzeit gebucht → Warnung ab 6 h mit „Verwerfen“, E2E-Test.
 
+## Deployment (12.10.2026) ✓
+- Hosting auf **GitHub Pages**: <https://filipclaude.github.io/winter/> (Repository `FilipClaude/winter`, öffentlich, nur Code). Build per GitHub Actions bei jedem Push (Typecheck + Unit-Tests vorab).
+- App läuft im Unterordner `/winter/` (`BASE_PATH`), lokal weiter unter `/`. Offline-Test unter `/winter/` lokal bestanden; live geprüft: Service Worker aktiv mit Scope `/winter/`, Manifest-`start_url` `/winter/#/heute`.
+- **Fund beim ersten CI-Build:** `.gitignore` enthielt `screens` (gemeint: Screenshot-Ordner) und schloss damit auch `src/screens/` aus. Die Screens waren nie committet, lokal fiel es nicht auf. Regel auf `/screens/` verankert, Screens nachgetragen, frischer Klon baut fehlerfrei.
+- Habit-E2E war wochentagsabhängig (DECISIONS #24), korrigiert.
+
 ---
 
 ## Ehrliche Zusammenfassung
