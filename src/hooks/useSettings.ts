@@ -10,3 +10,12 @@ export function useSettings(): Settings {
 export function useKV<T>(key: string): T | undefined {
   return useLiveQuery(async () => (await db.kv.get(key))?.value as T | undefined, [key]);
 }
+
+/** Wie useKV, unterscheidet aber „lädt noch“ von „nicht gesetzt“ (für Schalter, die nicht flackern dürfen). */
+export function useKVState<T>(key: string): { loaded: boolean; value: T | undefined } {
+  return useLiveQuery(
+    async () => ({ loaded: true, value: (await db.kv.get(key))?.value as T | undefined }),
+    [key],
+    { loaded: false, value: undefined },
+  );
+}

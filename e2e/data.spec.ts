@@ -192,6 +192,9 @@ test('Demo-Daten an → alle Screens mit Daten → aus = vollständig weg @scree
   await shot(page, '07-demo-habits', true);
 
   await page.goto('/#/einstellungen');
+  // Der Schalter ist gesperrt, bis der echte Zustand geladen ist (kein Flackern auf „aus“).
+  await expect(page.getByTestId('demo-toggle')).toBeChecked(SLOW_WRITE);
+  await expect(page.getByTestId('demo-toggle')).toBeEnabled();
   await page.getByTestId('demo-toggle').uncheck();
   await expect(page.getByText(/Demo-Einträge gelöscht/)).toBeVisible(SLOW_WRITE);
   // Regression: Der Schalter darf nach dem Löschen nicht kurz zurückspringen (WebKit-Fund in v2).

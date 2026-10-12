@@ -27,13 +27,15 @@ describe('Design-System: keine hart codierten Farben', () => {
       const offending = readFileSync(file, 'utf8')
         .split('\n')
         .map((line, i) => ({ line: line.trim(), n: i + 1 }))
-        // Kommentare und Rauschtextur-Maske (Data-URI ohne Farbe) ausnehmen
+        // Kommentare, Rauschtextur-Maske (Data-URI ohne Farbe) und aus Token-Werten zusammengesetzte
+        // Farben (`rgba(${…})`, Himmel auf dem Canvas) ausnehmen
         .filter(
           ({ line }) =>
             !line.startsWith('//') &&
             !line.startsWith('*') &&
             !line.startsWith('/*') &&
-            !line.includes('data:image/svg+xml'),
+            !line.includes('data:image/svg+xml') &&
+            !/rgba?\(\$\{/.test(line),
         )
         .filter(({ line }) => COLOR.test(line));
       expect(offending, offending.map((o) => `${o.n}: ${o.line}`).join('\n')).toEqual([]);

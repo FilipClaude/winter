@@ -3,7 +3,7 @@ import { useSettings } from './hooks/useSettings';
 import { useRoute, type RouteId } from './router';
 import { TodayScreen } from './screens/today/TodayScreen';
 import { CrashProbe, ScreenBoundary } from './shell/ErrorBoundary';
-import { Snowfall } from './shell/Snowfall';
+import { Sky } from './shell/Sky';
 import { TabBar } from './shell/TabBar';
 import { UpdatePrompt } from './shell/UpdatePrompt';
 import { OverlayProvider } from './ui/OverlayProvider';
@@ -36,7 +36,7 @@ export function App() {
 
   return (
     <OverlayProvider>
-      <Snowfall enabled={settings.snow} />
+      <Sky settings={settings} />
       <UpdatePrompt />
       <main className="app">
         <ScreenBoundary key={route.id} name={route.id}>

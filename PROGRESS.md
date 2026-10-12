@@ -199,3 +199,24 @@
 - v1 verwarf bei einem ungültigen Einstellungswert alle Einstellungen (DECISIONS #27).
 
 **Offen:** –
+
+## v2 · Phase 2 + 3 – Design-System v2 und Winterhimmel ✓
+(Zusammen umgesetzt, weil das Glas-Design der Karten vom Himmel abhängt.)
+
+**Fertig**
+- **Winterhimmel** nach echter Tageszeit (München): 4 Phasen weich gemischt, Sterne, Mond in echter Phase, Horizontlicht nach Sonnenstand, Alpen in 3 Ebenen mit Parallaxe (Scroll, optional Neigung), Schnee in 3 Tiefen, Modus „echtes Wetter“ (Open-Meteo). Entwickler-Schalter „Tageszeit simulieren“.
+- Eigene Sonnen-/Mondberechnung mit Tests (Auf-/Untergang ±3 min, Zeitumstellung, Mondphasen, stetige Übergänge).
+- **Glas-Karten** mit phasenabhängiger Deckkraft. **582 automatische Kontrastprüfungen** (jede Textfarbe × jede Himmelsstelle × jede Phase, direkt und auf Glas).
+- **Design-System v2:** Typo-Skala, Elevation, Motion-Tokens (`src/ui/motion.ts`), neue Bausteine `StatTile`, `Sparkline`, `ListRow`, `Skeleton`/`ScreenSkeleton`, Chart-Tooltip per Tap (für alle Balken- und Liniencharts, mit Screenreader-Beschriftung), Tap-Feedback.
+- `DESIGN.md` überarbeitet.
+
+**Geprüft:** typecheck, lint, Prettier, 750 Unit-Tests, 100 E2E (Chromium + WebKit + Offline). Screenshots aller vier Himmelsphasen angesehen.
+
+**Leistung (gemessen):** Hauptthread im Leerlauf 3,4 % mit Schnee, 0 % ohne (Chromium, 10 s). Vorher (eine Canvas) 12,5 % → auf zwei Ebenen aufgeteilt (DECISIONS #33). Ohne Schnee und bei „Bewegung reduzieren“ läuft keine Dauerschleife (E2E-Test zählt Frames).
+
+**Gefundene und behobene Fehler**
+- Mond wurde als dunkle Scheibe gezeichnet (Schatten in Himmelsfarbe statt ausgeschnitten) → Schattenteil wird jetzt transparent herausgeschnitten.
+- **WebKit-Fund:** Demo-Schalter zeigte beim Öffnen kurz „aus“, obwohl aktiv → gesperrt, bis geladen (DECISIONS #34).
+- Nahe Schneeflocken wirkten als unscharfe Flecken → kleiner.
+
+**Ehrlich offen:** Die GPU-Last der Glas-Unschärfe über bewegtem Schnee kann ich unter Windows nicht messen. Falls das iPhone warm wird oder der Akku leidet: Schnee auf „Aus“ (dann 0 % Dauerlast).

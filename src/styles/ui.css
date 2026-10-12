@@ -120,6 +120,10 @@
 .card {
   position: relative;
   background: var(--color-surface);
+  /* Glas über dem Winterhimmel: Deckkraft je nach Himmelsphase (--glass-alpha, vom Himmel gesetzt). */
+  background: color-mix(in srgb, var(--color-surface) calc(var(--glass-alpha) * 100%), transparent);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   border: var(--hairline);
   border-radius: var(--radius-l);
   padding: var(--space-4) var(--space-4) var(--space-4);
@@ -146,6 +150,9 @@
 .card--warn {
   border-color: var(--color-warn-28);
   background: linear-gradient(var(--color-warn-12), var(--color-warn-12)), var(--color-surface);
+  background:
+    linear-gradient(var(--color-warn-12), var(--color-warn-12)),
+    color-mix(in srgb, var(--color-surface) calc(var(--glass-alpha) * 100%), transparent);
 }
 
 .card--flush {
@@ -994,12 +1001,18 @@ button.list-item:active {
   color: var(--color-warn);
 }
 
-/* ---------- Schnee ---------- */
-.snow {
+/* ---------- Winterhimmel (Canvas hinter allem) ---------- */
+.sky {
   position: fixed;
   inset: 0;
-  z-index: var(--z-snow);
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
   pointer-events: none;
+}
+
+.sky--snow {
+  z-index: 1;
 }
 
 /* ---------- Charts ---------- */
@@ -1176,4 +1189,139 @@ button.list-item:active {
 
 .pr-mark {
   color: var(--color-accent);
+}
+
+/* ---------- Design-System v2: Bausteine (src/ui/kit.tsx) ---------- */
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.stat-tile__value {
+  font-size: var(--type-title-size);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-tight);
+}
+
+.stat-tile__delta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+}
+
+.sparkline {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.sparkline--empty {
+  height: 2px;
+  background: var(--color-line);
+  border-radius: var(--radius-pill);
+}
+
+.sparkline__line {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sparkline__dot {
+  fill: var(--color-accent);
+}
+
+.list-row {
+  width: 100%;
+  text-align: left;
+}
+
+.list-row__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.list-row--button {
+  border-radius: var(--radius-s);
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.list-row--button:active {
+  background: var(--color-surface-2);
+}
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+}
+
+.skeleton__line {
+  display: block;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--color-surface-2), var(--color-surface-3), var(--color-surface-2));
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s var(--ease-in-out) infinite;
+}
+
+.skeleton__line:first-child {
+  height: 20px;
+}
+
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+/* Chart-Tooltip (Tap zeigt exakte Werte) */
+.chart {
+  position: relative;
+}
+
+.chart__hit {
+  position: absolute;
+  inset: 0 0 18px 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+}
+
+.chart__hit button {
+  border-radius: var(--radius-xs);
+}
+
+.chart__hit button[aria-pressed='true'] {
+  background: var(--color-accent-08);
+}
+
+.chart__tip {
+  position: absolute;
+  top: -6px;
+  transform: translate(-50%, -100%);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-s);
+  background: var(--color-surface-3);
+  border: var(--hairline-strong);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Tap-Feedback für alle Buttons */
+.btn:active:not(:disabled),
+.icon-btn:active:not(:disabled) {
+  transform: scale(0.97);
 }

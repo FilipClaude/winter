@@ -21,7 +21,7 @@ import { useEffect, useRef, useState } from 'react';
 import { db, SCHEMA_VERSION } from '../../db/db';
 import { saveSettings, saveSubject } from '../../db/repo';
 import type { Settings, Subject } from '../../db/schemas';
-import { useKV, useSettings } from '../../hooks/useSettings';
+import { useKV, useKVState, useSettings } from '../../hooks/useSettings';
 import { useToday } from '../../hooks/useNow';
 import {
   backupFileName,
@@ -59,9 +59,7 @@ export default function SettingsScreen() {
       <MarkdownCard />
       <StorageCard />
       <DemoCard />
-      <Card label="Darstellung" icon={Snowflake} ariaLabel="Darstellung">
-        <ToggleRow label="Schneefall" hint="Sehr dezent. Aus, wenn das System „Bewegung reduzieren“ nutzt." checked={settings.snow} onChange={(snow) => void saveSettings({ snow })} />
-      </Card>
+      <AppearanceCard settings={settings} />
       <DangerCard />
       <p className="xsmall faint" style={{ textAlign: 'center', margin: 'var(--space-6) 0' }}>
         Alle Daten liegen nur auf diesem Gerät. Kein Konto, keine Cloud.
@@ -79,6 +77,71 @@ function ToggleRow({ label, hint, checked, onChange, testId, disabled }: { label
       </span>
       <input type="checkbox" role="switch" className="switch" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} data-testid={testId} />
     </label>
+  );
+}
+
+// ---------- Darstellung ----------
+
+type OrientationPermission = { requestPermission?: () => Promise<'granted' | 'denied'> };
+
+function AppearanceCard({ settings }: { settings: Settings }) {
+  const { toast } = useOverlay();
+  return (
+    <Card label="Darstellung" icon={Snowflake} ariaLabel="Darstellung" testId="appearance-card">
+      <div className="stack">
+        <div className="stack stack--s">
+          <span className="xsmall muted">Schnee</span>
+          <Segmented
+            label="Schnee"
+            value={settings.snowMode}
+            options={[
+              { value: 'off', label: 'Aus' },
+              { value: 'subtle', label: 'Dezent' },
+              { value: 'weather', label: 'Wetter' },
+            ]}
+            onChange={(snowMode) => void saveSettings({ snowMode, snow: snowMode !== 'off' })}
+          />
+          <span className="xsmall faint">
+            „Wetter“ schneit nur, wenn es in München gerade schneit (Open-Meteo, alle 30 min). Ohne Netz: leicht. Bei „Bewegung reduzieren“ immer aus.
+          </span>
+        </div>
+        <ToggleRow
+          label="Alpen bewegen sich mit"
+          hint="Leichte Parallaxe beim Neigen des iPhones. iOS fragt einmal nach Zugriff auf die Bewegungssensoren."
+          checked={settings.tilt}
+          onChange={(on) => {
+            if (!on) {
+              void saveSettings({ tilt: false });
+              return;
+            }
+            const DOE = (window as unknown as { DeviceOrientationEvent?: OrientationPermission }).DeviceOrientationEvent;
+            const ask = DOE?.requestPermission ? DOE.requestPermission() : Promise.resolve('granted' as const);
+            void ask
+              .then((r) => {
+                if (r === 'granted') return saveSettings({ tilt: true });
+                toast('Zugriff auf Bewegungssensoren abgelehnt', { tone: 'warn' });
+                return undefined;
+              })
+              .catch(() => toast('Bewegungssensoren nicht verfügbar', { tone: 'warn' }));
+          }}
+        />
+        <div className="stack stack--s">
+          <span className="xsmall muted">Tageszeit simulieren (Entwickler)</span>
+          <Segmented
+            label="Tageszeit simulieren"
+            value={settings.skySimulate}
+            options={[
+              { value: 'auto', label: 'Echt' },
+              { value: 'night', label: 'Nacht' },
+              { value: 'dawn', label: 'Morgen' },
+              { value: 'day', label: 'Tag' },
+              { value: 'dusk', label: 'Abend' },
+            ]}
+            onChange={(skySimulate) => void saveSettings({ skySimulate })}
+          />
+        </div>
+      </div>
+    </Card>
   );
 }
 
@@ -538,7 +601,9 @@ function StorageCard() {
 // ---------- Demo ----------
 
 function DemoCard() {
-  const active = useKV<boolean>('demoActive') === true;
+  // Erst schalten lassen, wenn der echte Zustand geladen ist – sonst stünde der Schalter kurz auf „aus“.
+  const demo = useKVState<boolean>('demoActive');
+  const active = demo.value === true;
   const { toast } = useOverlay();
   // Zielzustand sofort zeigen, solange geschrieben wird (optimistisch). Erst wenn die Datenbank-Abfrage
   // den neuen Zustand liefert, wird wieder `active` angezeigt – sonst springt der Schalter kurz zurück.
@@ -550,7 +615,7 @@ function DemoCard() {
         label="4 Wochen Beispieldaten"
         hint="Markiert und getrennt von echten Daten. Ausschalten löscht sie vollständig."
         checked={op ? op.target : active}
-        disabled={op !== null}
+        disabled={op !== null || !demo.loaded}
         testId="demo-toggle"
         onChange={(on) => {
           if (op !== null) return;

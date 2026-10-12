@@ -15,6 +15,7 @@ import { useOverlay } from '../../ui/overlay-context';
 import { Badge, Banner, Button, Card, EmptyState, ScreenHeader, SectionTitle, Stat } from '../../ui/primitives';
 import { openSessionSheet } from './openSession';
 import { SESSION_ICON } from './session-icons';
+import { ScreenSkeleton } from '../../ui/kit';
 
 type Filter = 'alle' | 'fussball' | 'gym' | 'spiele';
 
@@ -25,7 +26,7 @@ export default function TrainingScreen() {
   const sessions = useLiveQuery(() => db.sessions.toArray(), []);
   const [filter, setFilter] = useState<Filter>('alle');
 
-  if (!sessions) return <div className="screen" />;
+  if (!sessions) return <ScreenSkeleton />;
 
   const season = seasonOf(today);
   const range = seasonRange(season);

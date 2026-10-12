@@ -35,6 +35,7 @@ import { SESSION_ICON } from '../training/session-icons';
 import { JournalSheet } from './JournalSheet';
 import { BackupReminder, DemoNotice } from './Reminders';
 import { useDayData } from './useDayData';
+import { ScreenSkeleton } from '../../ui/kit';
 
 export function TodayScreen({ date: dateParam }: { date?: string | undefined }) {
   const today = useToday();
@@ -107,7 +108,7 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
   const settings = useSettings();
   const { openSheet } = useOverlay();
   const lastImport = useKV<string>('lastHealthImport');
-  if (!data) return <div style={{ minHeight: 600 }} />;
+  if (!data) return <ScreenSkeleton cards={5} />;
 
   const ring = dayRing(
     {

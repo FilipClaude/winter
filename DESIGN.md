@@ -51,15 +51,42 @@ Regeln:
 - Safe-Areas: Header oben `--safe-top`, Tab-Leiste unten `--safe-bottom`.
 - Desktop: zentrierte Spalte `--content-max` (480px).
 
-## Textur und Atmosphäre
+## Textur und Atmosphäre (v2: Winterhimmel)
 
-- Hintergrund: Radialverlauf `--color-bg-glow` → `--color-bg` oben, kaum sichtbar.
-- Frost: Rauschtextur (SVG-Turbulenz als Maske) in `--color-frost` mit 3,5 % Deckkraft.
-- Schneefall (optional, Einstellungen): wenige, langsame, kleine Flocken. Aus bei `prefers-reduced-motion`.
+- **Winterhimmel** (`src/shell/Sky.tsx`) hinter der UI, nach der **echten Tageszeit in München** (Sonnenstand offline berechnet, `src/lib/sky/astro.ts`):
+  - Phasen **Nacht → Morgen (Blaue Stunde) → Tag → Abend**, weich gemischt über die Sonnenhöhe (Tag ab +6°, Dämmerung −10…+2°, Nacht unter −16°).
+  - Nacht: Sterne und Mond in der **echten Phase** (Position stilisiert oben rechts). Tag: gedämpftes Stahlblau, nie grell. Abend: kaltes Violett-Blau mit **einem** sehr gedämpften warmen Streifen am Horizont.
+  - Horizontlicht dort, wo die Sonne steht (Azimut). Unten eine dunkle **Alpensilhouette** in 3 Ebenen mit leichter Parallaxe beim Scrollen bzw. Neigen (nur nach Erlaubnis).
+  - **Schnee in 3 Tiefen** (fern: klein/langsam, mittel, nah: weich/schnell) auf eigener Canvas. Modi: aus / dezent / echtes Wetter (Open-Meteo, 30 min Cache, offline „leicht“).
+- Alle Himmelsfarben sind Tokens (`--sky-<phase>-<stop>`), dazu je Phase **veil** (Abdunklung) und **glass** (Kartendeckkraft). `tokens.test.ts` prüft **jede** Text-/Hintergrund-Kombination in **jeder** Phase auf WCAG AA (582 Prüfungen). Lesbarkeit hat Vorrang: deshalb bleibt auch der Tag eher dunkel.
+- Karten sind **Glas**: `color-mix(--color-surface, --glass-alpha)` + `--glass-blur`. `--glass-alpha` setzt der Himmel je nach Phase; `html[data-sky]` trägt die vorherrschende Phase.
+- **Leistung:** statischer Himmel nur bei Änderung (Minutentakt, Scroll), Schnee auf getrennter Canvas mit 30 fps und Pixeldichte 1, Pause bei verdecktem Tab, bei „Bewegung reduzieren“ ein statisches Bild. Gemessen (Chromium, 10 s Leerlauf): **3,4 %** Hauptthread mit Schnee, **0 %** ohne.
+- Entwickler-Schalter „Tageszeit simulieren“ in den Einstellungen.
+- Frost: Rauschtextur (SVG-Turbulenz als Maske) in `--color-frost` mit 3,5 % Deckkraft über dem Himmel.
+
+## Typo-Skala v2 (semantisch)
+
+| Token | Wert | Einsatz |
+|---|---|---|
+| `--type-display-size` | 64 | Datum, Ringwert |
+| `--type-headline-size` | 36 | Screen-Titel |
+| `--type-title-size` | 28 | Kennzahlen (StatTile) |
+| `--type-subtitle-size` | 18 | Karten-/Sheet-Titel |
+| `--type-body-size` | 16 | Fließtext, Eingaben |
+| `--type-caption-size` | 12 | Metadaten |
+| `--type-label-size` | 11 | Versalien-Labels |
+
+Zahlen immer `.num` (Tabellenziffern).
+
+## Elevation
+
+Ebene 0 Himmel · 1 Karte (Glas) · 2 Tab-Leiste/Sheet (`--color-glass` + Blur) · 3 Toast (Fläche 3 + starke Haarlinie). Keine Schlagschatten außer am Sheet.
 
 ## Bewegung
 
-- `motion`, sparsam: `--dur-fast` 120ms (Taps), `--dur` 200ms (Übergänge), `--dur-slow` 360ms (Ring).
+- `motion`, sparsam: `--dur-fast` 120ms (Taps), `--dur` 200ms (Übergänge), `--dur-slow` 360ms (Ring), `--dur-screen` 240ms. Federn als Konstanten in `src/ui/motion.ts` (`SPRING_SHEET`, `SPRING_SOFT`).
+- Tap-Feedback: Buttons skalieren beim Drücken auf 97 %.
+- Laden: **Skeletons** (`ScreenSkeleton`) statt springendem Layout.
 - Werte zählen beim Ändern hoch (`NumberTicker`).
 - Checkboxen „frieren ein“: kurzer Eisblau-Kristall-Puls + Haken.
 - Bottom-Sheets federn (Spring, kein Überschwingen über 4px).
@@ -82,3 +109,8 @@ Regeln:
 | Ring | Spur `--color-line`, Fortschritt Eisblau, runde Kappen |
 | Warn-Banner | Fläche `--color-warn-12`, Haarlinie `--color-warn-28`, Icon und Text in Warnfarbe |
 | Tab-Leiste | Glas, Haarlinie oben, aktiv = Eisblau + Label, inaktiv = Text-3 |
+| StatTile (v2) | Label in Versalien, Zahl in Titelgröße, optional Trendpfeil (Eisblau = gut, Warnfarbe = schlecht) |
+| Sparkline (v2) | Eisblaue Linie ohne Achsen, Punkt am letzten Wert |
+| ListRow (v2) | Icon, Titel, Metazeile, rechts Wert/Chevron; als Button mit Druckzustand |
+| Skeleton (v2) | Schimmernde Balken in Fläche 2/3 |
+| Chart-Tooltip (v2) | Tap auf einen Balken/Punkt zeigt den exakten Wert; jeder Punkt ist ein beschrifteter Button (VoiceOver) |

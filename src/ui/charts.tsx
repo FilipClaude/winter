@@ -1,4 +1,38 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
+
+/**
+ * Tap-Bereiche über einem Chart: Ein Tap zeigt den exakten Wert als Tooltip (nochmal tippen = aus).
+ * Für Screenreader ist jeder Punkt ein Button mit vollständiger Beschriftung.
+ */
+function ChartHits({ items }: { items: { label: string; text: string }[] }) {
+  const [sel, setSel] = useState<number | null>(null);
+  const n = items.length;
+  const cur = sel === null ? null : items[sel];
+  return (
+    <>
+      <div className="chart__hit">
+        {items.map((it, i) => (
+          <button
+            key={i}
+            type="button"
+            aria-label={`${it.label}: ${it.text}`}
+            aria-pressed={sel === i}
+            onClick={() => setSel(sel === i ? null : i)}
+          />
+        ))}
+      </div>
+      {cur && sel !== null && (
+        <span
+          className="chart__tip mono"
+          role="status"
+          style={{ left: `${Math.min(88, Math.max(12, ((sel + 0.5) / n) * 100))}%` }}
+        >
+          {cur.label}: {cur.text}
+        </span>
+      )}
+    </>
+  );
+}
 
 export interface BarDatum {
   label: string;
@@ -37,7 +71,7 @@ export function BarChart({
   const bw = Math.min(slot * 0.5, 5);
   const y = (v: number) => top + plotH - (v / max) * plotH;
   return (
-    <figure className="chart" aria-label={label} role="img">
+    <figure className="chart" aria-label={label} role="group">
       <svg viewBox={`0 0 ${w} ${height}`} preserveAspectRatio="none" width="100%" height={height} aria-hidden>
         <line
           x1={0}
@@ -76,6 +110,12 @@ export function BarChart({
           );
         })}
       </svg>
+      <ChartHits
+        items={data.map((d) => ({
+          label: d.label,
+          text: d.title?.replace(/^[^:]*:\s*/, '') ?? (d.value === null ? 'keine Daten' : format(d.value)),
+        }))}
+      />
       <div
         className="chart__labels"
         style={{ gridTemplateColumns: `repeat(${data.length}, 1fr)` }}
@@ -94,6 +134,8 @@ export function BarChart({
     </figure>
   );
 }
+
+const formatChartNumber = (n: number) => n.toLocaleString('de-DE', { maximumFractionDigits: 1 });
 
 /** Linienverlauf (z. B. Stimmung). null = Lücke. */
 export function LineChart({
@@ -143,7 +185,7 @@ export function LineChart({
   })();
   const step = Math.ceil(data.length / 7);
   return (
-    <figure className="chart" aria-label={label} role="img">
+    <figure className="chart" aria-label={label} role="group">
       <svg viewBox={`0 0 ${w} ${height}`} preserveAspectRatio="none" width="100%" height={height} aria-hidden>
         <defs>
           <linearGradient id={gid} x1="0" x2="0" y1="0" y2="1">
@@ -172,6 +214,15 @@ export function LineChart({
         )}
         <path d={path(main)} className="chart__line" vectorEffect="non-scaling-stroke" />
       </svg>
+      <ChartHits
+        items={data.map((d, i) => ({
+          label: d.label,
+          text:
+            d.value === null
+              ? 'keine Daten'
+              : `${formatChartNumber(d.value)}${typeof secondary?.[i]?.value === 'number' ? ` · ${formatChartNumber(secondary[i]?.value ?? 0)}` : ''}`,
+        }))}
+      />
       <div
         className="chart__labels"
         style={{ gridTemplateColumns: `repeat(${data.length}, 1fr)` }}

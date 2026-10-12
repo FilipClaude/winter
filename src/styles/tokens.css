@@ -38,6 +38,57 @@
   --color-frost: #cfe6fa;
   --frost-opacity: 0.035;
 
+  /* ---------- Winterhimmel (v2) ----------
+   * Paletten je Phase: top/mid/horizon = Verlauf, glow = Licht am Horizont (Sonne bzw. Dämmerung),
+   * alp-1…3 = Alpen von fern nach nah. veil = Abdunklung über allem (Deckkraft von --color-bg),
+   * glass = Deckkraft der Kartenfläche. Alle Kombinationen werden in tokens.test.ts auf WCAG AA geprüft. */
+  --sky-night-top: #04060b;
+  --sky-night-mid: #070b13;
+  --sky-night-horizon: #0d1422;
+  --sky-night-glow: #16223a;
+  --sky-night-alp-1: #0c121d;
+  --sky-night-alp-2: #090e17;
+  --sky-night-alp-3: #06090f;
+  --sky-night-veil: 0;
+  --sky-night-glass: 0.72;
+
+  --sky-dawn-top: #070b18;
+  --sky-dawn-mid: #101a31;
+  --sky-dawn-horizon: #21375a;
+  --sky-dawn-glow: #2b4767;
+  --sky-dawn-alp-1: #142034;
+  --sky-dawn-alp-2: #0d1525;
+  --sky-dawn-alp-3: #080d17;
+  --sky-dawn-veil: 0.62;
+  --sky-dawn-glass: 0.78;
+
+  --sky-day-top: #142030;
+  --sky-day-mid: #1d2b3d;
+  --sky-day-horizon: #2d3f55;
+  --sky-day-glow: #35475c;
+  --sky-day-alp-1: #223045;
+  --sky-day-alp-2: #172233;
+  --sky-day-alp-3: #0e1621;
+  --sky-day-veil: 0.6;
+  --sky-day-glass: 0.84;
+
+  --sky-dusk-top: #08091a;
+  --sky-dusk-mid: #17162f;
+  --sky-dusk-horizon: #2c2747;
+  /* einziger warmer Ton: sehr gedämpfter Streifen am Horizont */
+  --sky-dusk-glow: #45363f;
+  --sky-dusk-alp-1: #1a1a2d;
+  --sky-dusk-alp-2: #111122;
+  --sky-dusk-alp-3: #090a14;
+  --sky-dusk-veil: 0.48;
+  --sky-dusk-glass: 0.78;
+
+  --color-star: #dfeaf6;
+  --color-moon: #dfe9f3;
+  /* wird vom Himmel je nach Phase gesetzt (gemischt), Standard = Nacht */
+  --glass-alpha: 0.72;
+  --glass-blur: blur(14px) saturate(120%);
+
   /* ---------- Typografie ---------- */
   --font-sans: 'Geist Variable', 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
@@ -52,6 +103,15 @@
   --text-3xl: 2.25rem; /* 36px */
   --text-display: 3rem; /* 48px – große Zahlen */
   --text-hero: 4rem; /* 64px – Datum, Tagesring */
+
+  /* Typo-Skala v2 (semantisch): Display → Titel → Body → Caption; Zahlen immer mit Tabellenziffern */
+  --type-display-size: var(--text-hero);
+  --type-headline-size: var(--text-3xl);
+  --type-title-size: var(--text-2xl);
+  --type-subtitle-size: var(--text-lg);
+  --type-body-size: var(--text-base);
+  --type-caption-size: var(--text-xs);
+  --type-label-size: var(--text-2xs);
 
   --weight-regular: 400;
   --weight-medium: 500;
@@ -95,9 +155,16 @@
   /* ---------- Bewegung ---------- */
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.3, 0.64, 1);
   --dur-fast: 120ms;
   --dur: 200ms;
   --dur-slow: 360ms;
+  --dur-screen: 240ms;
+  /* Federn (motion) stehen als Konstanten in src/ui/motion.ts – CSS kann keine Federn. */
+
+  /* ---------- Elevation (v2): Glas + Haarlinie statt Schatten ---------- */
+  /* Ebene 0 = Himmel, 1 = Karte (Glas, --glass-alpha), 2 = Sheet/Tab-Leiste (--color-glass + Blur),
+     3 = Toast (Fläche 3 + starke Haarlinie). */
 
   /* ---------- Layout ---------- */
   --touch: 44px;
@@ -111,7 +178,6 @@
   --z-tabbar: 20;
   --z-sheet: 40;
   --z-toast: 60;
-  --z-snow: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {

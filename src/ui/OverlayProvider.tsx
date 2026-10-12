@@ -1,6 +1,7 @@
 import { AlertTriangle, Check, X } from 'lucide-react';
 import { AnimatePresence, motion, useDragControls, useReducedMotion } from 'motion/react';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { SPRING_SHEET } from './motion';
 import { OverlayContext, type OverlayApi, type SheetSpec } from './overlay-context';
 import { IconButton } from './primitives';
 
@@ -11,7 +12,7 @@ interface ToastItem {
   action?: { label: string; run: () => void };
 }
 
-const SPRING = { type: 'spring', stiffness: 520, damping: 42, mass: 0.9 } as const;
+const SPRING = SPRING_SHEET;
 
 export function OverlayProvider({ children }: { children: ReactNode }) {
   const [sheet, setSheet] = useState<(SheetSpec & { key: number }) | null>(null);

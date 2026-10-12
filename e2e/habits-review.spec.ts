@@ -66,5 +66,5 @@ test('Rückblick zeigt Kennzahlen nach Einträgen', async ({ page }) => {
   const stats = page.getByTestId('review-stats');
   await expect(stats).toContainText('38'); // Ø Protein
   await expect(stats).toContainText('4,0'); // Ø Stimmung
-  await expect(page.getByRole('img', { name: /Stimmung \(Linie\)/ })).toBeVisible();
+  await expect(page.getByRole('group', { name: /Stimmung \(Linie\)/ })).toBeVisible();
 });

@@ -11,6 +11,7 @@ import { Heatmap } from '../../ui/charts';
 import { FrostCheck, Segmented, TextField } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
 import { Button, Card, EmptyState, ScreenHeader, SectionTitle } from '../../ui/primitives';
+import { ScreenSkeleton } from '../../ui/kit';
 
 const WEEKS = 18;
 const WD = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
@@ -19,7 +20,7 @@ export default function HabitsScreen() {
   const today = useToday();
   const { openSheet } = useOverlay();
   const data = useLiveQuery(async () => ({ habits: await db.habits.orderBy('order').toArray(), checks: await db.habitChecks.toArray() }), []);
-  if (!data) return <div className="screen" />;
+  if (!data) return <ScreenSkeleton />;
   const active = data.habits.filter((h) => !h.archived);
   const start = addDays(startOfWeek(today), -7 * (WEEKS - 1));
   const days = dateRange(start, addDays(startOfWeek(today), 6));
