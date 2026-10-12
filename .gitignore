@@ -9,5 +9,6 @@ blob-report
 .vscode/*
 !.vscode/extensions.json
 lighthouse-*.html
-screens
+# Screenshot-Ausgabe im Projektroot (nicht src/screens!)
+/screens/
 lighthouse-report.html
