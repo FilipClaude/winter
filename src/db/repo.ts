@@ -10,15 +10,20 @@ import {
   zDeadline,
   zExam,
   zExerciseTemplate,
+  zGoal,
+  zGrade,
   zHabit,
   zHabitCheck,
   zHealthDay,
+  zLesson,
   zMeal,
   zMealTemplate,
   zModule,
+  zSemesterResult,
   zSession,
   zSettings,
   zSleep,
+  zStudyBlock,
   zStudySession,
   zSubject,
   zTimer,
@@ -26,8 +31,13 @@ import {
   type Day,
   type Deadline,
   type Exam,
+  type Goal,
+  type Grade,
   type GymSet,
   type Habit,
+  type Lesson,
+  type Semester,
+  type StudyBlock,
   type HealthDay,
   type Meal,
   type MealTemplate,
@@ -77,18 +87,34 @@ export async function kvSet(key: string, value: unknown): Promise<void> {
   await db.kv.put({ key, value });
 }
 
+/** Objekt-Einstellungen mit festen Feldern (keine freien Records wie der Wochenplan). */
+const MERGED_KEYS = new Set<keyof Settings>(['goals', 'ring', 'timetable', 'pomodoro', 'abi', 'bfv']);
+
+/**
+ * Liest gespeicherte Einstellungen tolerant: Jeder Schlüssel wird einzeln geprüft und fällt bei Fehlern
+ * auf den Standard zurück – ein kaputter Wert kostet nie die übrigen Einstellungen. Objekte werden mit
+ * ihren Standardwerten zusammengeführt (neue Felder aus späteren Versionen).
+ */
 export function parseSettings(raw: unknown): Settings {
-  const merged =
-    raw && typeof raw === 'object'
-      ? {
-          ...DEFAULT_SETTINGS,
-          ...(raw as Partial<Settings>),
-          goals: { ...DEFAULT_SETTINGS.goals, ...((raw as Partial<Settings>).goals ?? {}) },
-          ring: { ...DEFAULT_SETTINGS.ring, ...((raw as Partial<Settings>).ring ?? {}) },
-        }
-      : DEFAULT_SETTINGS;
-  const r = zSettings.safeParse(merged);
-  return r.success ? r.data : DEFAULT_SETTINGS;
+  if (!raw || typeof raw !== 'object') return DEFAULT_SETTINGS;
+  const src = raw as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  const shape = zSettings.shape;
+  for (const key of Object.keys(shape) as (keyof Settings)[]) {
+    const def = DEFAULT_SETTINGS[key];
+    let value = src[key];
+    if (value === undefined) {
+      // v1 → v2: Schneeschalter übernehmen; wer schon Einstellungen hat, braucht kein Onboarding.
+      if (key === 'snowMode' && typeof src.snow === 'boolean') value = src.snow ? 'subtle' : 'off';
+      else if (key === 'onboarded') value = true;
+      else value = def;
+    } else if (MERGED_KEYS.has(key) && value && typeof value === 'object' && !Array.isArray(value)) {
+      value = { ...(def as object), ...value };
+    }
+    const r = shape[key].safeParse(value);
+    out[key] = r.success ? r.data : def;
+  }
+  return out as Settings;
 }
 
 export async function getSettings(): Promise<Settings> {
@@ -376,6 +402,82 @@ export async function toggleDeadline(id: string): Promise<void> {
 
 export async function deleteDeadline(id: string): Promise<void> {
   await db.deadlines.delete(id);
+}
+
+// ---------- v2: Noten, Halbjahre, Lernplan, Stundenplan, Ziele ----------
+
+export async function saveGrade(input: WithOptionalMeta<Grade>): Promise<Grade> {
+  const g = validate(zGrade, stamp(input));
+  await db.grades.put(g);
+  return g;
+}
+
+export async function deleteGrade(id: string): Promise<void> {
+  await db.grades.delete(id);
+}
+
+/** Setzt (points) bzw. entfernt (null) die Zeugnis-Halbjahresleistung eines Fachs. */
+export async function setSemesterResult(subjectId: string, semester: Semester, points: number | null) {
+  const id = `${subjectId}:${semester}`;
+  if (points === null) {
+    await db.semesterResults.delete(id);
+    return null;
+  }
+  const existing = await db.semesterResults.get(id);
+  const r = validate(
+    zSemesterResult,
+    stamp({ id, createdAt: existing?.createdAt, subjectId, semester, points }),
+  );
+  await db.semesterResults.put(r);
+  return r;
+}
+
+export async function saveStudyBlock(input: WithOptionalMeta<StudyBlock>): Promise<StudyBlock> {
+  const b = validate(zStudyBlock, stamp(input));
+  await db.studyBlocks.put(b);
+  return b;
+}
+
+export async function toggleStudyBlock(id: string): Promise<void> {
+  const b = await db.studyBlocks.get(id);
+  if (!b) return;
+  const next: StudyBlock = { ...b, done: !b.done, updatedAt: nowISO() };
+  if (next.done) next.doneAt = nowISO();
+  else delete next.doneAt;
+  await db.studyBlocks.put(next);
+}
+
+export async function deleteStudyBlock(id: string): Promise<void> {
+  await db.studyBlocks.delete(id);
+}
+
+/** Ersetzt die offenen, generierten Lerneinheiten einer Klausur durch einen neuen Plan. Erledigte bleiben. */
+export async function replaceExamPlan(examId: string, blocks: WithOptionalMeta<StudyBlock>[]) {
+  await db.transaction('rw', db.studyBlocks, async () => {
+    const old = await db.studyBlocks.where('examId').equals(examId).toArray();
+    await db.studyBlocks.bulkDelete(old.filter((b) => !b.done).map((b) => b.id));
+    await db.studyBlocks.bulkPut(blocks.map((b) => validate(zStudyBlock, stamp(b))));
+  });
+}
+
+export async function saveLesson(input: WithOptionalMeta<Lesson>): Promise<Lesson> {
+  const l = validate(zLesson, stamp(input));
+  await db.lessons.put(l);
+  return l;
+}
+
+export async function deleteLesson(id: string): Promise<void> {
+  await db.lessons.delete(id);
+}
+
+export async function saveGoal(input: WithOptionalMeta<Goal>): Promise<Goal> {
+  const g = validate(zGoal, stamp(input));
+  await db.goals.put(g);
+  return g;
+}
+
+export async function deleteGoal(id: string): Promise<void> {
+  await db.goals.delete(id);
 }
 
 // ---------- Habits ----------

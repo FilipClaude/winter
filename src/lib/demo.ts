@@ -393,11 +393,13 @@ export async function insertDemo(): Promise<number> {
 export async function removeDemo(): Promise<number> {
   let n = 0;
   await db.transaction('rw', [...DATA_TABLES.map((t) => db.table(t)), db.kv], async () => {
-    for (const t of DATA_TABLES)
-      n += await db
-        .table(t)
-        .filter((x: { demo?: number }) => x.demo === 1)
-        .delete();
+    for (const t of DATA_TABLES) {
+      const table = db.table(t);
+      // Über den demo-Index statt Tabellen-Scan: in WebKit um ein Vielfaches schneller.
+      n += table.schema.idxByName.demo
+        ? await table.where('demo').equals(1).delete()
+        : await table.filter((x: { demo?: number }) => x.demo === 1).delete();
+    }
     await db.kv.delete('demoActive');
   });
   return n;

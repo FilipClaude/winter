@@ -7,3 +7,4 @@ screens
 public
 package-lock.json
 *.md
+src/test/fixtures

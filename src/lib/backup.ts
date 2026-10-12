@@ -1,28 +1,39 @@
 import { z } from 'zod';
-import { DATA_TABLES, db, SCHEMA_VERSION, type DataTable } from '../db/db';
+import { BACKUP_KV_KEYS, DATA_TABLES, db, SCHEMA_VERSION, type DataTable } from '../db/db';
 import {
   zDay,
   zDeadline,
   zExam,
   zExerciseTemplate,
+  zGoal,
+  zGrade,
   zHabit,
   zHabitCheck,
   zHealthDay,
+  zLesson,
   zMeal,
   zMealTemplate,
   zModule,
+  zSemesterResult,
   zSession,
   zSleep,
+  zStudyBlock,
   zStudySession,
   zSubject,
   zTodo,
+  type Snapshot,
 } from '../db/schemas';
 import { buildDefaults } from '../db/seed';
-import { nowISO } from './date';
+import { nowISO, todayISO } from './date';
 
 export const BACKUP_FORMAT = 1;
 
 const TABLE_SCHEMAS: Record<DataTable, z.ZodType> = {
+  grades: zGrade,
+  semesterResults: zSemesterResult,
+  studyBlocks: zStudyBlock,
+  lessons: zLesson,
+  goals: zGoal,
   sessions: zSession,
   exerciseTemplates: zExerciseTemplate,
   meals: zMeal,
@@ -56,10 +67,15 @@ export const TABLE_LABEL: Record<DataTable, string> = {
   deadlines: 'Fristen',
   habits: 'Habits',
   habitChecks: 'Habit-Häkchen',
+  grades: 'Noten',
+  semesterResults: 'Halbjahresleistungen',
+  studyBlocks: 'Lerneinheiten (Plan)',
+  lessons: 'Stundenplan',
+  goals: 'Ziele',
 };
 
 /** kv-Schlüssel, die ins Backup gehören (Zeitstempel des Backups selbst nicht). */
-const KV_KEYS = ['settings', 'timer', 'lastHealthImport', 'demoActive'] as const;
+const KV_KEYS = BACKUP_KV_KEYS;
 
 export interface BackupFile {
   app: 'winter';
@@ -113,7 +129,14 @@ export function migrateBackup(b: BackupFile): BackupFile {
       `Die Sicherung stammt aus einer neueren App-Version (Schema ${b.schemaVersion}). Bitte erst die App aktualisieren.`,
     );
   }
-  return b;
+  const out: BackupFile = { ...b, tables: { ...b.tables }, kv: { ...b.kv } };
+  if (out.schemaVersion < 2) {
+    // v1 → v2: nur neue Tabellen (leer). Bestehende Datensätze bleiben unverändert gültig,
+    // neue Felder sind optional; Einstellungen werden beim Lesen ergänzt (parseSettings).
+    for (const t of DATA_TABLES) out.tables[t] ??= [];
+    out.schemaVersion = 2;
+  }
+  return out;
 }
 
 export interface BackupPreview {
@@ -176,7 +199,10 @@ export function previewBackup(text: string): PreviewResult {
 }
 
 /** Ersetzt alle Daten durch die Sicherung (eine Transaktion: alles oder nichts). */
-export async function restoreBackup(backup: BackupFile): Promise<number> {
+export async function restoreBackup(
+  backup: BackupFile,
+  { countsAsBackup = true }: { countsAsBackup?: boolean } = {},
+): Promise<number> {
   let n = 0;
   await db.transaction('rw', [...DATA_TABLES.map((t) => db.table(t)), db.kv], async () => {
     for (const t of DATA_TABLES) {
@@ -187,10 +213,10 @@ export async function restoreBackup(backup: BackupFile): Promise<number> {
     }
     for (const key of KV_KEYS) await db.kv.delete(key);
     for (const [key, value] of Object.entries(backup.kv)) {
-      if ((KV_KEYS as readonly string[]).includes(key)) await db.kv.put({ key, value });
+      if (KV_KEYS.includes(key)) await db.kv.put({ key, value });
     }
-    // Der wiederhergestellte Stand ist durch genau diese Sicherung gedeckt.
-    if (!Number.isNaN(new Date(backup.exportedAt).getTime()))
+    // Der wiederhergestellte Stand ist durch genau diese Sicherung gedeckt (nicht bei internen Snapshots).
+    if (countsAsBackup && !Number.isNaN(new Date(backup.exportedAt).getTime()))
       await db.kv.put({ key: 'lastBackupAt', value: backup.exportedAt });
   });
   return n;
@@ -210,4 +236,63 @@ export async function wipeAll(): Promise<void> {
 
 export async function markBackupDone(): Promise<void> {
   await db.kv.put({ key: 'lastBackupAt', value: nowISO() });
+}
+
+// ---------- Automatische Snapshots ----------
+
+export const SNAPSHOT_KEEP = 7;
+
+/**
+ * Legt höchstens einmal pro Kalendertag einen Snapshot aller Daten an und behält die letzten
+ * `SNAPSHOT_KEEP` Tages-Snapshots. Der Migrations-Snapshot („vor-v2“) bleibt unberührt.
+ * Gibt true zurück, wenn ein neuer Snapshot entstanden ist.
+ */
+export async function ensureDailySnapshot(now: Date = new Date()): Promise<boolean> {
+  const id = todayISO(now);
+  if (await db.snapshots.get(id)) return false;
+  const backup = await createBackup();
+  const rows = DATA_TABLES.reduce((a, t) => a + (backup.tables[t]?.length ?? 0), 0);
+  if (rows === 0) return false;
+  await db.transaction('rw', db.snapshots, async () => {
+    await db.snapshots.put({
+      id,
+      createdAt: now.toISOString(),
+      schemaVersion: SCHEMA_VERSION,
+      reason: 'daily',
+      rows,
+      data: backup,
+    } satisfies Snapshot);
+    const daily = (await db.snapshots.toArray())
+      .filter((s) => s.reason === 'daily')
+      .sort((a, b) => b.id.localeCompare(a.id));
+    for (const old of daily.slice(SNAPSHOT_KEEP)) await db.snapshots.delete(old.id);
+  });
+  return true;
+}
+
+/** Sichert den aktuellen Stand unmittelbar vor einem Import/einer Wiederherstellung (id „vor-import“). */
+export async function saveSafetySnapshot(now: Date = new Date()): Promise<void> {
+  const backup = await createBackup();
+  const rows = DATA_TABLES.reduce((a, t) => a + (backup.tables[t]?.length ?? 0), 0);
+  if (rows === 0) return;
+  await db.snapshots.put({
+    id: 'vor-import',
+    createdAt: now.toISOString(),
+    schemaVersion: SCHEMA_VERSION,
+    reason: 'manual',
+    rows,
+    data: backup,
+  } satisfies Snapshot);
+}
+
+export async function listSnapshots(): Promise<Omit<Snapshot, 'data'>[]> {
+  const all = await db.snapshots.toArray();
+  return all.map(({ data: _data, ...meta }) => meta).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+/** Prüft einen Snapshot wie eine importierte Datei (inkl. Migration) und gibt die Vorschau zurück. */
+export async function previewSnapshot(id: string): Promise<PreviewResult> {
+  const s = await db.snapshots.get(id);
+  if (!s) return { ok: false, error: 'Sicherung nicht gefunden.' };
+  return previewBackup(JSON.stringify(s.data));
 }

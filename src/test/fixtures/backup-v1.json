@@ -1,0 +1,3699 @@
+{
+ "app": "winter",
+ "format": 1,
+ "schemaVersion": 1,
+ "exportedAt": "2026-10-12T19:00:00.000Z",
+ "tables": {
+  "sessions": [
+   {
+    "id": "02471a43-ef56-4b3e-82ba-001c333f0be2",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-11",
+    "note": "",
+    "type": "recovery",
+    "durationMin": 38,
+    "rpe": 2
+   },
+   {
+    "id": "04570410-4daa-4068-a086-6424f30eb5ea",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-26",
+    "note": "",
+    "type": "match",
+    "durationMin": 72,
+    "rpe": 8,
+    "match": {
+     "opponent": "SV Pullach",
+     "goalsFor": 2,
+     "goalsAgainst": 2,
+     "minutes": 72,
+     "goals": 1,
+     "assists": 1,
+     "shots": 4,
+     "rating": 8,
+     "reflection": "Kopfballtor nach Ecke, zweite Halbzeit platt."
+    }
+   },
+   {
+    "id": "048861e3-d6f1-4dc5-b00c-31fcd2c23ab9",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-18",
+    "note": "",
+    "type": "football",
+    "durationMin": 75,
+    "rpe": 6
+   },
+   {
+    "id": "0eba66c7-e143-4940-91c9-d579dc554957",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-28",
+    "note": "",
+    "type": "football",
+    "durationMin": 90,
+    "rpe": 6
+   },
+   {
+    "id": "16a9ff22-95eb-4aa8-b83e-8f554ced160c",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-24",
+    "note": "",
+    "type": "gym",
+    "durationMin": 69,
+    "rpe": 8,
+    "gym": {
+     "exercises": [
+      {
+       "name": "Kreuzheben",
+       "sets": [
+        {
+         "reps": 5,
+         "weightKg": 100
+        },
+        {
+         "reps": 5,
+         "weightKg": 100
+        },
+        {
+         "reps": 5,
+         "weightKg": 100
+        }
+       ]
+      },
+      {
+       "name": "Bulgarian Split Squat",
+       "sets": [
+        {
+         "reps": 8,
+         "weightKg": 18
+        },
+        {
+         "reps": 8,
+         "weightKg": 18
+        },
+        {
+         "reps": 8,
+         "weightKg": 18
+        }
+       ]
+      },
+      {
+       "name": "Nordic Curls",
+       "sets": [
+        {
+         "reps": 6,
+         "weightKg": 0
+        },
+        {
+         "reps": 6,
+         "weightKg": 0
+        },
+        {
+         "reps": 6,
+         "weightKg": 0
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "3233be1e-1a71-4427-bd14-ac6184b643a0",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-09",
+    "note": "",
+    "type": "football",
+    "durationMin": 75,
+    "rpe": 7
+   },
+   {
+    "id": "34f5df78-716a-40b1-a3c4-0dadc7eca31f",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-10",
+    "note": "",
+    "type": "match",
+    "durationMin": 65,
+    "rpe": 9,
+    "match": {
+     "opponent": "TSV Gräfelfing",
+     "goalsFor": 3,
+     "goalsAgainst": 3,
+     "minutes": 65,
+     "goals": 1,
+     "assists": 1,
+     "shots": 3,
+     "rating": 8,
+     "reflection": "Kopfballtor nach Ecke, zweite Halbzeit platt."
+    }
+   },
+   {
+    "id": "3583cfe3-c9d6-47ce-a4d9-ee44813b19d4",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-02",
+    "note": "",
+    "type": "football",
+    "durationMin": 90,
+    "rpe": 5
+   },
+   {
+    "id": "60f9391e-6704-47bb-af8f-45c70899eb4f",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-03",
+    "note": "",
+    "type": "match",
+    "durationMin": 80,
+    "rpe": 9,
+    "match": {
+     "opponent": "FC Starnberg",
+     "goalsFor": 2,
+     "goalsAgainst": 3,
+     "minutes": 80,
+     "goals": 0,
+     "assists": 1,
+     "shots": 2,
+     "rating": 5,
+     "reflection": "Viel gegen den Ball gearbeitet, wenig Bälle bekommen."
+    }
+   },
+   {
+    "id": "64ae82ad-62a4-4916-80d0-b6dd5d22ae12",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-07",
+    "note": "",
+    "type": "football",
+    "durationMin": 75,
+    "rpe": 8
+   },
+   {
+    "id": "66774940-b9ee-4075-a155-bb506f843026",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-25",
+    "note": "",
+    "type": "football",
+    "durationMin": 75,
+    "rpe": 6
+   },
+   {
+    "id": "68a7555b-e0fb-4b65-9e15-cb2e9b5a52a9",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-06",
+    "note": "",
+    "type": "gym",
+    "durationMin": 57,
+    "rpe": 6,
+    "gym": {
+     "exercises": [
+      {
+       "name": "Kniebeuge",
+       "sets": [
+        {
+         "reps": 5,
+         "weightKg": 82.5
+        },
+        {
+         "reps": 5,
+         "weightKg": 82.5
+        },
+        {
+         "reps": 5,
+         "weightKg": 82.5
+        }
+       ]
+      },
+      {
+       "name": "Bankdrücken",
+       "sets": [
+        {
+         "reps": 6,
+         "weightKg": 62.5
+        },
+        {
+         "reps": 6,
+         "weightKg": 62.5
+        },
+        {
+         "reps": 6,
+         "weightKg": 62.5
+        }
+       ]
+      },
+      {
+       "name": "Rudern",
+       "sets": [
+        {
+         "reps": 8,
+         "weightKg": 57.5
+        },
+        {
+         "reps": 8,
+         "weightKg": 57.5
+        },
+        {
+         "reps": 8,
+         "weightKg": 57.5
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "703d8244-556c-4c0d-a631-f74cea0f0065",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-20",
+    "note": "",
+    "type": "recovery",
+    "durationMin": 32,
+    "rpe": 2
+   },
+   {
+    "id": "727f40a4-0fd3-4cc8-91c7-7580c1e64022",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-05",
+    "note": "",
+    "type": "football",
+    "durationMin": 90,
+    "rpe": 5
+   },
+   {
+    "id": "737980ce-4304-4ec4-83c5-c51f6dc81855",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-19",
+    "note": "",
+    "type": "match",
+    "durationMin": 80,
+    "rpe": 9,
+    "match": {
+     "opponent": "TSV Gilching",
+     "goalsFor": 1,
+     "goalsAgainst": 1,
+     "minutes": 80,
+     "goals": 1,
+     "assists": 1,
+     "shots": 5,
+     "rating": 8,
+     "reflection": "Viel gegen den Ball gearbeitet, wenig Bälle bekommen."
+    }
+   },
+   {
+    "id": "79a0454a-0f84-4464-98c2-39213c32b030",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-22",
+    "note": "",
+    "type": "gym",
+    "durationMin": 67,
+    "rpe": 6,
+    "gym": {
+     "exercises": [
+      {
+       "name": "Kniebeuge",
+       "sets": [
+        {
+         "reps": 5,
+         "weightKg": 77.5
+        },
+        {
+         "reps": 5,
+         "weightKg": 77.5
+        },
+        {
+         "reps": 5,
+         "weightKg": 77.5
+        }
+       ]
+      },
+      {
+       "name": "Bankdrücken",
+       "sets": [
+        {
+         "reps": 6,
+         "weightKg": 57.5
+        },
+        {
+         "reps": 6,
+         "weightKg": 57.5
+        },
+        {
+         "reps": 6,
+         "weightKg": 57.5
+        }
+       ]
+      },
+      {
+       "name": "Rudern",
+       "sets": [
+        {
+         "reps": 8,
+         "weightKg": 52.5
+        },
+        {
+         "reps": 8,
+         "weightKg": 52.5
+        },
+        {
+         "reps": 8,
+         "weightKg": 52.5
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "988c29e3-35e8-4260-b8b9-4135098c7c53",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-23",
+    "note": "",
+    "type": "football",
+    "durationMin": 90,
+    "rpe": 7
+   },
+   {
+    "id": "c0944bd0-5c35-4d9f-b6b3-d45d0cd3178c",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-21",
+    "note": "",
+    "type": "football",
+    "durationMin": 100,
+    "rpe": 6
+   },
+   {
+    "id": "c3c4c992-7c07-43b9-a80e-aa7c79ac56ec",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-15",
+    "note": "",
+    "type": "gym",
+    "durationMin": 58,
+    "rpe": 6,
+    "gym": {
+     "exercises": [
+      {
+       "name": "Kniebeuge",
+       "sets": [
+        {
+         "reps": 5,
+         "weightKg": 75
+        },
+        {
+         "reps": 5,
+         "weightKg": 75
+        },
+        {
+         "reps": 5,
+         "weightKg": 75
+        }
+       ]
+      },
+      {
+       "name": "Bankdrücken",
+       "sets": [
+        {
+         "reps": 6,
+         "weightKg": 55
+        },
+        {
+         "reps": 6,
+         "weightKg": 55
+        },
+        {
+         "reps": 6,
+         "weightKg": 55
+        }
+       ]
+      },
+      {
+       "name": "Rudern",
+       "sets": [
+        {
+         "reps": 8,
+         "weightKg": 50
+        },
+        {
+         "reps": 8,
+         "weightKg": 50
+        },
+        {
+         "reps": 8,
+         "weightKg": 50
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "cb67e1fd-ded0-4064-9688-07dd505279a2",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-16",
+    "note": "",
+    "type": "football",
+    "durationMin": 90,
+    "rpe": 7
+   },
+   {
+    "id": "d3f2c357-3da1-42ab-b9a7-44bd71b5fc26",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-17",
+    "note": "",
+    "type": "gym",
+    "durationMin": 61,
+    "rpe": 6,
+    "gym": {
+     "exercises": [
+      {
+       "name": "Kreuzheben",
+       "sets": [
+        {
+         "reps": 5,
+         "weightKg": 95
+        },
+        {
+         "reps": 5,
+         "weightKg": 95
+        },
+        {
+         "reps": 5,
+         "weightKg": 95
+        }
+       ]
+      },
+      {
+       "name": "Bulgarian Split Squat",
+       "sets": [
+        {
+         "reps": 8,
+         "weightKg": 16
+        },
+        {
+         "reps": 8,
+         "weightKg": 16
+        },
+        {
+         "reps": 8,
+         "weightKg": 16
+        }
+       ]
+      },
+      {
+       "name": "Nordic Curls",
+       "sets": [
+        {
+         "reps": 6,
+         "weightKg": 0
+        },
+        {
+         "reps": 6,
+         "weightKg": 0
+        },
+        {
+         "reps": 6,
+         "weightKg": 0
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "dec05d4c-3bda-4a30-b2a1-98222d6d6021",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-30",
+    "note": "",
+    "type": "football",
+    "durationMin": 75,
+    "rpe": 7
+   },
+   {
+    "id": "e9848419-c0ec-447f-a00c-7b91d2cd93fe",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-29",
+    "note": "",
+    "type": "gym",
+    "durationMin": 67,
+    "rpe": 6,
+    "gym": {
+     "exercises": [
+      {
+       "name": "Kniebeuge",
+       "sets": [
+        {
+         "reps": 5,
+         "weightKg": 80
+        },
+        {
+         "reps": 5,
+         "weightKg": 80
+        },
+        {
+         "reps": 5,
+         "weightKg": 80
+        }
+       ]
+      },
+      {
+       "name": "Bankdrücken",
+       "sets": [
+        {
+         "reps": 6,
+         "weightKg": 60
+        },
+        {
+         "reps": 6,
+         "weightKg": 60
+        },
+        {
+         "reps": 6,
+         "weightKg": 60
+        }
+       ]
+      },
+      {
+       "name": "Rudern",
+       "sets": [
+        {
+         "reps": 8,
+         "weightKg": 55
+        },
+        {
+         "reps": 8,
+         "weightKg": 55
+        },
+        {
+         "reps": 8,
+         "weightKg": 55
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "fbbbece3-f769-441b-bee6-d646c5ef69be",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-08",
+    "note": "",
+    "type": "gym",
+    "durationMin": 67,
+    "rpe": 8,
+    "gym": {
+     "exercises": [
+      {
+       "name": "Kreuzheben",
+       "sets": [
+        {
+         "reps": 5,
+         "weightKg": 110
+        },
+        {
+         "reps": 5,
+         "weightKg": 110
+        },
+        {
+         "reps": 5,
+         "weightKg": 110
+        }
+       ]
+      },
+      {
+       "name": "Bulgarian Split Squat",
+       "sets": [
+        {
+         "reps": 8,
+         "weightKg": 22
+        },
+        {
+         "reps": 8,
+         "weightKg": 22
+        },
+        {
+         "reps": 8,
+         "weightKg": 22
+        }
+       ]
+      },
+      {
+       "name": "Nordic Curls",
+       "sets": [
+        {
+         "reps": 6,
+         "weightKg": 0
+        },
+        {
+         "reps": 6,
+         "weightKg": 0
+        },
+        {
+         "reps": 6,
+         "weightKg": 0
+        }
+       ]
+      }
+     ]
+    }
+   },
+   {
+    "id": "ff3bb030-fdf8-440c-9e4b-8b4f29869fcc",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-01",
+    "note": "",
+    "type": "gym",
+    "durationMin": 61,
+    "rpe": 7,
+    "gym": {
+     "exercises": [
+      {
+       "name": "Kreuzheben",
+       "sets": [
+        {
+         "reps": 5,
+         "weightKg": 105
+        },
+        {
+         "reps": 5,
+         "weightKg": 105
+        },
+        {
+         "reps": 5,
+         "weightKg": 105
+        }
+       ]
+      },
+      {
+       "name": "Bulgarian Split Squat",
+       "sets": [
+        {
+         "reps": 8,
+         "weightKg": 20
+        },
+        {
+         "reps": 8,
+         "weightKg": 20
+        },
+        {
+         "reps": 8,
+         "weightKg": 20
+        }
+       ]
+      },
+      {
+       "name": "Nordic Curls",
+       "sets": [
+        {
+         "reps": 6,
+         "weightKg": 0
+        },
+        {
+         "reps": 6,
+         "weightKg": 0
+        },
+        {
+         "reps": 6,
+         "weightKg": 0
+        }
+       ]
+      }
+     ]
+    }
+   }
+  ],
+  "exerciseTemplates": [
+   {
+    "id": "0e38abd2-087b-4595-9795-8c46bff24b2d",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Kniebeuge",
+    "lastSets": [],
+    "order": 0
+   },
+   {
+    "id": "1e681f61-370f-458e-841f-1085fed60cea",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Schulterdrücken",
+    "lastSets": [],
+    "order": 5
+   },
+   {
+    "id": "2128645f-2050-49b4-a2f6-9196564fc308",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Hip Thrust",
+    "lastSets": [],
+    "order": 7
+   },
+   {
+    "id": "3ae47658-ffa0-4d7a-912d-0532cfde6328",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Rudern",
+    "lastSets": [],
+    "order": 4
+   },
+   {
+    "id": "748427ee-875e-4f8d-851f-1d97e289b8ca",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Nordic Curls",
+    "lastSets": [],
+    "order": 8
+   },
+   {
+    "id": "8ce8f56f-7c1c-4aa4-85ee-3cc84156e8cc",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Bankdrücken",
+    "lastSets": [],
+    "order": 2
+   },
+   {
+    "id": "b75d3619-2311-49fd-93c6-65c8bcd704ce",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Bulgarian Split Squat",
+    "lastSets": [],
+    "order": 6
+   },
+   {
+    "id": "edbca945-b60c-4683-a1db-fc47d9d7d227",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Klimmzüge",
+    "lastSets": [],
+    "order": 3
+   },
+   {
+    "id": "f4e72291-0b13-473c-827f-7f84b4ea10ba",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Kreuzheben",
+    "lastSets": [],
+    "order": 1
+   },
+   {
+    "id": "f6dd9d71-ce78-4113-b8b6-f49ce4881f4b",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Wadenheben",
+    "lastSets": [],
+    "order": 9
+   }
+  ],
+  "meals": [
+   {
+    "id": "01f932a0-62ea-4606-bf15-9c1c906326fc",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-23",
+    "name": "Mensa: Curry",
+    "kcal": 720,
+    "proteinG": 43
+   },
+   {
+    "id": "029e16bc-1beb-403a-8e9b-14c7251e61c8",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-02",
+    "name": "Lachs, Kartoffeln",
+    "kcal": 948,
+    "proteinG": 53
+   },
+   {
+    "id": "0522bec7-dd56-47c1-98b7-15d51cc54d0a",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-19",
+    "name": "Mensa: Hähnchen-Reis",
+    "kcal": 833,
+    "proteinG": 34
+   },
+   {
+    "id": "05591da0-e2dc-485d-8dd6-dda3c2692fca",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-05",
+    "name": "Pasta mit Hack",
+    "kcal": 1053,
+    "proteinG": 54
+   },
+   {
+    "id": "07ac8ebe-bcf7-46f3-94aa-353616868287",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-27",
+    "name": "Mensa: Curry",
+    "kcal": 673,
+    "proteinG": 30
+   },
+   {
+    "id": "0a910328-dbaf-4727-9f01-7adde99a3515",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-12",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "0c98c6c3-fe7c-42f1-ac25-0077b4bde08d",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-26",
+    "name": "Quark mit Beeren",
+    "kcal": 321,
+    "proteinG": 32
+   },
+   {
+    "id": "13af57a5-b6f7-4fd1-8ad2-17fe59240bda",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-02",
+    "name": "Mensa: Curry",
+    "kcal": 814,
+    "proteinG": 39
+   },
+   {
+    "id": "14051122-5057-4e8f-8072-9d79f062a1d9",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-22",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "140e2f2d-4f06-4211-bec5-febcd90ccded",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-24",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "1672c6b8-8ffb-486f-89dd-2ab6b184aec9",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-04",
+    "name": "Mensa: Curry",
+    "kcal": 735,
+    "proteinG": 30
+   },
+   {
+    "id": "16d252ea-e8fd-45b0-b451-d80dddbff4f6",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-15",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "1747ac82-fe23-44fc-a020-dcbe3bef3d1e",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-08",
+    "name": "Mensa: Hähnchen-Reis",
+    "kcal": 796,
+    "proteinG": 41
+   },
+   {
+    "id": "1bc105a6-2c47-453c-900f-df26d2c3439d",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-29",
+    "name": "Wrap",
+    "kcal": 730,
+    "proteinG": 33
+   },
+   {
+    "id": "1d7747f4-f9b2-4f4c-bc2f-d64dd951dbc6",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-16",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "23ba06d8-9bdc-4a40-afdc-45fe0a87dfe3",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-07",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "2452b9f1-e159-4925-9412-d830b5db8c4c",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-05",
+    "name": "Mensa: Nudeln",
+    "kcal": 686,
+    "proteinG": 38
+   },
+   {
+    "id": "25821221-cc43-430f-b3c6-2f334bea3334",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-24",
+    "name": "Pizza",
+    "kcal": 1030,
+    "proteinG": 52
+   },
+   {
+    "id": "274d32d4-8127-4690-bd74-01efb5e295a3",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-09",
+    "name": "Pizza",
+    "kcal": 721,
+    "proteinG": 47
+   },
+   {
+    "id": "2e7307f5-a9f7-4c26-bf3e-d5b4df118333",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-05",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "3474331a-8184-4a74-b5b0-952a05bf40cb",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-01",
+    "name": "Quark mit Beeren",
+    "kcal": 351,
+    "proteinG": 17
+   },
+   {
+    "id": "34d1cd7e-128e-4e9c-8e6f-f6d54d42e8aa",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-21",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "382b8c05-a7a9-4634-a143-3c416d5b8d87",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-26",
+    "name": "Lachs, Kartoffeln",
+    "kcal": 930,
+    "proteinG": 50
+   },
+   {
+    "id": "38b87bf0-5b2a-4d35-8884-8b0cbf925de0",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-24",
+    "name": "Proteinshake",
+    "kcal": 251,
+    "proteinG": 22
+   },
+   {
+    "id": "3c833b7e-38df-4512-b42f-71a02a5f1515",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-22",
+    "name": "Abendessen zu Hause",
+    "kcal": 733,
+    "proteinG": 53
+   },
+   {
+    "id": "3d482951-0efa-4019-bfcf-f8defed14152",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-07",
+    "name": "Mensa: Curry",
+    "kcal": 729,
+    "proteinG": 41
+   },
+   {
+    "id": "41f4e98f-8e39-4171-9fa6-1f7927f3b4a2",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-16",
+    "name": "Pasta mit Hack",
+    "kcal": 776,
+    "proteinG": 46
+   },
+   {
+    "id": "44769a54-9ca6-46c1-8847-4caa6d2132bd",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-17",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "45571520-7f18-4c42-9860-1dbd82cca6fc",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-16",
+    "name": "Wrap",
+    "kcal": 822,
+    "proteinG": 33
+   },
+   {
+    "id": "460b137e-b238-4dc5-b68a-1d74de0e2a74",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-27",
+    "name": "Abendessen zu Hause",
+    "kcal": 1091,
+    "proteinG": 43
+   },
+   {
+    "id": "4c02a97f-98e6-4555-ad87-cb600ee1ab07",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-23",
+    "name": "Pizza",
+    "kcal": 978,
+    "proteinG": 36
+   },
+   {
+    "id": "513e41df-6e60-46c8-b4c4-c7def86f0c1d",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-04",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "5273d914-59fc-4468-867b-ac09234e8bee",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-10",
+    "name": "Abendessen zu Hause",
+    "kcal": 926,
+    "proteinG": 31
+   },
+   {
+    "id": "574ef1ac-522c-4efd-b103-91bb0eeedd12",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-17",
+    "name": "Pasta mit Hack",
+    "kcal": 957,
+    "proteinG": 49
+   },
+   {
+    "id": "57dfc5d9-75b7-44f5-a002-029a4096aa8e",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-25",
+    "name": "Lachs, Kartoffeln",
+    "kcal": 826,
+    "proteinG": 55
+   },
+   {
+    "id": "589752ed-d6e2-4db5-a846-b19126fccc6f",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-15",
+    "name": "Mensa: Hähnchen-Reis",
+    "kcal": 784,
+    "proteinG": 33
+   },
+   {
+    "id": "5b46d927-4719-483e-80f4-b6434e3df8e5",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-07",
+    "name": "Lachs, Kartoffeln",
+    "kcal": 849,
+    "proteinG": 30
+   },
+   {
+    "id": "5e327dcf-cb8d-4e20-aaef-0c3552fd71b2",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-28",
+    "name": "Pizza",
+    "kcal": 706,
+    "proteinG": 35
+   },
+   {
+    "id": "5f35b7e3-f13f-4c83-a515-f025d470cbe3",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-20",
+    "name": "Lachs, Kartoffeln",
+    "kcal": 963,
+    "proteinG": 34
+   },
+   {
+    "id": "6334d7d1-9b23-4cb8-a2c9-104cc9c99b15",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-06",
+    "name": "Pasta mit Hack",
+    "kcal": 734,
+    "proteinG": 51
+   },
+   {
+    "id": "69ba1fcc-8d4f-4d4d-86d2-642ef4002456",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-02",
+    "name": "Quark mit Beeren",
+    "kcal": 215,
+    "proteinG": 21
+   },
+   {
+    "id": "69f3d837-bfaa-4590-a55c-ccaae0bfe2b7",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-03",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "725498ea-8a33-4af5-bf2e-2067ebe8254d",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-11",
+    "name": "Banane + Nüsse",
+    "kcal": 246,
+    "proteinG": 23
+   },
+   {
+    "id": "768bab22-ae98-4df7-9579-bddc644bff88",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-29",
+    "name": "Pasta mit Hack",
+    "kcal": 1005,
+    "proteinG": 31
+   },
+   {
+    "id": "7744479b-7f3d-4225-a5ef-df05b658fc53",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-24",
+    "name": "Mensa: Hähnchen-Reis",
+    "kcal": 664,
+    "proteinG": 44
+   },
+   {
+    "id": "794d1903-5fa8-4c00-b797-7eb85b06af98",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-19",
+    "name": "Banane + Nüsse",
+    "kcal": 328,
+    "proteinG": 31
+   },
+   {
+    "id": "797fc459-ae5f-4cbb-b1f5-76c0af5e6865",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-04",
+    "name": "Abendessen zu Hause",
+    "kcal": 786,
+    "proteinG": 41
+   },
+   {
+    "id": "79b1fa74-c301-421c-93a4-57eef8f08cc2",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-09",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "7ad08004-bcf8-414d-9cfc-b9eb50187a82",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-22",
+    "name": "Mensa: Curry",
+    "kcal": 650,
+    "proteinG": 31
+   },
+   {
+    "id": "7b61efb3-00d8-4cdc-8f54-3407976cdefa",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-03",
+    "name": "Banane + Nüsse",
+    "kcal": 349,
+    "proteinG": 22
+   },
+   {
+    "id": "7cf75d9d-5c9f-4a0b-be50-74e76eb19e12",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-04",
+    "name": "Proteinshake",
+    "kcal": 204,
+    "proteinG": 31
+   },
+   {
+    "id": "7fa07f83-325a-4dff-a7b1-7bc96690e176",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-21",
+    "name": "Banane + Nüsse",
+    "kcal": 312,
+    "proteinG": 27
+   },
+   {
+    "id": "801f22cc-4a73-4cf1-9cfe-7a2d8130120d",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-08",
+    "name": "Banane + Nüsse",
+    "kcal": 281,
+    "proteinG": 19
+   },
+   {
+    "id": "8341f272-9222-43e7-9de1-19101f5c797f",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-03",
+    "name": "Pasta mit Hack",
+    "kcal": 948,
+    "proteinG": 51
+   },
+   {
+    "id": "86126659-bdc6-404d-9759-b3d6d0884779",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-29",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "8912e71c-9acc-427d-b1c7-19223ab0e338",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-18",
+    "name": "Mensa: Nudeln",
+    "kcal": 854,
+    "proteinG": 43
+   },
+   {
+    "id": "89cdd210-ffbd-4c5d-85bd-2d30dc77b8ba",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-19",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "8ee3b7ab-7b08-4360-8a19-ccda0adfb06f",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-08",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "8fa134b9-1c16-4554-99c0-ff65709317d6",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-27",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "920ff427-545b-4b73-8606-cb9a4ccdf107",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-06",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "963b1852-5eb7-449e-86b6-2e19a8464e8d",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-10",
+    "name": "Mensa: Hähnchen-Reis",
+    "kcal": 758,
+    "proteinG": 36
+   },
+   {
+    "id": "99ef85a5-d8b8-4243-8c94-37b9f40d5e8a",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-23",
+    "name": "Proteinshake",
+    "kcal": 217,
+    "proteinG": 17
+   },
+   {
+    "id": "9ab94755-e6e3-4f29-8c27-d15ef09af8ab",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-30",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "9bd2e602-8147-4d00-9983-92b4f692ad94",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-02",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "9db82c57-4d3c-4388-a733-2fefb1901b90",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-10",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "9dff5252-cade-455f-b6ac-fcd85345bd12",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-25",
+    "name": "Banane + Nüsse",
+    "kcal": 328,
+    "proteinG": 25
+   },
+   {
+    "id": "a23fb0cb-bbaa-474e-8165-50d176df2f86",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-08",
+    "name": "Pasta mit Hack",
+    "kcal": 877,
+    "proteinG": 33
+   },
+   {
+    "id": "a3a82085-a3b6-4c33-a618-c25e6b656feb",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-01",
+    "name": "Abendessen zu Hause",
+    "kcal": 1045,
+    "proteinG": 31
+   },
+   {
+    "id": "a4a41021-dc33-49c7-b21d-9cf45a15897c",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-07",
+    "name": "Quark mit Beeren",
+    "kcal": 380,
+    "proteinG": 31
+   },
+   {
+    "id": "a7380596-a967-49ad-8867-064a8b75ca59",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-11",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "a8f83e67-5988-48cd-a20b-cc3f3e8c45f0",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-26",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "acf8b89e-6d60-4c31-b6d8-696ea2ea50ab",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-27",
+    "name": "Banane + Nüsse",
+    "kcal": 200,
+    "proteinG": 30
+   },
+   {
+    "id": "adcb08d2-0e77-4208-9c19-be4fa5fd3c83",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-01",
+    "name": "Mensa: Hähnchen-Reis",
+    "kcal": 786,
+    "proteinG": 35
+   },
+   {
+    "id": "b4bb7219-da14-4bce-bffb-f26776166812",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-30",
+    "name": "Pasta mit Hack",
+    "kcal": 860,
+    "proteinG": 37
+   },
+   {
+    "id": "b75c7fdf-4c5b-42b4-b6db-752000ac11f9",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-18",
+    "name": "Lachs, Kartoffeln",
+    "kcal": 1097,
+    "proteinG": 45
+   },
+   {
+    "id": "bc141b96-c933-4e37-8505-04bc6444a270",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-28",
+    "name": "Mensa: Curry",
+    "kcal": 872,
+    "proteinG": 38
+   },
+   {
+    "id": "bdd1dde1-582e-4038-a522-47979bdfb175",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-21",
+    "name": "Pasta mit Hack",
+    "kcal": 1033,
+    "proteinG": 42
+   },
+   {
+    "id": "bff7f855-8287-4606-aefc-d2c2b76ab25d",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-10",
+    "name": "Quark mit Beeren",
+    "kcal": 293,
+    "proteinG": 34
+   },
+   {
+    "id": "c3cca433-5c34-469b-b1f6-18e502468639",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-18",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "c5fa4737-667d-4e0e-9b21-dfad03986460",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-25",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "c8245c04-b62f-4c76-9cdd-211b3e2494d6",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-16",
+    "name": "Proteinshake",
+    "kcal": 224,
+    "proteinG": 34
+   },
+   {
+    "id": "c893bd86-1618-426d-a1b1-cbcf00adb1b3",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-06",
+    "name": "Mensa: Hähnchen-Reis",
+    "kcal": 863,
+    "proteinG": 36
+   },
+   {
+    "id": "c959196d-9e9f-47d8-ba52-6e7b766339f6",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-09",
+    "name": "Mensa: Nudeln",
+    "kcal": 668,
+    "proteinG": 34
+   },
+   {
+    "id": "ceb2da48-a461-4f62-b0ed-d61564b3f5d3",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-23",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "d165a574-e328-439c-bff2-343712e8e4b0",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-20",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "d3e35fed-e6af-43d4-800a-e44e40bcc554",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-09",
+    "name": "Quark mit Beeren",
+    "kcal": 371,
+    "proteinG": 27
+   },
+   {
+    "id": "d5c63e56-284f-4ccc-8f00-def516a5b82c",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-01",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "d803efab-4f8e-4e59-b51c-8d41aaf0dc7e",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-15",
+    "name": "Abendessen zu Hause",
+    "kcal": 1051,
+    "proteinG": 34
+   },
+   {
+    "id": "d9770d7e-8847-40ca-91a2-2f5a752bdb24",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-26",
+    "name": "Mensa: Nudeln",
+    "kcal": 809,
+    "proteinG": 30
+   },
+   {
+    "id": "db5ac3e1-2a98-435b-9c00-a51c422728e4",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-30",
+    "name": "Mensa: Curry",
+    "kcal": 734,
+    "proteinG": 44
+   },
+   {
+    "id": "ded5a77c-f1ff-4280-b6ee-b43f738416a8",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-19",
+    "name": "Lachs, Kartoffeln",
+    "kcal": 1020,
+    "proteinG": 40
+   },
+   {
+    "id": "e6ab8875-3a6a-4afd-853c-b426a004a473",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-11",
+    "name": "Lachs, Kartoffeln",
+    "kcal": 739,
+    "proteinG": 39
+   },
+   {
+    "id": "e90d674f-1c20-4870-84b6-47331bc301bd",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-21",
+    "name": "Mensa: Hähnchen-Reis",
+    "kcal": 829,
+    "proteinG": 41
+   },
+   {
+    "id": "ebfb9060-8a26-4eae-a58c-9a91b1e7c3bf",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-17",
+    "name": "Mensa: Curry",
+    "kcal": 895,
+    "proteinG": 38
+   },
+   {
+    "id": "ec5bc6a4-28e8-4f20-a7b1-b7b9a4379b5c",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-25",
+    "name": "Wrap",
+    "kcal": 807,
+    "proteinG": 29
+   },
+   {
+    "id": "f526a7fc-0b11-4df1-af86-0ab6df690d6e",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-28",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38
+   },
+   {
+    "id": "f5f1b9ef-9471-47d3-9977-a2f91923d310",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-20",
+    "name": "Mensa: Hähnchen-Reis",
+    "kcal": 759,
+    "proteinG": 40
+   },
+   {
+    "id": "f8410be4-40e9-46c6-aa86-aae466dd4292",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-03",
+    "name": "Wrap",
+    "kcal": 816,
+    "proteinG": 33
+   },
+   {
+    "id": "fa197791-7703-49a7-9c1f-37238ffc74ee",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-11",
+    "name": "Wrap",
+    "kcal": 684,
+    "proteinG": 31
+   }
+  ],
+  "mealTemplates": [
+   {
+    "id": "0dd19015-3d4d-4dd1-93b1-1715a810118e",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Skyr + Haferflocken",
+    "kcal": 420,
+    "proteinG": 38,
+    "order": 0
+   }
+  ],
+  "days": [
+   {
+    "id": "2026-09-15",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-15",
+    "water": 11,
+    "mood": 3,
+    "energy": 3,
+    "note": "Training war zäh, Beine schwer.",
+    "good": "",
+    "better": "",
+    "tomorrow": "Vokabeltest Englisch"
+   },
+   {
+    "id": "2026-09-16",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-16",
+    "water": 11,
+    "mood": 2,
+    "energy": 1,
+    "note": "",
+    "good": "",
+    "better": "",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-09-17",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-17",
+    "water": 11,
+    "mood": 4,
+    "energy": 4,
+    "note": "Mathe endlich verstanden.",
+    "good": "",
+    "better": "",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-09-18",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-18",
+    "water": 11,
+    "mood": 3,
+    "energy": 3,
+    "note": "Zu lange am Handy gewesen.",
+    "good": "",
+    "better": "",
+    "tomorrow": "Vokabeltest Englisch"
+   },
+   {
+    "id": "2026-09-19",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-19",
+    "water": 6,
+    "mood": 4,
+    "energy": 3,
+    "note": "",
+    "good": "",
+    "better": "Früher schlafen",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-09-20",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-20",
+    "water": 8,
+    "mood": 4,
+    "energy": 4,
+    "note": "",
+    "good": "",
+    "better": "",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-09-21",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-21",
+    "water": 11,
+    "mood": 4,
+    "energy": 5,
+    "note": "",
+    "good": "",
+    "better": "Handy weg beim Lernen",
+    "tomorrow": "Vokabeltest Englisch"
+   },
+   {
+    "id": "2026-09-22",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-22",
+    "water": 10,
+    "mood": 3,
+    "energy": 4,
+    "note": "",
+    "good": "",
+    "better": "",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-09-23",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-23",
+    "water": 8,
+    "mood": 2,
+    "energy": 2,
+    "note": "",
+    "good": "",
+    "better": "Früher schlafen",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-09-24",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-24",
+    "water": 6,
+    "mood": 3,
+    "energy": 3,
+    "note": "",
+    "good": "",
+    "better": "",
+    "tomorrow": "Vokabeltest Englisch"
+   },
+   {
+    "id": "2026-09-25",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-25",
+    "water": 9,
+    "mood": 3,
+    "energy": 3,
+    "note": "",
+    "good": "",
+    "better": "Mehr trinken",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-09-26",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-26",
+    "water": 9,
+    "mood": 4,
+    "energy": 4,
+    "note": "",
+    "good": "Hausaufgaben direkt nach der Schule",
+    "better": "",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-09-27",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-27",
+    "water": 8,
+    "mood": 4,
+    "energy": 4,
+    "note": "",
+    "good": "",
+    "better": "",
+    "tomorrow": "EA-Gliederung"
+   },
+   {
+    "id": "2026-09-28",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-28",
+    "water": 6,
+    "mood": 3,
+    "energy": 3,
+    "note": "",
+    "good": "Genug Protein",
+    "better": "Früher schlafen",
+    "tomorrow": "Vokabeltest Englisch"
+   },
+   {
+    "id": "2026-09-29",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-29",
+    "water": 12,
+    "mood": 4,
+    "energy": 4,
+    "note": "",
+    "good": "",
+    "better": "",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-09-30",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-30",
+    "water": 9,
+    "mood": 3,
+    "energy": 3,
+    "note": "",
+    "good": "",
+    "better": "",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-10-01",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-01",
+    "water": 8,
+    "mood": 3,
+    "energy": 3,
+    "note": "",
+    "good": "",
+    "better": "Mehr trinken",
+    "tomorrow": "Vokabeltest Englisch"
+   },
+   {
+    "id": "2026-10-02",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-02",
+    "water": 7,
+    "mood": 3,
+    "energy": 3,
+    "note": "Mathe endlich verstanden.",
+    "good": "Abschluss im Training sauber",
+    "better": "",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-10-03",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-03",
+    "water": 11,
+    "mood": 4,
+    "energy": 4,
+    "note": "",
+    "good": "",
+    "better": "",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-10-04",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-04",
+    "water": 10,
+    "mood": 5,
+    "energy": 5,
+    "note": "",
+    "good": "",
+    "better": "",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-10-05",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-05",
+    "water": 6,
+    "mood": 4,
+    "energy": 4,
+    "note": "",
+    "good": "Hausaufgaben direkt nach der Schule",
+    "better": "Früher schlafen",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-10-06",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-06",
+    "water": 12,
+    "mood": 2,
+    "energy": 2,
+    "note": "",
+    "good": "",
+    "better": "",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-10-07",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-07",
+    "water": 12,
+    "mood": 3,
+    "energy": 3,
+    "note": "Früh ins Bett, morgen Spiel.",
+    "good": "",
+    "better": "",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-10-08",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-08",
+    "water": 9,
+    "mood": 3,
+    "energy": 3,
+    "note": "",
+    "good": "Genug Protein",
+    "better": "Handy weg beim Lernen",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-10-09",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-09",
+    "water": 10,
+    "mood": 3,
+    "energy": 3,
+    "note": "",
+    "good": "",
+    "better": "Früher schlafen",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-10-10",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-10",
+    "water": 12,
+    "mood": 4,
+    "energy": 5,
+    "note": "",
+    "good": "Genug Protein",
+    "better": "",
+    "tomorrow": ""
+   },
+   {
+    "id": "2026-10-11",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-11",
+    "water": 9,
+    "mood": 4,
+    "energy": 3,
+    "note": "",
+    "good": "Abschluss im Training sauber",
+    "better": "",
+    "tomorrow": "Vokabeltest Englisch"
+   },
+   {
+    "id": "2026-10-12",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-12",
+    "water": 3,
+    "mood": 4,
+    "energy": 5,
+    "note": "",
+    "good": "",
+    "better": "",
+    "tomorrow": ""
+   }
+  ],
+  "sleep": [
+   {
+    "id": "080a4cc5-ab6b-4f6d-ad5c-629a7a29c850",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-08",
+    "start": "2026-10-07T21:46:00.000Z",
+    "end": "2026-10-08T04:58:00.000Z",
+    "quality": 4
+   },
+   {
+    "id": "0b373342-49d6-433e-acd6-bf8a20f216d8",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-26",
+    "start": "2026-09-25T21:14:00.000Z",
+    "end": "2026-09-26T06:21:00.000Z",
+    "quality": 5
+   },
+   {
+    "id": "144bab30-fcbc-478e-a5fa-0a983d9c2cb5",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-27",
+    "start": "2026-09-26T20:58:00.000Z",
+    "end": "2026-09-27T06:50:00.000Z",
+    "quality": 5
+   },
+   {
+    "id": "1e76c196-2a93-4730-a8f2-d46545f24d6c",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-12",
+    "start": "2026-10-11T21:18:00.000Z",
+    "end": "2026-10-12T04:53:00.000Z",
+    "quality": 5
+   },
+   {
+    "id": "22371be4-72b4-4d01-afa8-d8a33297a1f4",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-06",
+    "start": "2026-10-05T21:34:00.000Z",
+    "end": "2026-10-06T04:39:00.000Z",
+    "quality": 4
+   },
+   {
+    "id": "28a95a0a-3661-4bca-8f74-361998938712",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-22",
+    "start": "2026-09-21T21:00:00.000Z",
+    "end": "2026-09-22T04:43:00.000Z",
+    "quality": 5
+   },
+   {
+    "id": "63122780-0f3c-4224-8b23-d1363b26819f",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-09",
+    "start": "2026-10-08T20:49:00.000Z",
+    "end": "2026-10-09T04:52:00.000Z",
+    "quality": 5
+   },
+   {
+    "id": "6755fa74-b514-47e4-a247-7016c8dcd41e",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-02",
+    "start": "2026-10-01T20:44:00.000Z",
+    "end": "2026-10-02T04:47:00.000Z",
+    "quality": 4
+   },
+   {
+    "id": "75aad5be-639e-4313-b3a4-7772a6a950c5",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-04",
+    "start": "2026-10-03T20:48:00.000Z",
+    "end": "2026-10-04T06:27:00.000Z",
+    "quality": 5
+   },
+   {
+    "id": "9b8dbd31-ec36-4704-b2a6-b5584a742475",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-19",
+    "start": "2026-09-18T21:13:00.000Z",
+    "end": "2026-09-19T06:33:00.000Z",
+    "quality": 5
+   },
+   {
+    "id": "a5f9d31e-8a1b-4cf2-ad16-61c4aef7b820",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-05",
+    "start": "2026-10-04T21:02:00.000Z",
+    "end": "2026-10-05T04:34:00.000Z",
+    "quality": 4
+   },
+   {
+    "id": "b81ae998-6d2d-491e-b4de-ba56e2f5cc1d",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-25",
+    "start": "2026-09-24T21:03:00.000Z",
+    "end": "2026-09-25T04:33:00.000Z",
+    "quality": 4
+   },
+   {
+    "id": "e7883f64-2f11-4bd7-8313-1802e860061f",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-30",
+    "start": "2026-09-29T21:14:00.000Z",
+    "end": "2026-09-30T04:26:00.000Z",
+    "quality": 4
+   },
+   {
+    "id": "ec6712e9-9d43-434b-9abf-bbe78c954d01",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-07",
+    "start": "2026-10-06T20:42:00.000Z",
+    "end": "2026-10-07T04:51:00.000Z",
+    "quality": 4
+   },
+   {
+    "id": "ff80101c-7841-40ea-9dc3-e75457d58513",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-23",
+    "start": "2026-09-22T21:36:00.000Z",
+    "end": "2026-09-23T04:49:00.000Z",
+    "quality": 4
+   }
+  ],
+  "health": [
+   {
+    "id": "2026-09-15",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-15",
+    "steps": 13194,
+    "distanceKm": 9.8,
+    "flights": 11,
+    "sleepStart": "2026-09-14T20:53:00.000Z",
+    "sleepEnd": "2026-09-15T04:22:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-09-16",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-16",
+    "steps": 9239,
+    "distanceKm": 6.8,
+    "flights": 5,
+    "sleepStart": "2026-09-15T21:36:00.000Z",
+    "sleepEnd": "2026-09-16T04:54:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-09-17",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-17",
+    "steps": 14763,
+    "distanceKm": 10.9,
+    "flights": 16,
+    "sleepStart": "2026-09-16T21:34:00.000Z",
+    "sleepEnd": "2026-09-17T04:38:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-09-18",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-18",
+    "steps": 14970,
+    "distanceKm": 11.1,
+    "flights": 7,
+    "sleepStart": "2026-09-17T21:48:00.000Z",
+    "sleepEnd": "2026-09-18T04:39:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-09-19",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-19",
+    "steps": 11634,
+    "distanceKm": 8.6,
+    "flights": 10,
+    "sleepStart": "2026-09-18T21:21:00.000Z",
+    "sleepEnd": "2026-09-19T06:33:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-09-20",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-20",
+    "steps": 7116,
+    "distanceKm": 5.3,
+    "flights": 18,
+    "sleepStart": "2026-09-19T21:21:00.000Z",
+    "sleepEnd": "2026-09-20T06:28:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-09-21",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-21",
+    "steps": 14788,
+    "distanceKm": 10.9,
+    "flights": 8,
+    "sleepStart": "2026-09-20T20:56:00.000Z",
+    "sleepEnd": "2026-09-21T04:49:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-09-22",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-22",
+    "steps": 14144,
+    "distanceKm": 10.5,
+    "flights": 11,
+    "sleepStart": "2026-09-21T21:24:00.000Z",
+    "sleepEnd": "2026-09-22T04:40:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-09-23",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-23",
+    "steps": 9638,
+    "distanceKm": 7.1,
+    "flights": 10,
+    "sleepStart": "2026-09-22T21:50:00.000Z",
+    "sleepEnd": "2026-09-23T04:44:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-09-24",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-24",
+    "steps": 14527,
+    "distanceKm": 10.7,
+    "flights": 10,
+    "sleepStart": "2026-09-23T20:59:00.000Z",
+    "sleepEnd": "2026-09-24T04:19:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-09-25",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-25",
+    "steps": 13051,
+    "distanceKm": 9.7,
+    "flights": 9,
+    "sleepStart": "2026-09-24T21:22:00.000Z",
+    "sleepEnd": "2026-09-25T04:31:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-09-26",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-26",
+    "steps": 13575,
+    "distanceKm": 10,
+    "flights": 6,
+    "sleepStart": "2026-09-25T21:19:00.000Z",
+    "sleepEnd": "2026-09-26T06:16:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-09-27",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-27",
+    "steps": 5650,
+    "distanceKm": 4.2,
+    "flights": 14,
+    "sleepStart": "2026-09-26T21:13:00.000Z",
+    "sleepEnd": "2026-09-27T06:41:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-09-28",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-28",
+    "steps": 13590,
+    "distanceKm": 10.1,
+    "flights": 11,
+    "sleepStart": "2026-09-27T21:19:00.000Z",
+    "sleepEnd": "2026-09-28T04:34:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-09-29",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-29",
+    "steps": 14192,
+    "distanceKm": 10.5,
+    "flights": 11,
+    "sleepStart": "2026-09-28T21:03:00.000Z",
+    "sleepEnd": "2026-09-29T04:30:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-09-30",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-30",
+    "steps": 10098,
+    "distanceKm": 7.5,
+    "flights": 13,
+    "sleepStart": "2026-09-29T21:34:00.000Z",
+    "sleepEnd": "2026-09-30T04:18:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-10-01",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-01",
+    "steps": 14508,
+    "distanceKm": 10.7,
+    "flights": 5,
+    "sleepStart": "2026-09-30T21:51:00.000Z",
+    "sleepEnd": "2026-10-01T04:20:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-10-02",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-02",
+    "steps": 13821,
+    "distanceKm": 10.2,
+    "flights": 17,
+    "sleepStart": "2026-10-01T21:03:00.000Z",
+    "sleepEnd": "2026-10-02T04:47:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-10-03",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-03",
+    "steps": 11782,
+    "distanceKm": 8.7,
+    "flights": 3,
+    "sleepStart": "2026-10-02T21:21:00.000Z",
+    "sleepEnd": "2026-10-03T06:38:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-10-04",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-04",
+    "steps": 8035,
+    "distanceKm": 5.9,
+    "flights": 18,
+    "sleepStart": "2026-10-03T21:13:00.000Z",
+    "sleepEnd": "2026-10-04T06:27:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-10-05",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-05",
+    "steps": 14725,
+    "distanceKm": 10.9,
+    "flights": 16,
+    "sleepStart": "2026-10-04T21:07:00.000Z",
+    "sleepEnd": "2026-10-05T04:25:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-10-06",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-06",
+    "steps": 9976,
+    "distanceKm": 7.4,
+    "flights": 5,
+    "sleepStart": "2026-10-05T21:49:00.000Z",
+    "sleepEnd": "2026-10-06T04:33:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-10-07",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-07",
+    "steps": 12990,
+    "distanceKm": 9.6,
+    "flights": 12,
+    "sleepStart": "2026-10-06T20:52:00.000Z",
+    "sleepEnd": "2026-10-07T04:46:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-10-08",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-08",
+    "steps": 11223,
+    "distanceKm": 8.3,
+    "flights": 12,
+    "sleepStart": "2026-10-07T21:52:00.000Z",
+    "sleepEnd": "2026-10-08T04:57:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-10-09",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-09",
+    "steps": 11278,
+    "distanceKm": 8.3,
+    "flights": 18,
+    "sleepStart": "2026-10-08T21:03:00.000Z",
+    "sleepEnd": "2026-10-09T04:46:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-10-10",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-10",
+    "steps": 11582,
+    "distanceKm": 8.6,
+    "flights": 12,
+    "sleepStart": "2026-10-09T21:30:00.000Z",
+    "sleepEnd": "2026-10-10T06:41:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-10-11",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-11",
+    "steps": 9315,
+    "distanceKm": 6.9,
+    "flights": 10,
+    "sleepStart": "2026-10-10T21:53:00.000Z",
+    "sleepEnd": "2026-10-11T06:31:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   },
+   {
+    "id": "2026-10-12",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-12",
+    "steps": 3653,
+    "distanceKm": 2.7,
+    "flights": 7,
+    "sleepStart": "2026-10-11T21:34:00.000Z",
+    "sleepEnd": "2026-10-12T04:44:00.000Z",
+    "source": "demo",
+    "importedAt": "2026-10-12T18:56:16.444Z"
+   }
+  ],
+  "subjects": [
+   {
+    "id": "0f6c1276-38b2-413e-9bd5-003d64a4583c",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Englisch",
+    "short": "E",
+    "order": 2,
+    "archived": false
+   },
+   {
+    "id": "2c1d1abc-a474-44d6-8a13-a545ce0baaea",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Kunst",
+    "short": "Ku",
+    "order": 6,
+    "archived": false
+   },
+   {
+    "id": "4d3466ce-3328-4919-8bb8-f010dbd0d50b",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Deutsch",
+    "short": "D",
+    "order": 0,
+    "archived": false
+   },
+   {
+    "id": "52bc8d9c-d021-4434-a69d-02c81bb39773",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Geschichte",
+    "short": "G",
+    "order": 3,
+    "archived": false
+   },
+   {
+    "id": "6fbc568b-3c78-4100-b88b-be792df6014d",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Bio",
+    "short": "B",
+    "order": 8,
+    "archived": false
+   },
+   {
+    "id": "99bfc2c0-444f-4ade-8d06-c9f028d8d22c",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "PuG",
+    "short": "PuG",
+    "order": 4,
+    "archived": false,
+    "major": true
+   },
+   {
+    "id": "a0bd7d57-034e-4181-aae4-cbc3308d6e63",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Biophysik",
+    "short": "BPh",
+    "order": 7,
+    "archived": false
+   },
+   {
+    "id": "a443f391-d4bc-4c49-8238-eb4ec3f9cb74",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Ethik",
+    "short": "Eth",
+    "order": 9,
+    "archived": false
+   },
+   {
+    "id": "a63d788d-e025-4080-9695-40d1f1570b1a",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "FernUni",
+    "short": "FU",
+    "order": 11,
+    "archived": false
+   },
+   {
+    "id": "bc5e5f3b-9b3f-48b0-b797-4f7a31cd1e92",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "WR",
+    "short": "WR",
+    "order": 10,
+    "archived": false
+   },
+   {
+    "id": "c594d808-f236-447c-859f-01ca2ac0225d",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "VkM",
+    "short": "VkM",
+    "order": 5,
+    "archived": false
+   },
+   {
+    "id": "cde3644f-d76e-4903-81bb-50209e3d78e1",
+    "createdAt": "2026-10-12T18:56:16.434Z",
+    "updatedAt": "2026-10-12T18:56:16.434Z",
+    "name": "Mathe",
+    "short": "M",
+    "order": 1,
+    "archived": false
+   }
+  ],
+  "studySessions": [
+   {
+    "id": "04d5f8c7-37f4-43a1-85bb-646bb6b76044",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-08",
+    "subjectId": "0f6c1276-38b2-413e-9bd5-003d64a4583c",
+    "start": "2026-10-08T14:30:00.000Z",
+    "end": "2026-10-08T14:59:00.000Z",
+    "minutes": 29
+   },
+   {
+    "id": "08d3d6e1-383d-4f86-9f9f-b527619efd27",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-20",
+    "subjectId": "a63d788d-e025-4080-9695-40d1f1570b1a",
+    "start": "2026-09-20T08:30:00.000Z",
+    "end": "2026-09-20T10:47:00.000Z",
+    "minutes": 137
+   },
+   {
+    "id": "156e35b7-42e5-41d4-bde5-219df2b065c8",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-26",
+    "subjectId": "a63d788d-e025-4080-9695-40d1f1570b1a",
+    "start": "2026-09-26T08:30:00.000Z",
+    "end": "2026-09-26T10:31:00.000Z",
+    "minutes": 121
+   },
+   {
+    "id": "18d58aa3-613d-4657-b2b3-85e413ce14c1",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-15",
+    "subjectId": "4d3466ce-3328-4919-8bb8-f010dbd0d50b",
+    "start": "2026-09-15T14:30:00.000Z",
+    "end": "2026-09-15T15:37:00.000Z",
+    "minutes": 67
+   },
+   {
+    "id": "1b1f49ae-cff6-4cf3-b990-c4f5ddae6b4e",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-06",
+    "subjectId": "a443f391-d4bc-4c49-8238-eb4ec3f9cb74",
+    "start": "2026-10-06T16:00:00.000Z",
+    "end": "2026-10-06T16:30:00.000Z",
+    "minutes": 30
+   },
+   {
+    "id": "28ba15a2-e08f-4253-981a-70c4ef65adb4",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-04",
+    "subjectId": "a63d788d-e025-4080-9695-40d1f1570b1a",
+    "start": "2026-10-04T08:30:00.000Z",
+    "end": "2026-10-04T10:34:00.000Z",
+    "minutes": 124
+   },
+   {
+    "id": "2cf28d34-a392-484e-ae38-b6cc229757dd",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-01",
+    "subjectId": "0f6c1276-38b2-413e-9bd5-003d64a4583c",
+    "start": "2026-10-01T14:30:00.000Z",
+    "end": "2026-10-01T15:40:00.000Z",
+    "minutes": 70
+   },
+   {
+    "id": "3252c2cd-ed72-43e1-b1f6-1a95687797cc",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-22",
+    "subjectId": "a0bd7d57-034e-4181-aae4-cbc3308d6e63",
+    "start": "2026-09-22T15:55:00.000Z",
+    "end": "2026-09-22T16:45:00.000Z",
+    "minutes": 50
+   },
+   {
+    "id": "421005a4-f55a-434f-87a3-925eb2a3a92b",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-27",
+    "subjectId": "a63d788d-e025-4080-9695-40d1f1570b1a",
+    "start": "2026-09-27T08:30:00.000Z",
+    "end": "2026-09-27T10:25:00.000Z",
+    "minutes": 115
+   },
+   {
+    "id": "5642d70c-0847-412f-906d-314af9b203c9",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-22",
+    "subjectId": "52bc8d9c-d021-4434-a69d-02c81bb39773",
+    "start": "2026-09-22T14:30:00.000Z",
+    "end": "2026-09-22T15:35:00.000Z",
+    "minutes": 65
+   },
+   {
+    "id": "5b3b8e85-2587-416e-b86f-f8e6a9d6a5e0",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-24",
+    "subjectId": "4d3466ce-3328-4919-8bb8-f010dbd0d50b",
+    "start": "2026-09-24T14:30:00.000Z",
+    "end": "2026-09-24T15:34:00.000Z",
+    "minutes": 64
+   },
+   {
+    "id": "63019a43-1448-423c-a682-3daefb2f9ef1",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-10",
+    "subjectId": "a63d788d-e025-4080-9695-40d1f1570b1a",
+    "start": "2026-10-10T08:30:00.000Z",
+    "end": "2026-10-10T10:13:00.000Z",
+    "minutes": 103
+   },
+   {
+    "id": "6bac4174-9c32-417e-8568-1e55344aa106",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-30",
+    "subjectId": "0f6c1276-38b2-413e-9bd5-003d64a4583c",
+    "start": "2026-09-30T14:30:00.000Z",
+    "end": "2026-09-30T15:37:00.000Z",
+    "minutes": 67
+   },
+   {
+    "id": "6d4bc740-3b82-42bc-866c-1dec76052f64",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-15",
+    "subjectId": "a63d788d-e025-4080-9695-40d1f1570b1a",
+    "start": "2026-09-15T15:57:00.000Z",
+    "end": "2026-09-15T16:34:00.000Z",
+    "minutes": 37
+   },
+   {
+    "id": "6eb800ee-f908-4350-a45c-a6284f4e2db2",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-29",
+    "subjectId": "0f6c1276-38b2-413e-9bd5-003d64a4583c",
+    "start": "2026-09-29T14:30:00.000Z",
+    "end": "2026-09-29T15:32:00.000Z",
+    "minutes": 62
+   },
+   {
+    "id": "72d80a82-0f6d-4aff-a10a-7e1d2c62e8f3",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-07",
+    "subjectId": "99bfc2c0-444f-4ade-8d06-c9f028d8d22c",
+    "start": "2026-10-07T14:30:00.000Z",
+    "end": "2026-10-07T15:28:00.000Z",
+    "minutes": 58
+   },
+   {
+    "id": "7449987f-4c80-416b-b7db-796ee7d97455",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-23",
+    "subjectId": "0f6c1276-38b2-413e-9bd5-003d64a4583c",
+    "start": "2026-09-23T14:30:00.000Z",
+    "end": "2026-09-23T15:38:00.000Z",
+    "minutes": 68
+   },
+   {
+    "id": "74627a6b-b0f2-4aca-9034-a4128d9b94b9",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-25",
+    "subjectId": "99bfc2c0-444f-4ade-8d06-c9f028d8d22c",
+    "start": "2026-09-25T14:30:00.000Z",
+    "end": "2026-09-25T15:22:00.000Z",
+    "minutes": 52
+   },
+   {
+    "id": "761b1cf2-3ee0-49f3-a0dc-0c91f0364263",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-09",
+    "subjectId": "cde3644f-d76e-4903-81bb-50209e3d78e1",
+    "start": "2026-10-09T14:30:00.000Z",
+    "end": "2026-10-09T15:04:00.000Z",
+    "minutes": 34
+   },
+   {
+    "id": "812b40a8-2990-48ef-bb6f-dc084224cc89",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-23",
+    "subjectId": "a443f391-d4bc-4c49-8238-eb4ec3f9cb74",
+    "start": "2026-09-23T15:58:00.000Z",
+    "end": "2026-09-23T16:23:00.000Z",
+    "minutes": 25
+   },
+   {
+    "id": "8d1d2c07-5a41-41b4-8f91-10b9392a5428",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-18",
+    "subjectId": "99bfc2c0-444f-4ade-8d06-c9f028d8d22c",
+    "start": "2026-09-18T14:30:00.000Z",
+    "end": "2026-09-18T15:27:00.000Z",
+    "minutes": 57
+   },
+   {
+    "id": "aaad1036-0611-4bdf-a17b-9a394cecae36",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-19",
+    "subjectId": "a63d788d-e025-4080-9695-40d1f1570b1a",
+    "start": "2026-09-19T08:30:00.000Z",
+    "end": "2026-09-19T10:02:00.000Z",
+    "minutes": 92
+   },
+   {
+    "id": "b7118275-7673-40a4-a9da-29fbe20e0af5",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-25",
+    "subjectId": "a63d788d-e025-4080-9695-40d1f1570b1a",
+    "start": "2026-09-25T15:42:00.000Z",
+    "end": "2026-09-25T16:32:00.000Z",
+    "minutes": 50
+   },
+   {
+    "id": "bbcf0163-d6ec-4cd9-b228-743c07ee45ed",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-03",
+    "subjectId": "a63d788d-e025-4080-9695-40d1f1570b1a",
+    "start": "2026-10-03T08:30:00.000Z",
+    "end": "2026-10-03T09:38:00.000Z",
+    "minutes": 68
+   },
+   {
+    "id": "c555c756-d5dc-44f4-b125-66940caab88f",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-28",
+    "subjectId": "bc5e5f3b-9b3f-48b0-b797-4f7a31cd1e92",
+    "start": "2026-09-28T15:40:00.000Z",
+    "end": "2026-09-28T16:00:00.000Z",
+    "minutes": 20
+   },
+   {
+    "id": "c589e6ed-1579-4686-9f34-228d20999ca2",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-01",
+    "subjectId": "bc5e5f3b-9b3f-48b0-b797-4f7a31cd1e92",
+    "start": "2026-10-01T16:00:00.000Z",
+    "end": "2026-10-01T16:34:00.000Z",
+    "minutes": 34
+   },
+   {
+    "id": "cb6eb98f-d864-460a-a0ef-c8da6e76e01b",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-06",
+    "subjectId": "99bfc2c0-444f-4ade-8d06-c9f028d8d22c",
+    "start": "2026-10-06T14:30:00.000Z",
+    "end": "2026-10-06T15:40:00.000Z",
+    "minutes": 70
+   },
+   {
+    "id": "cf802066-0b04-4560-9af5-f466dda8ad3d",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-11",
+    "subjectId": "a63d788d-e025-4080-9695-40d1f1570b1a",
+    "start": "2026-10-11T08:30:00.000Z",
+    "end": "2026-10-11T10:18:00.000Z",
+    "minutes": 108
+   },
+   {
+    "id": "cfa6a73d-0082-41a0-9e40-49be0796050c",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-21",
+    "subjectId": "4d3466ce-3328-4919-8bb8-f010dbd0d50b",
+    "start": "2026-09-21T14:30:00.000Z",
+    "end": "2026-09-21T15:25:00.000Z",
+    "minutes": 55
+   },
+   {
+    "id": "df60af70-6f85-4fcf-b0c2-81420b6db744",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-02",
+    "subjectId": "0f6c1276-38b2-413e-9bd5-003d64a4583c",
+    "start": "2026-10-02T14:30:00.000Z",
+    "end": "2026-10-02T15:34:00.000Z",
+    "minutes": 64
+   },
+   {
+    "id": "e3960f7e-acbc-4c5f-aaf7-0a78878bed12",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-16",
+    "subjectId": "6fbc568b-3c78-4100-b88b-be792df6014d",
+    "start": "2026-09-16T14:30:00.000Z",
+    "end": "2026-09-16T15:25:00.000Z",
+    "minutes": 55
+   },
+   {
+    "id": "f01913b4-e7a6-4056-b9e7-1d9996a7f47b",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-28",
+    "subjectId": "cde3644f-d76e-4903-81bb-50209e3d78e1",
+    "start": "2026-09-28T14:30:00.000Z",
+    "end": "2026-09-28T15:20:00.000Z",
+    "minutes": 50
+   },
+   {
+    "id": "f3631ed6-d492-4a21-ba45-d0d29a7d045b",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-17",
+    "subjectId": "cde3644f-d76e-4903-81bb-50209e3d78e1",
+    "start": "2026-09-17T14:30:00.000Z",
+    "end": "2026-09-17T14:56:00.000Z",
+    "minutes": 26
+   },
+   {
+    "id": "f64cbae3-1b4c-4e12-bd22-b1434a78a880",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-05",
+    "subjectId": "0f6c1276-38b2-413e-9bd5-003d64a4583c",
+    "start": "2026-10-05T14:30:00.000Z",
+    "end": "2026-10-05T15:48:00.000Z",
+    "minutes": 78
+   }
+  ],
+  "todos": [
+   {
+    "id": "0d45441e-9cfa-4f01-8fa8-13596a87d47c",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-09",
+    "title": "Sportsachen waschen",
+    "done": false
+   },
+   {
+    "id": "24340e50-b1e7-486e-b48c-52adfa3a09d9",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-09",
+    "title": "PuG Referat Gliederung",
+    "done": false,
+    "subjectId": "99bfc2c0-444f-4ade-8d06-c9f028d8d22c",
+    "due": "2026-10-18"
+   },
+   {
+    "id": "79d474e0-eeb8-45ab-8e0c-85873644c1c8",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-09",
+    "title": "Mathe S. 112 Nr. 4–7",
+    "done": false,
+    "subjectId": "cde3644f-d76e-4903-81bb-50209e3d78e1",
+    "due": "2026-10-13"
+   },
+   {
+    "id": "d753c020-4c77-433d-9844-e1bbc538cea0",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-09",
+    "title": "Bio Arbeitsblatt Genetik",
+    "done": true,
+    "subjectId": "6fbc568b-3c78-4100-b88b-be792df6014d",
+    "due": "2026-10-10",
+    "doneAt": "2026-10-10T16:00:00.000Z"
+   },
+   {
+    "id": "fe80a6e4-2c15-466a-91d6-d5dbd33df5ee",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-09",
+    "title": "Englisch Essay Entwurf",
+    "done": false,
+    "subjectId": "0f6c1276-38b2-413e-9bd5-003d64a4583c",
+    "due": "2026-10-15"
+   }
+  ],
+  "exams": [
+   {
+    "id": "0e87215f-23c7-4b38-ae91-aea991b8924a",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-25",
+    "subjectId": "0f6c1276-38b2-413e-9bd5-003d64a4583c",
+    "kind": "kurzarbeit",
+    "topics": "Vocabulary, Grammar",
+    "progress": 100,
+    "points": 9
+   },
+   {
+    "id": "44a31bfa-06f8-4f91-8639-a0c933bb4ef3",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-02",
+    "subjectId": "99bfc2c0-444f-4ade-8d06-c9f028d8d22c",
+    "kind": "klausur",
+    "topics": "Demokratietheorien",
+    "progress": 100,
+    "points": 13
+   },
+   {
+    "id": "44b69a90-0728-411c-9b94-07560d495e49",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-16",
+    "subjectId": "cde3644f-d76e-4903-81bb-50209e3d78e1",
+    "kind": "klausur",
+    "topics": "Analysis: Kurvendiskussion, Integrale",
+    "progress": 55
+   },
+   {
+    "id": "8d6e8589-da3c-4b4a-af9a-e55aa57b36cb",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-09-18",
+    "subjectId": "4d3466ce-3328-4919-8bb8-f010dbd0d50b",
+    "kind": "klausur",
+    "topics": "Erörterung",
+    "progress": 100,
+    "points": 11
+   },
+   {
+    "id": "e016f5a4-2544-4f10-beb9-2da9fa3ab316",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-27",
+    "subjectId": "52bc8d9c-d021-4434-a69d-02c81bb39773",
+    "kind": "klausur",
+    "topics": "Weimarer Republik",
+    "progress": 20
+   },
+   {
+    "id": "ff09f1ba-66e8-4839-bc2f-99bea52ff332",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "date": "2026-10-07",
+    "subjectId": "6fbc568b-3c78-4100-b88b-be792df6014d",
+    "kind": "ex",
+    "topics": "Genetik",
+    "progress": 100,
+    "points": 8
+   }
+  ],
+  "modules": [
+   {
+    "id": "d65ba0f1-954c-45b3-b870-692c8e7884a6",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "name": "Einführung in die Wirtschaftswissenschaft",
+    "number": "31001",
+    "archived": false
+   }
+  ],
+  "deadlines": [
+   {
+    "id": "1ad43a18-99aa-46e8-82b2-58b13c46af31",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "moduleId": "d65ba0f1-954c-45b3-b870-692c8e7884a6",
+    "kind": "einsendearbeit",
+    "title": "EA 2",
+    "date": "2026-10-17",
+    "done": false,
+    "time": "23:59"
+   },
+   {
+    "id": "1d9a3b35-3cea-4832-ad14-0c8dd6f8159d",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "moduleId": "d65ba0f1-954c-45b3-b870-692c8e7884a6",
+    "kind": "einsendearbeit",
+    "title": "EA 3",
+    "date": "2026-10-31",
+    "done": false,
+    "time": "23:59"
+   },
+   {
+    "id": "2cecb1f5-fa1e-4f0b-8a19-24302b83c7ea",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "moduleId": "d65ba0f1-954c-45b3-b870-692c8e7884a6",
+    "kind": "pruefung",
+    "title": "Modulklausur",
+    "date": "2026-11-29",
+    "done": false
+   },
+   {
+    "id": "bd3093f5-dba9-4e45-b05c-14407b758f6a",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "moduleId": "d65ba0f1-954c-45b3-b870-692c8e7884a6",
+    "kind": "einsendearbeit",
+    "title": "EA 1",
+    "date": "2026-09-30",
+    "done": true,
+    "time": "23:59"
+   }
+  ],
+  "habits": [
+   {
+    "id": "0798665f-0b5f-4113-9287-868b27336448",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "name": "Lesen 20 min",
+    "schedule": {
+     "kind": "daily"
+    },
+    "order": 101,
+    "archived": false,
+    "startDate": "2026-09-15"
+   },
+   {
+    "id": "0b77b854-a1de-4049-b531-db321d6d187b",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "name": "Vokabeln",
+    "schedule": {
+     "kind": "weekdays",
+     "days": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ]
+    },
+    "order": 102,
+    "archived": false,
+    "startDate": "2026-09-15"
+   },
+   {
+    "id": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "name": "Dehnen 10 min",
+    "schedule": {
+     "kind": "daily"
+    },
+    "order": 100,
+    "archived": false,
+    "startDate": "2026-09-15"
+   }
+  ],
+  "habitChecks": [
+   {
+    "id": "0080219c-7834-4364-87ed-68f96ca08d38",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0b77b854-a1de-4049-b531-db321d6d187b",
+    "date": "2026-09-25"
+   },
+   {
+    "id": "06a61224-5cac-4fb7-be0a-874ebaa1de24",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-10-02"
+   },
+   {
+    "id": "08514959-42dc-45ea-86e8-fea684bca5e9",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-10-11"
+   },
+   {
+    "id": "129f56e9-68c6-47ab-ab3b-d3de42abc597",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0b77b854-a1de-4049-b531-db321d6d187b",
+    "date": "2026-09-29"
+   },
+   {
+    "id": "1395c1f9-80e3-47fd-b667-0b69dea34650",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0b77b854-a1de-4049-b531-db321d6d187b",
+    "date": "2026-10-08"
+   },
+   {
+    "id": "143fc459-4004-416c-9d12-e12516de2970",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-09-29"
+   },
+   {
+    "id": "18088ea0-2aa0-4d74-b88f-f73bd4c4c72c",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-09-16"
+   },
+   {
+    "id": "1a82d2ca-0712-41b0-b2f9-7b732a21b94d",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-09-24"
+   },
+   {
+    "id": "20812e4f-fcbd-4cf0-8d53-ba649ab0267a",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-09-15"
+   },
+   {
+    "id": "22ceb0d9-b1f8-4f17-b877-00fa2cd8a849",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-09-28"
+   },
+   {
+    "id": "25a911bd-4e2a-4f13-a7e3-5c6950ed9bdd",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-10-07"
+   },
+   {
+    "id": "2788cd96-6b04-4987-a8bf-a57e001b289d",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-09-19"
+   },
+   {
+    "id": "2bed6e12-482f-4504-93e6-c4922f2d99cb",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-09-27"
+   },
+   {
+    "id": "2d3dc10e-05e5-4ce7-a896-2e3d06a9ecfe",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-09-23"
+   },
+   {
+    "id": "2f38018d-1dc8-4c07-b54d-89fbc9237e37",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-10-07"
+   },
+   {
+    "id": "3412327b-4b28-49de-8e93-285d3889bc4c",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-09-18"
+   },
+   {
+    "id": "3c5c1f31-e178-494f-b53e-4152cd710bb9",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-10-05"
+   },
+   {
+    "id": "416c276e-9d3f-4e16-a7e4-809a9f7fec2d",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-10-08"
+   },
+   {
+    "id": "4c55628f-f8bd-47d7-9840-458387ac1a18",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-09-26"
+   },
+   {
+    "id": "4c7f63fe-387a-4406-a253-df948de9d3a9",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0b77b854-a1de-4049-b531-db321d6d187b",
+    "date": "2026-09-16"
+   },
+   {
+    "id": "54eb46a9-1d00-4d2a-9dde-01dd388fa951",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0b77b854-a1de-4049-b531-db321d6d187b",
+    "date": "2026-09-17"
+   },
+   {
+    "id": "55e53659-9d39-4aeb-a7be-4680e1784a4a",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0b77b854-a1de-4049-b531-db321d6d187b",
+    "date": "2026-09-28"
+   },
+   {
+    "id": "65288a73-0218-40c6-88c6-173edf3bbdd1",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-10-10"
+   },
+   {
+    "id": "6995fcb0-7670-4072-bb74-78c9fd2100cf",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0b77b854-a1de-4049-b531-db321d6d187b",
+    "date": "2026-09-18"
+   },
+   {
+    "id": "799d667c-3fb4-46b1-ac0d-57356729c1f0",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-10-01"
+   },
+   {
+    "id": "83e2738d-8a87-47a9-b101-4acbfced75b9",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0b77b854-a1de-4049-b531-db321d6d187b",
+    "date": "2026-09-22"
+   },
+   {
+    "id": "843fae31-f3ca-4e1f-bd21-d00443de3402",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-09-20"
+   },
+   {
+    "id": "85f5a3fb-d8c1-4c70-8b4c-8c4200185c71",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-10-03"
+   },
+   {
+    "id": "861ba709-4fb7-4833-ae6f-e1dfec91fc35",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-10-11"
+   },
+   {
+    "id": "87bdfeb1-6d60-4fdc-9cf8-42875587f054",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0b77b854-a1de-4049-b531-db321d6d187b",
+    "date": "2026-09-30"
+   },
+   {
+    "id": "9eb24ee0-a617-479c-8729-bb878dae389c",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0b77b854-a1de-4049-b531-db321d6d187b",
+    "date": "2026-10-06"
+   },
+   {
+    "id": "a29eefce-3e85-49e7-a25e-1f66c309f6d0",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-09-26"
+   },
+   {
+    "id": "a35f1b57-f2f0-414c-8326-373cf22a77b6",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-10-05"
+   },
+   {
+    "id": "a37e61ae-82f5-461d-8216-0e73ef062ab6",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-09-23"
+   },
+   {
+    "id": "a5f5c821-764a-4476-9926-43e3367c65cb",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-10-06"
+   },
+   {
+    "id": "ae2d514b-6551-43c1-bd68-f5b3b140ac4f",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-09-25"
+   },
+   {
+    "id": "b4ea944f-1f05-463f-b546-19d4d3572caa",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-09-21"
+   },
+   {
+    "id": "bd8c2972-1d8d-44c7-a521-1fbfe9619264",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-10-09"
+   },
+   {
+    "id": "c2940031-1a35-4872-85cd-652137f8cb3b",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-09-22"
+   },
+   {
+    "id": "c36d4fc5-e2fe-4e0d-95c4-eec9fff52b3c",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-09-22"
+   },
+   {
+    "id": "c533c330-efc9-480e-a0d8-4c61d27844e9",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-09-20"
+   },
+   {
+    "id": "c7506c29-e6b2-4f89-9a41-7727b5ec7f20",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-10-10"
+   },
+   {
+    "id": "c8d62cc9-126a-44a5-8469-a3ef2c0afbbb",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0b77b854-a1de-4049-b531-db321d6d187b",
+    "date": "2026-10-05"
+   },
+   {
+    "id": "c8db9744-cedc-499a-b28a-c2537d616a80",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-10-06"
+   },
+   {
+    "id": "c9f3cd6d-68ed-4a0e-8e95-57a3383391c6",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0b77b854-a1de-4049-b531-db321d6d187b",
+    "date": "2026-09-21"
+   },
+   {
+    "id": "caf8db88-abad-45b2-aeea-792462c5720e",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-09-29"
+   },
+   {
+    "id": "d0846fd5-c036-4dcf-a836-5c967ae274fa",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-09-28"
+   },
+   {
+    "id": "d10b2eaf-9987-4f40-ae45-ee16a141eab5",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0b77b854-a1de-4049-b531-db321d6d187b",
+    "date": "2026-10-07"
+   },
+   {
+    "id": "d39ba111-121c-436b-8357-54384ae38949",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0b77b854-a1de-4049-b531-db321d6d187b",
+    "date": "2026-09-24"
+   },
+   {
+    "id": "dc3ea532-1b28-40e2-908b-4505b3e39f19",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-10-04"
+   },
+   {
+    "id": "e273738d-225c-4e2d-a0f1-fdb08cd08348",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-09-30"
+   },
+   {
+    "id": "e9fcd055-05c1-406c-8fc8-eb8737ff036e",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "a28b3ac5-4691-460e-8374-b2f96ab28bc7",
+    "date": "2026-10-01"
+   },
+   {
+    "id": "eb0b889c-d5da-4721-aee2-8fd75865e865",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-09-24"
+   },
+   {
+    "id": "f7e3f156-e4f3-4120-a078-fe4dd91db641",
+    "createdAt": "2026-10-12T18:56:16.444Z",
+    "updatedAt": "2026-10-12T18:56:16.444Z",
+    "habitId": "0798665f-0b5f-4113-9287-868b27336448",
+    "date": "2026-10-03"
+   }
+  ]
+ },
+ "kv": {
+  "settings": {
+   "goals": {
+    "proteinG": 150,
+    "kcal": 2900,
+    "waterGlasses": 10,
+    "studyMin": 90,
+    "sleepH": 8,
+    "steps": 9000
+   },
+   "weekPlan": {
+    "1": [
+     "football"
+    ],
+    "2": [
+     "gym"
+    ],
+    "3": [
+     "football"
+    ],
+    "4": [
+     "gym"
+    ],
+    "5": [
+     "football"
+    ],
+    "6": [
+     "match"
+    ],
+    "7": [
+     "recovery"
+    ]
+   },
+   "glassMl": 250,
+   "snow": true,
+   "shortcutName": "Winter Health",
+   "ring": {
+    "habits": true,
+    "protein": true,
+    "water": true,
+    "study": true,
+    "sleep": true
+   }
+  },
+  "timer": {
+   "subjectId": "0f6c1276-38b2-413e-9bd5-003d64a4583c",
+   "startedAt": "2026-10-12T15:00:00.000Z"
+  },
+  "lastHealthImport": "2026-10-12T18:40:00.000Z"
+ }
+}

@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { enableDemo } from './helpers';
 
 async function audit(page: Page, name: string) {
   await page.evaluate(() => document.fonts.ready);
@@ -22,9 +23,7 @@ test('Barrierefreiheit (axe, WCAG AA) aller Screens mit Demo-Daten', async ({ pa
   test.setTimeout(90_000);
   // Ohne Überblendungen messen: axe würde sonst halbtransparente Zwischenstände bewerten.
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/#/einstellungen');
-  await page.getByTestId('demo-toggle').check();
-  await expect(page.getByText(/Demo-Einträge angelegt/)).toBeVisible();
+  await enableDemo(page);
   await page.waitForTimeout(2800); // Toast abwarten
 
   for (const route of ['heute', 'training', 'schule', 'koerper', 'rueckblick', 'habits', 'einstellungen']) {

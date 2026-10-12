@@ -9,6 +9,7 @@ import {
   GraduationCap,
   HardDrive,
   HeartPulse,
+  History,
   Plus,
   Share2,
   Snowflake,
@@ -22,7 +23,18 @@ import { saveSettings, saveSubject } from '../../db/repo';
 import type { Settings, Subject } from '../../db/schemas';
 import { useKV, useSettings } from '../../hooks/useSettings';
 import { useToday } from '../../hooks/useNow';
-import { backupFileName, createBackup, markBackupDone, previewBackup, restoreBackup, wipeAll, type BackupPreview } from '../../lib/backup';
+import {
+  backupFileName,
+  createBackup,
+  listSnapshots,
+  markBackupDone,
+  previewBackup,
+  previewSnapshot,
+  restoreBackup,
+  saveSafetySnapshot,
+  wipeAll,
+  type BackupPreview,
+} from '../../lib/backup';
 import { formatDecimal } from '../../lib/calc/insights';
 import { diffDays, formatDE, startOfWeek, toISODate, toTimeHM } from '../../lib/date';
 import { insertDemo, removeDemo } from '../../lib/demo';
@@ -43,6 +55,7 @@ export default function SettingsScreen() {
       <SubjectsCard />
       <HealthCard settings={settings} />
       <BackupCard />
+      <SnapshotsCard />
       <MarkdownCard />
       <StorageCard />
       <DemoCard />
@@ -57,14 +70,14 @@ export default function SettingsScreen() {
   );
 }
 
-function ToggleRow({ label, hint, checked, onChange, testId }: { label: string; hint?: string; checked: boolean; onChange: (v: boolean) => void; testId?: string }) {
+function ToggleRow({ label, hint, checked, onChange, testId, disabled }: { label: string; hint?: string; checked: boolean; onChange: (v: boolean) => void; testId?: string; disabled?: boolean }) {
   return (
     <label className="toggle-row">
       <span className="grow">
         <span className="list-item__title">{label}</span>
         {hint && <span className="list-item__meta" style={{ display: 'block' }}>{hint}</span>}
       </span>
-      <input type="checkbox" role="switch" className="switch" checked={checked} onChange={(e) => onChange(e.target.checked)} data-testid={testId} />
+      <input type="checkbox" role="switch" className="switch" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} data-testid={testId} />
     </label>
   );
 }
@@ -321,7 +334,7 @@ function BackupCard() {
   );
 }
 
-function ImportPreview({ preview, close }: { preview: BackupPreview; close: () => void }) {
+function ImportPreview({ preview, close, snapshot = false }: { preview: BackupPreview; close: () => void; snapshot?: boolean }) {
   const { toast } = useOverlay();
   const [busy, setBusy] = useState(false);
   return (
@@ -331,7 +344,7 @@ function ImportPreview({ preview, close }: { preview: BackupPreview; close: () =
         <span className="unit">Einträge</span>
       </p>
       <p className="small muted">
-        {preview.total} Einträge werden importiert (Sicherung vom {formatDE(toISODate(preview.backup.exportedAt))}, {toTimeHM(preview.backup.exportedAt)} Uhr)
+        {preview.total} Einträge werden {snapshot ? 'wiederhergestellt' : 'importiert'} (Stand vom {formatDE(toISODate(preview.backup.exportedAt))}, {toTimeHM(preview.backup.exportedAt)} Uhr)
         {preview.demo > 0 ? `, davon ${preview.demo} Demo-Einträge` : ''}.
       </p>
       <div className="list">
@@ -345,7 +358,7 @@ function ImportPreview({ preview, close }: { preview: BackupPreview; close: () =
           ))}
       </div>
       <Banner icon={Database} tone="warn">
-        Der Import ersetzt alle aktuellen Daten auf diesem Gerät.
+        Ersetzt alle aktuellen Daten auf diesem Gerät. Der jetzige Stand wird vorher als „vor Import“ gesichert.
       </Banner>
       <Button
         variant="primary"
@@ -353,7 +366,8 @@ function ImportPreview({ preview, close }: { preview: BackupPreview; close: () =
         disabled={busy}
         onClick={() => {
           setBusy(true);
-          void restoreBackup(preview.backup)
+          void saveSafetySnapshot()
+            .then(() => restoreBackup(preview.backup, { countsAsBackup: !snapshot }))
             .then((n) => {
               toast(`${n} Einträge wiederhergestellt`);
               close();
@@ -364,12 +378,61 @@ function ImportPreview({ preview, close }: { preview: BackupPreview; close: () =
             });
         }}
       >
-        Ersetzen und importieren
+        {snapshot ? 'Ersetzen und wiederherstellen' : 'Ersetzen und importieren'}
       </Button>
       <Button variant="ghost" block onClick={close}>
         Abbrechen
       </Button>
     </div>
+  );
+}
+
+const SNAPSHOT_LABEL: Record<string, string> = {
+  'vor-v2': 'Vor dem Update auf v2',
+  'vor-import': 'Vor dem letzten Import',
+};
+
+function SnapshotsCard() {
+  const { toast, openSheet } = useOverlay();
+  const list = useLiveQuery(() => listSnapshots(), []);
+  return (
+    <Card label="Automatische Sicherungen" icon={History} ariaLabel="Automatische Sicherungen" testId="snapshots-card">
+      <p className="small muted">
+        Einmal täglich legt Winter auf diesem Gerät eine Sicherung an (die letzten 7 bleiben). Sie ersetzt kein Backup als Datei, weil sie mit den Website-Daten verloren gehen kann.
+      </p>
+      {list && list.length > 0 ? (
+        <div className="list">
+          {list.map((s) => (
+            <div key={s.id} className="list-item">
+              <span className="grow">
+                <span className="list-item__title">{SNAPSHOT_LABEL[s.id] ?? formatDE(s.id)}</span>
+                <br />
+                <span className="list-item__meta mono">
+                  {formatDE(toISODate(s.createdAt))} {toTimeHM(s.createdAt)} · {s.rows} Einträge
+                </span>
+              </span>
+              <Button
+                size="s"
+                variant="secondary"
+                onClick={() =>
+                  void previewSnapshot(s.id).then((r) => {
+                    if (!r.ok) {
+                      toast(r.error, { tone: 'warn' });
+                      return;
+                    }
+                    openSheet({ title: 'Sicherung wiederherstellen', render: (close) => <ImportPreview preview={r.preview} close={close} snapshot /> });
+                  })
+                }
+              >
+                Ansehen
+              </Button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="small faint">Noch keine Sicherung.</p>
+      )}
+    </Card>
   );
 }
 
@@ -477,21 +540,31 @@ function StorageCard() {
 function DemoCard() {
   const active = useKV<boolean>('demoActive') === true;
   const { toast } = useOverlay();
-  // Zielzustand sofort zeigen, solange geschrieben wird (optimistisch).
-  const [pending, setPending] = useState<boolean | null>(null);
+  // Zielzustand sofort zeigen, solange geschrieben wird (optimistisch). Erst wenn die Datenbank-Abfrage
+  // den neuen Zustand liefert, wird wieder `active` angezeigt – sonst springt der Schalter kurz zurück.
+  const [op, setOp] = useState<{ target: boolean; done: boolean } | null>(null);
+  if (op?.done && active === op.target) setOp(null);
   return (
     <Card label="Demo-Daten" icon={FlaskConical} ariaLabel="Demo-Daten">
       <ToggleRow
         label="4 Wochen Beispieldaten"
         hint="Markiert und getrennt von echten Daten. Ausschalten löscht sie vollständig."
-        checked={pending ?? active}
+        checked={op ? op.target : active}
+        disabled={op !== null}
         testId="demo-toggle"
         onChange={(on) => {
-          if (pending !== null) return;
-          setPending(on);
+          if (op !== null) return;
+          setOp({ target: on, done: false });
           void (on ? insertDemo() : removeDemo())
-            .then((n) => toast(on ? `${n} Demo-Einträge angelegt` : `${n} Demo-Einträge gelöscht`))
-            .finally(() => setPending(null));
+            .then((n) => {
+              toast(on ? `${n} Demo-Einträge angelegt` : `${n} Demo-Einträge gelöscht`);
+              setOp({ target: on, done: true });
+            })
+            .catch((e: unknown) => {
+              console.error('Demo-Daten', e);
+              toast(`Demo-Daten fehlgeschlagen: ${e instanceof Error ? e.message : String(e)}`, { tone: 'warn' });
+              setOp(null);
+            });
         }}
       />
     </Card>

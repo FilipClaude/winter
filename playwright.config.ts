@@ -15,7 +15,8 @@ export default defineConfig({
   fullyParallel: true,
   workers: 4,
   retries: 0,
-  reporter: [['list']],
+  // In CI zusätzlich ein HTML-Report (wird bei Fehlern als Artefakt hochgeladen).
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list']],
   timeout: 30_000,
   expect: { timeout: 5_000 },
   use: {
@@ -25,8 +26,18 @@ export default defineConfig({
     ...iphone,
   },
   projects: [
-    { name: 'iphone', testIgnore: /offline\.spec\.ts/ },
-    { name: 'offline', testMatch: /offline\.spec\.ts/, use: { serviceWorkers: 'allow' } },
+    { name: 'iphone', testIgnore: /offline\.spec\.ts/, use: { browserName: 'chromium' } },
+    // WebKit = Safari-Engine (Annäherung ans iPhone). Screenshots nur einmal (Chromium), sonst doppelt.
+    {
+      name: 'webkit',
+      testIgnore: /offline\.spec\.ts|visual\.spec\.ts/,
+      use: { browserName: 'webkit' },
+    },
+    {
+      name: 'offline',
+      testMatch: /offline\.spec\.ts/,
+      use: { browserName: 'chromium', serviceWorkers: 'allow' },
+    },
   ],
   webServer: {
     command: 'npx vite preview --port 4173 --strictPort',

@@ -462,3 +462,13 @@
   -webkit-backdrop-filter: var(--blur-glass);
   backdrop-filter: var(--blur-glass);
 }
+
+/* ---------- Fehlergrenze ---------- */
+.error-panel {
+  padding-top: calc(var(--safe-top) + var(--space-16));
+  gap: var(--space-4);
+}
+
+.error-panel__msg {
+  overflow-wrap: anywhere;
+}

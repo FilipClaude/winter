@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from 'react';
 import { useSettings } from './hooks/useSettings';
 import { useRoute, type RouteId } from './router';
 import { TodayScreen } from './screens/today/TodayScreen';
+import { CrashProbe, ScreenBoundary } from './shell/ErrorBoundary';
 import { Snowfall } from './shell/Snowfall';
 import { TabBar } from './shell/TabBar';
 import { UpdatePrompt } from './shell/UpdatePrompt';
@@ -38,17 +39,20 @@ export function App() {
       <Snowfall enabled={settings.snow} />
       <UpdatePrompt />
       <main className="app">
-        <Suspense fallback={<div className="screen" style={{ minHeight: '100dvh' }} />}>
-          <div key={route.id} className="route-fade">
-            {route.id === 'heute' && <TodayScreen date={route.param} />}
-            {route.id === 'training' && <TrainingScreen />}
-            {route.id === 'schule' && <SchoolScreen />}
-            {route.id === 'koerper' && <BodyScreen />}
-            {route.id === 'rueckblick' && <ReviewScreen />}
-            {route.id === 'habits' && <HabitsScreen />}
-            {route.id === 'einstellungen' && <SettingsScreen />}
-          </div>
-        </Suspense>
+        <ScreenBoundary key={route.id} name={route.id}>
+          <Suspense fallback={<div className="screen" style={{ minHeight: '100dvh' }} />}>
+            <div className="route-fade">
+              <CrashProbe name={route.id} />
+              {route.id === 'heute' && <TodayScreen date={route.param} />}
+              {route.id === 'training' && <TrainingScreen />}
+              {route.id === 'schule' && <SchoolScreen />}
+              {route.id === 'koerper' && <BodyScreen />}
+              {route.id === 'rueckblick' && <ReviewScreen />}
+              {route.id === 'habits' && <HabitsScreen />}
+              {route.id === 'einstellungen' && <SettingsScreen />}
+            </div>
+          </Suspense>
+        </ScreenBoundary>
       </main>
       <TabBar active={route.id} />
     </OverlayProvider>

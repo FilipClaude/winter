@@ -1,4 +1,5 @@
-# Baut Winter bei jedem Push auf main und veröffentlicht es auf GitHub Pages.
+# Qualitätsschranke + Deploy: Winter wird nur veröffentlicht, wenn Typecheck, Lint, Format, Unit-Tests
+# und alle E2E-Tests (Chromium und WebKit) grün sind. Läuft bei jedem Push auf main.
 name: Deploy auf GitHub Pages
 
 on:
@@ -8,40 +9,91 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
+# Feste Runner-Version statt ubuntu-latest (Umstellung auf Ubuntu 26 ab 19.10.2026): Playwrights
+# Systempakete sind für 24.04 erprobt. Wechsel bewusst später (siehe DECISIONS.md).
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  check:
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
       - run: npm test
+
+  e2e:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: chromium
+            browsers: chromium
+            projects: --project=iphone --project=offline
+          - name: webkit
+            browsers: webkit
+            projects: --project=webkit
+    name: e2e (${{ matrix.name }})
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps ${{ matrix.browsers }}
+      - run: npx vite build
+      - run: npx playwright test ${{ matrix.projects }}
+        env:
+          CI: 'true'
+      - name: Playwright-Report bei Fehlern
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-${{ matrix.name }}
+          path: |
+            playwright-report
+            test-results
+          retention-days: 14
+
+  build:
+    needs: [check, e2e]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
       - name: Build
         run: npm run build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
 
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

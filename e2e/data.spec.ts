@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-import { shot } from './helpers';
+import { allowClipboard, enableDemo, shot, SLOW_WRITE } from './helpers';
 
 function berlinDate(offsetDays = 0): string {
   return new Intl.DateTimeFormat('en-CA', {
@@ -61,8 +61,8 @@ test('Health: Text einfügen, erneuter Import überschreibt nur Health-Werte @sc
   await expect(page.getByRole('button', { name: 'Schlaf' })).toContainText('8:00');
 });
 
-test('Health: Zwischenablage nach Rückkehr und Datei-Import', async ({ page, context }) => {
-  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+test('Health: Zwischenablage nach Rückkehr und Datei-Import', async ({ page }) => {
+  await allowClipboard(page);
   await openHealth(page);
   await page.evaluate((t) => navigator.clipboard.writeText(t), health(7777));
   await page.getByTestId('health-paste').click();
@@ -156,11 +156,10 @@ test('Markdown-Export für Obsidian', async ({ page }) => {
 });
 
 test('Demo-Daten an → alle Screens mit Daten → aus = vollständig weg @screens', async ({ page }) => {
-  test.setTimeout(60_000);
+  test.setTimeout(90_000);
   await page.goto('/#/einstellungen');
   await shot(page, '07-einstellungen', true);
-  await page.getByTestId('demo-toggle').check();
-  await expect(page.getByText(/Demo-Einträge angelegt/)).toBeVisible();
+  await enableDemo(page);
 
   await page.goto('/#/heute');
   await expect(page.getByTestId('demo-notice')).toBeVisible();
@@ -194,7 +193,11 @@ test('Demo-Daten an → alle Screens mit Daten → aus = vollständig weg @scree
 
   await page.goto('/#/einstellungen');
   await page.getByTestId('demo-toggle').uncheck();
-  await expect(page.getByText(/Demo-Einträge gelöscht/)).toBeVisible();
+  await expect(page.getByText(/Demo-Einträge gelöscht/)).toBeVisible(SLOW_WRITE);
+  // Regression: Der Schalter darf nach dem Löschen nicht kurz zurückspringen (WebKit-Fund in v2).
+  await page.waitForTimeout(500);
+  await expect(page.getByTestId('demo-toggle')).not.toBeChecked();
+  await expect(page.getByTestId('demo-toggle')).toBeEnabled();
   await page.goto('/#/training');
   await expect(page.getByTestId('session-row')).toHaveCount(0);
   await page.goto('/#/heute');

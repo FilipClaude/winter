@@ -170,3 +170,32 @@
 7. Bundle verkleinern: `zod/mini` statt Zod für die Laufzeitvalidierung und motion nur in den Sheets laden.
 8. WebKit-Lauf der E2E-Tests (`npx playwright install webkit`) als zusätzliche Annäherung an Safari.
 
+
+---
+
+# v2 – „Winterhimmel“ (Auftrag: Obsidian `Persönlich/Daily-App Prompt v2.md`, Plan: `PLAN-v2.md`)
+
+## v2 · Phase 0 – Bestandsaufnahme ✓
+- Code und Doku gelesen, alle Tests grün (162 Unit, 44 E2E), Ist-Screenshots als Referenz in `screens/v1-ref/`.
+- `PLAN-v2.md` mit Phasen, Zeitbudget, Risiken und Migrationsplan.
+
+## v2 · Phase 1 – Sicherheitsnetz ✓
+**Fertig**
+- **Schema v2** (rein additiv, DECISIONS #25): neue Tabellen für Noten, Halbjahre, Lernplan, Stundenplan, Ziele, Snapshots; optionale Felder für Klausur-Themen, Aufgaben-Priorität/-Wiederholung, FernUni-Regeln/-Punkte, BFV-Spiele. Einstellungen v2 (Himmel, Schnee-Modus, Stundenplan, Pomodoro, Dashboard, Abi, BFV, Onboarding).
+- **v1-Fixture** `src/test/fixtures/backup-v1.json` (390 Datensätze, mit dem v1-Code erzeugt, eingefroren).
+- **Migrationstests:** echte v1-Dexie-DB → v2 öffnen → jeder Datensatz identisch, Einstellungen erhalten, Snapshot „vor-v2“; v1-Backup-Import; v2-Roundtrip mit neuen Tabellen; neuere Backups werden abgelehnt.
+- **E2E „Start mit v1-Daten“:** legt im Browser eine IndexedDB im v1-Layout an (wie auf Filips iPhone) und startet v2 darauf – Chromium und WebKit.
+- **Automatische Sicherungen** (DECISIONS #26): täglich (letzte 7), „vor-v2“, „vor-import“; Karte in den Einstellungen mit Vorschau und Wiederherstellen.
+- **Fehlergrenze** pro Screen mit „Bereich neu laden“, „App neu starten“ und Backup-Export.
+- **CI als Qualitätsschranke:** Typecheck, Lint, Format, Unit, E2E (Chromium + WebKit, Report als Artefakt bei Fehlern), erst dann Build und Deploy. Actions aktualisiert (Node-20-Warnung behoben), Runner fest `ubuntu-24.04`.
+- Einstellungen werden pro Schlüssel geprüft (DECISIONS #27).
+
+**Geprüft:** typecheck, lint, Prettier, 172 Unit-Tests, 93 E2E-Tests (Chromium, WebKit, Offline). Screenshot der Fehlergrenze angesehen → oberer Abstand fehlte, ergänzt.
+
+**Gefundene und behobene Fehler**
+- **WebKit-Fund (betrifft Safari):** Nach dem Ausschalten der Demo-Daten sprang der Schalter kurz zurück auf „an“, bis die Datenbank-Abfrage nachzog. Ein zweiter Tap in diesem Moment hätte die Demo-Daten erneut angelegt. Jetzt bleibt der Zielzustand sichtbar, bis die Daten ihn bestätigen; der Schalter ist währenddessen gesperrt. Regressionstest ergänzt.
+- Fehler beim Anlegen/Löschen der Demo-Daten wurden verschluckt (kein Hinweis). Jetzt Meldung.
+- Demo-Löschen per Tabellen-Scan war in WebKit sehr langsam → über den Index (DECISIONS #29).
+- v1 verwarf bei einem ungültigen Einstellungswert alle Einstellungen (DECISIONS #27).
+
+**Offen:** –
