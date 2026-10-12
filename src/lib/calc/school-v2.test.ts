@@ -62,22 +62,23 @@ describe('FernUni: Prüfungsberechtigung', () => {
     expect(eaPassed({ maxPoints: 100 }, 50)).toBeNull();
   });
 
-  it('„mindestens eine EA mit 50 %“: offen → bestanden; nicht mehr erreichbar wird erkannt', () => {
+  it('„mindestens eine EA mit 50 %“: offen → bestanden; fehlende Anzahl statt Fehlalarm', () => {
     const rule = { rule: { minPassed: 1, passPercent: 50 } };
     const ea = (points?: number) => ({
       kind: 'einsendearbeit' as const,
       maxPoints: 100,
       ...(points !== undefined ? { points } : {}),
     });
-    expect(moduleEligibility(rule, [ea(), ea()])).toMatchObject({
-      eligible: false,
-      open: 2,
-      unreachable: false,
+    expect(moduleEligibility(rule, [ea(), ea()])).toMatchObject({ eligible: false, open: 2, missing: 1 });
+    expect(moduleEligibility(rule, [ea(30), ea(62)])).toMatchObject({
+      eligible: true,
+      passed: 1,
+      missing: 0,
     });
-    expect(moduleEligibility(rule, [ea(30), ea(62)])).toMatchObject({ eligible: true, passed: 1 });
+    // Kein „nicht mehr erreichbar“: weitere EAs können noch kommen (Review-Fund)
     expect(moduleEligibility({ rule: { minPassed: 2, passPercent: 50 } }, [ea(30), ea(62)])).toMatchObject({
       eligible: false,
-      unreachable: true,
+      missing: 1,
     });
     expect(moduleEligibility({}, [ea(80)]).eligible).toBeNull();
   });

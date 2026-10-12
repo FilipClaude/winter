@@ -1,5 +1,6 @@
 import { DATA_TABLES, db, type DataTable } from '../db/db';
 import type {
+  Grade,
   Day,
   Deadline,
   Exam,
@@ -15,6 +16,7 @@ import type {
   Subject,
   Todo,
 } from '../db/schemas';
+import { semesterForDate } from './calc/calendar-by';
 import { isScheduled } from './calc/habits';
 import { sleepFromWallTimes } from './calc/sleep';
 import { addDays, isoWeekday, splitAtMidnight, todayISO, zonedToInstant, type ISODate } from './date';
@@ -51,6 +53,7 @@ export interface DemoSet {
   deadlines: Deadline[];
   habits: Habit[];
   habitChecks: HabitCheck[];
+  grades: Grade[];
 }
 
 const OPPONENTS = [
@@ -81,6 +84,7 @@ export function generateDemo(
     studySessions: [],
     todos: [],
     exams: [],
+    grades: [],
     modules: [],
     deadlines: [],
     habits: [],
@@ -320,6 +324,42 @@ export function generateDemo(
   exam('Bio', -5, 'ex', 100, 8, 'Genetik');
   exam('Mathe', 4, 'klausur', 55, undefined, 'Analysis: Kurvendiskussion, Integrale');
   exam('Geschichte', 15, 'klausur', 20, undefined, 'Weimarer Republik');
+
+  // v2: Noten – bewertete Klausuren als verknüpfte Noten plus kleine Leistungsnachweise
+  for (const e of set.exams) {
+    if (e.points === undefined) continue;
+    set.grades.push({
+      ...meta(),
+      date: e.date,
+      subjectId: e.subjectId,
+      semester: semesterForDate(e.date),
+      size: e.kind === 'klausur' ? 'gross' : 'klein',
+      type: e.kind,
+      points: e.points,
+      weight: 1,
+      note: e.topics,
+      examId: e.id,
+    });
+  }
+  const small = (name: string, offset: number, type: Grade['type'], points: number) =>
+    set.grades.push({
+      ...meta(),
+      date: addDays(today, offset),
+      subjectId: subjectId(name),
+      semester: semesterForDate(addDays(today, offset)),
+      size: 'klein',
+      type,
+      points,
+      weight: 1,
+      note: '',
+    });
+  small('Deutsch', -12, 'abfrage', 12);
+  small('Mathe', -20, 'ex', 10);
+  small('Mathe', -8, 'muendlich', 12);
+  small('PuG', -18, 'referat', 14);
+  small('Englisch', -6, 'muendlich', 10);
+  small('Geschichte', -14, 'abfrage', 11);
+  small('Bio', -21, 'abfrage', 9);
 
   const todo = (title: string, name: string | null, due: number | null, done: boolean) =>
     set.todos.push({

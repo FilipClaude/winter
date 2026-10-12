@@ -8,6 +8,7 @@ import {
   Dumbbell,
   Footprints,
   HeartPulse,
+  LayoutGrid,
   Moon,
   NotebookPen,
   Plus,
@@ -36,6 +37,11 @@ import { JournalSheet } from './JournalSheet';
 import { BackupReminder, DemoNotice } from './Reminders';
 import { useDayData } from './useDayData';
 import { ScreenSkeleton } from '../../ui/kit';
+import type { ReactNode } from 'react';
+import type { DashboardWidgetId } from '../../db/schemas';
+import { normalizeDashboard, orderForDisplay } from '../../lib/calc/dashboard-layout';
+import { useCriticalCount } from './widget-meta';
+import { AbiWidget, BriefingWidget, DashboardEditor, GoalsWidget, NextMatchWidget, StudyTodayWidget } from './widgets';
 
 export function TodayScreen({ date: dateParam }: { date?: string | undefined }) {
   const today = useToday();
@@ -108,6 +114,7 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
   const settings = useSettings();
   const { openSheet } = useOverlay();
   const lastImport = useKV<string>('lastHealthImport');
+  const critical = useCriticalCount(today);
   if (!data) return <ScreenSkeleton cards={5} />;
 
   const ring = dayRing(
@@ -124,186 +131,260 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
   );
   const importedToday = lastImport !== undefined && toISODate(lastImport) === today;
   const g = settings.goals;
+  const isToday = date === today;
+  const openMeal = () => openSheet({ title: 'Mahlzeit', render: (close) => <MealSheet date={date} close={close} /> });
 
-  return (
-    <>
-      <Card ariaLabel="Tagesring" testId="ring-card">
-        <div className="ring-card">
-          <Ring value={ring.total} size={132} label="Tagesziele erfüllt">
-            <div>
-              <NumberTicker value={Math.round(ring.total * 100)} className="num ring-card__pct" />
-              <span className="unit">%</span>
-              <div className="xsmall faint">Tagesziele</div>
-            </div>
-          </Ring>
-          <ul className="ring-card__parts">
-            {ring.parts.map((p) => (
-              <li key={p.key}>
-                <div className="row row--between xsmall">
-                  <span className="muted">{p.label}</span>
-                  <span className="mono faint">{p.detail}</span>
-                </div>
-                <ProgressBar value={p.value} label={p.label} />
-              </li>
-            ))}
-            {ring.parts.length === 0 && <li className="small muted">Keine Tagesziele aktiv.</li>}
-          </ul>
-        </div>
-      </Card>
-
-      {date === today && <DeadlineAlerts today={today} />}
-      {date === today && <BackupReminder today={today} />}
-      {date === today && <DemoNotice />}
-
-      {date === today && !data.health && !importedToday && (
-        <Banner
-          icon={HeartPulse}
-          tone="accent"
-          testId="health-hint"
-          action={
-            <Button variant="ghost" size="s" className="accent" onClick={() => openHealthSheet(openSheet, settings.shortcutName)}>
-              Health holen
-            </Button>
-          }
-        >
-          Heute noch kein Health-Import.
-        </Banner>
+  const steps = (
+    <Card label="Schritte" icon={Footprints} ariaLabel="Schritte">
+      {data.health?.steps !== undefined ? (
+        <>
+          <div className="big big--m">
+            <NumberTicker value={data.health.steps} />
+          </div>
+          <div className="of" style={{ marginTop: 6 }}>
+            {data.health.distanceKm !== undefined && <span className="mono">{data.health.distanceKm.toLocaleString('de-DE', { maximumFractionDigits: 1 })} km</span>}
+            {data.health.flights !== undefined && <span className="mono"> · {data.health.flights} Stockw.</span>}
+          </div>
+          <div style={{ marginTop: 10 }}>
+            <ProgressBar value={g.steps > 0 ? data.health.steps / g.steps : 0} label="Schrittziel" />
+          </div>
+        </>
+      ) : (
+        <p className="small faint card-empty">Noch kein Import</p>
       )}
+    </Card>
+  );
 
-      <div className="grid-2">
-        <Card label="Schritte" icon={Footprints} ariaLabel="Schritte">
-          {data.health?.steps !== undefined ? (
-            <>
-              <div className="big big--m">
-                <NumberTicker value={data.health.steps} />
-              </div>
-              <div className="of" style={{ marginTop: 6 }}>
-                {data.health.distanceKm !== undefined && <span className="mono">{data.health.distanceKm.toLocaleString('de-DE', { maximumFractionDigits: 1 })} km</span>}
-                {data.health.flights !== undefined && <span className="mono"> · {data.health.flights} Stockw.</span>}
-              </div>
-              <div style={{ marginTop: 10 }}>
-                <ProgressBar value={g.steps > 0 ? data.health.steps / g.steps : 0} label="Schrittziel" />
-              </div>
-            </>
-          ) : (
-            <p className="small faint card-empty">Noch kein Import</p>
-          )}
-        </Card>
-        <Card label="Schlaf" icon={Moon} ariaLabel="Schlaf" onClick={() => navigate('koerper')}>
-          {data.sleep ? (
-            <>
-              <div className="big big--m num">{formatHM(data.sleep.minutes)}</div>
-              <div className="of mono" style={{ marginTop: 6 }}>
-                {toTimeHM(data.sleep.start)}–{toTimeHM(data.sleep.end)}
-              </div>
-              <div className="xsmall faint" style={{ marginTop: 8 }}>
-                {data.sleep.source === 'health' ? 'aus Health' : data.sleep.quality ? `Qualität ${data.sleep.quality}/5` : 'manuell'}
-              </div>
-            </>
-          ) : (
-            <p className="small faint card-empty">Nicht erfasst</p>
-          )}
-        </Card>
+  const sleep = (
+    <Card label="Schlaf" icon={Moon} ariaLabel="Schlaf" onClick={() => navigate('koerper')}>
+      {data.sleep ? (
+        <>
+          <div className="big big--m num">{formatHM(data.sleep.minutes)}</div>
+          <div className="of mono" style={{ marginTop: 6 }}>
+            {toTimeHM(data.sleep.start)}–{toTimeHM(data.sleep.end)}
+          </div>
+          <div className="xsmall faint" style={{ marginTop: 8 }}>
+            {data.sleep.source === 'health' ? 'aus Health' : data.sleep.quality ? `Qualität ${data.sleep.quality}/5` : 'manuell'}
+          </div>
+        </>
+      ) : (
+        <p className="small faint card-empty">Nicht erfasst</p>
+      )}
+    </Card>
+  );
+
+  const protein = (
+    <Card label="Protein" icon={Activity} ariaLabel="Protein" action={<IconButton icon={Plus} label="Mahlzeit eintragen" variant="accent" onClick={openMeal} />}>
+      <div className="big big--m" data-testid="protein-value">
+        <NumberTicker value={data.proteinG} />
+        <span className="unit">g</span>
       </div>
+      <div className="of" style={{ margin: '6px 0 10px' }}>
+        von {g.proteinG} g · {data.kcal.toLocaleString('de-DE')} kcal
+      </div>
+      <ProgressBar value={g.proteinG > 0 ? data.proteinG / g.proteinG : 0} label="Proteinziel" />
+    </Card>
+  );
 
-      <div className="grid-2">
-        <Card
-          label="Protein"
-          icon={Activity}
-          ariaLabel="Protein"
-          action={<IconButton icon={Plus} label="Mahlzeit eintragen" variant="accent" onClick={() => openSheet({ title: 'Mahlzeit', render: (close) => <MealSheet date={date} close={close} /> })} />}
-        >
-          <div className="big big--m" data-testid="protein-value">
-            <NumberTicker value={data.proteinG} />
+  const water = (
+    <Card label="Wasser" icon={Droplet} ariaLabel="Wasser" action={<IconButton icon={Plus} label="Ein Glas Wasser" variant="accent" onClick={() => void addWater(date, 1)} />}>
+      <div className="big big--m" data-testid="water-value">
+        <NumberTicker value={data.day.water} />
+        <span className="unit">Gläser</span>
+      </div>
+      <div className="of" style={{ margin: '6px 0 10px' }}>
+        von {g.waterGlasses} · {((data.day.water * settings.glassMl) / 1000).toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} l
+      </div>
+      <div className="glasses" aria-hidden>
+        {Array.from({ length: Math.max(g.waterGlasses, data.day.water) }, (_, i) => (
+          <i key={i} className={i < data.day.water ? 'on' : ''} />
+        ))}
+      </div>
+      {data.day.water > 0 && (
+        <button type="button" className="btn btn--ghost btn--s glasses__undo" onClick={() => void addWater(date, -1)}>
+          Ein Glas zurück
+        </button>
+      )}
+    </Card>
+  );
+
+  const widgets: Record<DashboardWidgetId, { l: ReactNode; s?: ReactNode } | null> = {
+    briefing: isToday ? { l: <BriefingWidget today={today} /> } : null,
+    ring: {
+      l: (
+        <Card ariaLabel="Tagesring" testId="ring-card">
+          <div className="ring-card">
+            <Ring value={ring.total} size={132} label="Tagesziele erfüllt">
+              <div>
+                <NumberTicker value={Math.round(ring.total * 100)} className="num ring-card__pct" />
+                <span className="unit">%</span>
+                <div className="xsmall faint">Tagesziele</div>
+              </div>
+            </Ring>
+            <ul className="ring-card__parts">
+              {ring.parts.map((p) => (
+                <li key={p.key}>
+                  <div className="row row--between xsmall">
+                    <span className="muted">{p.label}</span>
+                    <span className="mono faint">{p.detail}</span>
+                  </div>
+                  <ProgressBar value={p.value} label={p.label} />
+                </li>
+              ))}
+              {ring.parts.length === 0 && <li className="small muted">Keine Tagesziele aktiv.</li>}
+            </ul>
+          </div>
+        </Card>
+      ),
+      s: (
+        <Card ariaLabel="Tagesring" testId="ring-card">
+          <div className="ring-card ring-card--s">
+            <Ring value={ring.total} size={96} label="Tagesziele erfüllt">
+              <div>
+                <NumberTicker value={Math.round(ring.total * 100)} className="num ring-card__pct" />
+                <span className="unit">%</span>
+              </div>
+            </Ring>
+          </div>
+        </Card>
+      ),
+    },
+    alerts: isToday
+      ? {
+          l: (
+            <div className="stack stack--s">
+              <DeadlineAlerts today={today} />
+              <BackupReminder today={today} />
+              <DemoNotice />
+              {!data.health && !importedToday && (
+                <Banner
+                  icon={HeartPulse}
+                  tone="accent"
+                  testId="health-hint"
+                  action={
+                    <Button variant="ghost" size="s" className="accent" onClick={() => openHealthSheet(openSheet, settings.shortcutName)}>
+                      Health holen
+                    </Button>
+                  }
+                >
+                  Heute noch kein Health-Import.
+                </Banner>
+              )}
+            </div>
+          ),
+        }
+      : null,
+    deadlines: { l: <NextDateCard today={date} /> },
+    studyToday: { l: <StudyTodayWidget date={date} /> },
+    training: { l: <TrainingCard date={date} sessions={data.sessions} plan={settings.weekPlan[String(isoWeekday(date))] ?? []} /> },
+    nextMatch: { l: <NextMatchWidget today={today} /> },
+    steps: { l: steps, s: steps },
+    sleep: { l: sleep, s: sleep },
+    nutrition: {
+      l: (
+        <div className="grid-2">
+          {protein}
+          {water}
+        </div>
+      ),
+      s: (
+        <Card label="Ernährung" icon={Activity} ariaLabel="Ernährung kompakt" action={<IconButton icon={Plus} label="Mahlzeit eintragen" variant="accent" onClick={openMeal} />}>
+          <div className="big big--s num" data-testid="protein-value">
+            {data.proteinG}
             <span className="unit">g</span>
           </div>
-          <div className="of" style={{ margin: '6px 0 10px' }}>
-            von {g.proteinG} g · {data.kcal.toLocaleString('de-DE')} kcal
+          <div className="of" style={{ marginTop: 4 }}>
+            <span data-testid="water-value">{data.day.water}</span> Gläser Wasser
           </div>
-          <ProgressBar value={g.proteinG > 0 ? data.proteinG / g.proteinG : 0} label="Proteinziel" />
         </Card>
-        <Card
-          label="Wasser"
-          icon={Droplet}
-          ariaLabel="Wasser"
-          action={<IconButton icon={Plus} label="Ein Glas Wasser" variant="accent" onClick={() => void addWater(date, 1)} />}
-        >
-          <div className="big big--m" data-testid="water-value">
-            <NumberTicker value={data.day.water} />
-            <span className="unit">Gläser</span>
-          </div>
-          <div className="of" style={{ margin: '6px 0 10px' }}>
-            von {g.waterGlasses} · {((data.day.water * settings.glassMl) / 1000).toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} l
-          </div>
-          <div className="glasses" aria-hidden>
-            {Array.from({ length: Math.max(g.waterGlasses, data.day.water) }, (_, i) => (
-              <i key={i} className={i < data.day.water ? 'on' : ''} />
-            ))}
-          </div>
-          {data.day.water > 0 && (
-            <button type="button" className="btn btn--ghost btn--s glasses__undo" onClick={() => void addWater(date, -1)}>
-              Ein Glas zurück
-            </button>
+      ),
+    },
+    habits: {
+      l: (
+        <Card label="Habits" icon={Repeat} ariaLabel="Habits" action={<Button variant="ghost" size="s" onClick={() => navigate('habits')}>Alle</Button>}>
+          {data.habits.length === 0 ? (
+            <EmptyState icon={Repeat} title="Keine Habits für heute">
+              <Button variant="secondary" size="s" onClick={() => navigate('habits')}>
+                Habit anlegen
+              </Button>
+            </EmptyState>
+          ) : (
+            <div className="list" data-testid="habit-list">
+              {data.habits.map((h) => (
+                <div key={h.id} className="list-item">
+                  <FrostCheck checked={data.checked.has(h.id)} label={h.name} onChange={() => void toggleHabit(h.id, date)} />
+                  <span className={`grow ${data.checked.has(h.id) ? 'muted' : ''}`}>{h.name}</span>
+                </div>
+              ))}
+            </div>
           )}
         </Card>
+      ),
+    },
+    mood: {
+      l: (
+        <Card label="Stimmung & Energie" icon={Smile} ariaLabel="Stimmung und Energie">
+          <div className="stack">
+            <div className="stack stack--s">
+              <span className="xsmall muted">Stimmung</span>
+              <Scale label="Stimmung" value={data.day.mood} onChange={(v) => void updateDay(date, { mood: v })} allowClear fill />
+            </div>
+            <div className="stack stack--s">
+              <span className="xsmall muted">Energie</span>
+              <Scale label="Energie" value={data.day.energy} onChange={(v) => void updateDay(date, { energy: v })} allowClear fill />
+            </div>
+          </div>
+        </Card>
+      ),
+    },
+    abi: { l: <AbiWidget />, s: <AbiWidget /> },
+    goals: { l: <GoalsWidget today={today} /> },
+    journal: {
+      l: (
+        <Card label="Tagesnotiz" icon={NotebookPen} ariaLabel="Tagesnotiz öffnen" onClick={() => openSheet({ title: 'Tagesnotiz', render: (close) => <JournalSheet day={data.day} close={close} /> })}>
+          {data.day.note || data.day.good || data.day.better || data.day.tomorrow ? (
+            <div className="stack stack--s small">
+              {data.day.note && <p className="journal-preview">{data.day.note}</p>}
+              {data.day.tomorrow && (
+                <p className="muted">
+                  <span className="faint">Morgen wichtig: </span>
+                  {data.day.tomorrow}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="small faint">Kurz festhalten, wie der Tag war.</p>
+          )}
+        </Card>
+      ),
+    },
+  };
+
+  // Kritische Fristen (überfällig oder ≤ 2 Tage) stehen immer ganz oben – egal, wie das Dashboard sortiert ist.
+  const layout = orderForDisplay(normalizeDashboard(settings.dashboard), critical > 0);
+  return (
+    <>
+      <div className="dash" data-testid="dashboard">
+        {layout.map((w) => {
+          const entry = widgets[w.id];
+          if (!entry) return null;
+          const node = w.size === 's' ? (entry.s ?? entry.l) : entry.l;
+          return (
+            <div key={w.id} className={`dash__w dash__w--${entry.s ? w.size : 'l'}`} data-widget={w.id}>
+              {node}
+            </div>
+          );
+        })}
       </div>
-
-      <NextDateCard today={date} />
-
-      <TrainingCard date={date} sessions={data.sessions} plan={settings.weekPlan[String(isoWeekday(date))] ?? []} />
-
-      <Card label="Habits" icon={Repeat} ariaLabel="Habits" action={<Button variant="ghost" size="s" onClick={() => navigate('habits')}>Alle</Button>}>
-        {data.habits.length === 0 ? (
-          <EmptyState icon={Repeat} title="Keine Habits für heute">
-            <Button variant="secondary" size="s" onClick={() => navigate('habits')}>
-              Habit anlegen
-            </Button>
-          </EmptyState>
-        ) : (
-          <div className="list" data-testid="habit-list">
-            {data.habits.map((h) => (
-              <div key={h.id} className="list-item">
-                <FrostCheck checked={data.checked.has(h.id)} label={h.name} onChange={() => void toggleHabit(h.id, date)} />
-                <span className={`grow ${data.checked.has(h.id) ? 'muted' : ''}`}>{h.name}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
-
-      <Card label="Stimmung & Energie" icon={Smile} ariaLabel="Stimmung und Energie">
-        <div className="stack">
-          <div className="stack stack--s">
-            <span className="xsmall muted">Stimmung</span>
-            <Scale label="Stimmung" value={data.day.mood} onChange={(v) => void updateDay(date, { mood: v })} allowClear fill />
-          </div>
-          <div className="stack stack--s">
-            <span className="xsmall muted">Energie</span>
-            <Scale label="Energie" value={data.day.energy} onChange={(v) => void updateDay(date, { energy: v })} allowClear fill />
-          </div>
-        </div>
-      </Card>
-
-      <Card
-        label="Tagesnotiz"
-        icon={NotebookPen}
-        ariaLabel="Tagesnotiz öffnen"
-        onClick={() => openSheet({ title: 'Tagesnotiz', render: (close) => <JournalSheet day={data.day} close={close} /> })}
+      <Button
+        variant="ghost"
+        block
+        icon={LayoutGrid}
+        data-testid="dashboard-edit"
+        onClick={() => openSheet({ title: 'Dashboard anpassen', render: () => <DashboardEditor /> })}
       >
-        {data.day.note || data.day.good || data.day.better || data.day.tomorrow ? (
-          <div className="stack stack--s small">
-            {data.day.note && <p className="journal-preview">{data.day.note}</p>}
-            {data.day.tomorrow && (
-              <p className="muted">
-                <span className="faint">Morgen wichtig: </span>
-                {data.day.tomorrow}
-              </p>
-            )}
-          </div>
-        ) : (
-          <p className="small faint">Kurz festhalten, wie der Tag war.</p>
-        )}
-      </Card>
+        Dashboard anpassen
+      </Button>
     </>
   );
 }

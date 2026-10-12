@@ -577,3 +577,70 @@
 .timer-card--pause .timer-card__time {
   color: var(--color-text-2);
 }
+
+/* ---------- Dashboard ---------- */
+.dash {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.dash__w {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dash__w > * {
+  flex: 1;
+}
+
+.dash__w--l {
+  grid-column: 1 / -1;
+}
+
+.dash__w:empty {
+  display: none;
+}
+
+.ring-card--s {
+  justify-content: center;
+}
+
+.briefing__line {
+  font-size: var(--text-base);
+  line-height: var(--leading-snug);
+}
+
+.briefing__line + .briefing__line {
+  color: var(--color-text-2);
+}
+
+.dash-edit {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.dash-edit__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--touch);
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-s);
+  background: var(--color-surface-2);
+}
+
+.dash-edit__grip {
+  display: grid;
+  place-items: center;
+  width: var(--touch);
+  height: var(--touch);
+  color: var(--color-text-3);
+  touch-action: none;
+  cursor: grab;
+}

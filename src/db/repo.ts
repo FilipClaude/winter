@@ -396,10 +396,14 @@ export async function toggleTodo(id: string): Promise<void> {
     await db.todos.put(next);
     if (done && t.repeat && t.repeat !== 'none') {
       const step = t.repeat === 'weekly' ? 7 : 14;
-      const base = t.due ?? todayISO();
-      const due = addDays(base, step);
+      const today = todayISO();
+      // Im Rhythmus weiterrücken, bis die Folgeaufgabe in der Zukunft liegt (überfällige erzeugen
+      // keine neue überfällige Aufgabe).
+      let due = addDays(t.due ?? today, step);
+      while (due <= today) due = addDays(due, step);
+      // Gibt es sie schon (auch erledigt)? Dann nicht noch einmal anlegen.
       const exists = (await db.todos.where('due').equals(due).toArray()).some(
-        (x) => x.title === t.title && x.subjectId === t.subjectId && !x.done,
+        (x) => x.title === t.title && x.subjectId === t.subjectId,
       );
       if (!exists) {
         const { id: _id, createdAt: _c, updatedAt: _u, doneAt: _d, ...rest } = t;
@@ -434,27 +438,39 @@ export async function deleteExam(id: string): Promise<void> {
 
 /**
  * Bewertete Klausur → verknüpfte Note (für Halbjahresleistung und Abi-Rechner). Klausur = großer,
- * Kurzarbeit/Ex/Referat = kleiner Leistungsnachweis. Ohne Punkte wird die verknüpfte Note entfernt.
+ * Kurzarbeit/Ex/Referat = kleiner Leistungsnachweis (Bayern). Ohne Punkte wird die verknüpfte Note
+ * entfernt. Gesucht wird über alle Fächer (Fachwechsel!); überzählige Verknüpfungen werden gelöscht.
  */
 export async function syncExamGrade(exam: Exam): Promise<void> {
-  const linked = (await db.grades.where('subjectId').equals(exam.subjectId).toArray()).find(
-    (g) => g.examId === exam.id,
-  );
-  if (exam.points === undefined) {
-    if (linked) await db.grades.delete(linked.id);
-    return;
-  }
-  await saveGrade({
-    ...(linked ? { id: linked.id, createdAt: linked.createdAt } : {}),
-    date: exam.date,
-    subjectId: exam.subjectId,
-    semester: exam.semester ?? semesterForDate(exam.date),
-    size: exam.kind === 'klausur' ? 'gross' : 'klein',
-    type: exam.kind,
-    points: exam.points,
-    weight: linked?.weight ?? 1,
-    note: linked?.note ?? '',
-    examId: exam.id,
+  await db.transaction('rw', db.grades, async () => {
+    const linked = await db.grades.filter((g) => g.examId === exam.id).toArray();
+    const [keep, ...extra] = linked;
+    if (extra.length > 0) await db.grades.bulkDelete(extra.map((g) => g.id));
+    if (exam.points === undefined) {
+      if (keep) await db.grades.delete(keep.id);
+      return;
+    }
+    await saveGrade({
+      ...(keep ? { id: keep.id, createdAt: keep.createdAt } : {}),
+      date: exam.date,
+      subjectId: exam.subjectId,
+      semester: exam.semester ?? semesterForDate(exam.date),
+      size: exam.kind === 'klausur' ? 'gross' : 'klein',
+      type: exam.kind,
+      points: exam.points,
+      weight: keep?.weight ?? 1,
+      note: keep?.note ?? '',
+      examId: exam.id,
+    });
+  });
+}
+
+/** Klausur speichern und die verknüpfte Note in einer Transaktion nachziehen. */
+export async function saveExamWithGrade(input: WithOptionalMeta<Exam>): Promise<Exam> {
+  return db.transaction('rw', db.exams, db.grades, async () => {
+    const saved = await saveExam(input);
+    await syncExamGrade(saved);
+    return saved;
   });
 }
 
@@ -533,12 +549,22 @@ export async function deleteStudyBlock(id: string): Promise<void> {
   await db.studyBlocks.delete(id);
 }
 
-/** Ersetzt die offenen, generierten Lerneinheiten einer Klausur durch einen neuen Plan. Erledigte bleiben. */
+/**
+ * Ersetzt die offenen Lerneinheiten einer Klausur durch einen neuen Plan. Erledigte bleiben; Themen,
+ * die schon erledigt gelernt wurden, werden nicht erneut zum Lernen eingeplant, und eine bereits
+ * erledigte Einheit am selben Tag wird nicht verdoppelt.
+ */
 export async function replaceExamPlan(examId: string, blocks: WithOptionalMeta<StudyBlock>[]) {
   await db.transaction('rw', db.studyBlocks, async () => {
     const old = await db.studyBlocks.where('examId').equals(examId).toArray();
+    const done = old.filter((b) => b.done);
+    const learned = new Set(done.filter((b) => b.kind === 'lernen').map((b) => b.topic));
+    const doneKey = new Set(done.map((b) => `${b.date}|${b.kind}|${b.topic}`));
+    const fresh = blocks.filter(
+      (b) => !(b.kind === 'lernen' && learned.has(b.topic)) && !doneKey.has(`${b.date}|${b.kind}|${b.topic}`),
+    );
     await db.studyBlocks.bulkDelete(old.filter((b) => !b.done).map((b) => b.id));
-    await db.studyBlocks.bulkPut(blocks.map((b) => validate(zStudyBlock, stamp(b))));
+    await db.studyBlocks.bulkPut(fresh.map((b) => validate(zStudyBlock, stamp(b))));
   });
 }
 

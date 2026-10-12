@@ -185,7 +185,17 @@ describe('Warnungen (Zulassung § 44, Bestehen § 54)', () => {
       examPoints: { D: 0, M: 4, PuG: 4, E: 4, G: 4 },
     });
     expect(r.block2).toBe(64);
-    expect(r.warnings.filter((w) => w.level === 'kritisch').length).toBeGreaterThanOrEqual(3);
+    // Genau die erwarteten Bedingungen, nicht nur „irgendwelche“ Warnungen (Review-Fund)
+    const texts = r.warnings.filter((w) => w.level === 'kritisch').map((w) => w.text);
+    expect(texts).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('D: Prüfung mit 0 Punkten'),
+        expect.stringContaining('Block II 64 < 100'),
+        expect.stringContaining('Nur 0 Prüfungen mit ≥ 5 Punkten'),
+        expect.stringContaining('Keine Prüfung in Deutsch, Mathe oder Leistungsfach'),
+      ]),
+    );
+    expect(texts).toHaveLength(4);
   });
 
   it('Pflicht-Halbjahre über 40 → Hinweis auf Optionsregel', () => {
@@ -193,6 +203,10 @@ describe('Warnungen (Zulassung § 44, Bestehen § 54)', () => {
     const known = many.flatMap((s) => hy(s.id, [10, 10, 10, 10]));
     const r = computeAbi({ subjects: many, known, seminar: SEMINAR, examPoints: EXAMS });
     expect(r.warnings.some((w) => w.text.includes('Optionsregel'))).toBe(true);
+    // Trotzdem nie mehr als 40 Halbjahresleistungen in Block I (Review-Fund): 36 + Seminar
+    expect(r.mandatoryCount).toBe(40);
+    expect(r.included).toHaveLength(36);
+    expect(r.block1).toBe(400);
   });
 });
 
@@ -233,13 +247,16 @@ describe('Standardrollen (Anlage 10) mit Filips Fächern', () => {
     });
     const role = (n: string) => list.find((s) => s.id === n)?.role;
     expect(role('Kunst')).toBe('three');
-    expect(role('Bio')).toBe('three');
+    // Bio ist Filips einzige Naturwissenschaft → alle 4 (Anlage 10 Fn. 5, Review-Fund)
+    expect(role('Bio')).toBe('all');
     expect(role('WR')).toBe('free');
     expect(role('FernUni')).toBe('none');
     const known = list.filter((s) => s.role !== 'none').flatMap((s) => hy(s.id, [10, 10, 10, 10]));
     const examPoints = { Deutsch: 10, Mathe: 10, PuG: 10, Englisch: 10, Geschichte: 10 };
     const r = computeAbi({ subjects: list, known, seminar: SEMINAR, examPoints });
-    expect(r.mandatoryCount).toBe(29);
+    expect(r.mandatoryCount).toBe(30);
+    expect(r.block1).toBe(400);
+    expect(r.grade).toBe(2.3);
     expect(r.warnings.some((w) => w.text.includes('Optionsregel'))).toBe(false);
     expect(r.included).toHaveLength(36);
     expect(r.projectedShare).toBe(0);

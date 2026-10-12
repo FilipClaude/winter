@@ -83,9 +83,13 @@ export function buildStudyPlan(
   const used = new Map<ISODate, number>();
   const blocks: PlannedBlock[] = [];
   const order = [...raw].sort((a, b) => a.date.localeCompare(b.date) || (a.kind === 'lernen' ? -1 : 1));
+  // Je Thema: frühester erlaubter Tag. Wird das Lernen wegen voller Tage verschoben, rücken die
+  // Wiederholungen mit – eine Wiederholung vor dem Lernen ergäbe keinen Sinn (Review-Fund).
+  const earliest = new Map<string, number>();
   for (const b of order) {
-    let idx = days.indexOf(b.date);
     const isFinal = b.topic.startsWith('Abschlusswiederholung');
+    let idx = Math.max(days.indexOf(b.date), isFinal ? 0 : (earliest.get(b.topic) ?? 0));
+    idx = Math.min(idx, last);
     while (
       !isFinal &&
       idx < last &&
@@ -95,6 +99,8 @@ export function buildStudyPlan(
     const date = days[idx] ?? b.date;
     used.set(date, (used.get(date) ?? 0) + b.minutes);
     blocks.push({ ...b, date });
+    // Nächste Einheit desselben Themas frühestens am Folgetag (Abschlusswiederholung ausgenommen).
+    if (!isFinal) earliest.set(b.topic, Math.min(last, idx + 1));
   }
   const overbooked = [...used.entries()].filter(([d, m]) => m > capacity(d)).map(([d]) => d);
   return {

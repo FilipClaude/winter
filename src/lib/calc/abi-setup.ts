@@ -44,14 +44,37 @@ export function defaultRole(s: Subject, examSubjects: string[]): Role {
   return 'free';
 }
 
+const NATURAL_SCIENCES = ['bio', 'biologie', 'chemie', 'physik'];
+const LANGUAGES = [
+  'englisch',
+  'französisch',
+  'latein',
+  'spanisch',
+  'italienisch',
+  'griechisch',
+  'russisch',
+  'chinesisch',
+];
+
 export function abiSubjects(subjects: Subject[], abi: Settings['abi']): AbiSubject[] {
-  return subjects
-    .filter((s) => !s.archived)
-    .map((s) => ({
+  const active = subjects.filter((s) => !s.archived);
+  // Anlage 10 (Fn. 2, 5): Die einzige Fremdsprache bzw. die einzige Naturwissenschaft geht mit allen
+  // vier Halbjahren ein (Review-Fund: Bio war bei Filip fälschlich „3 von 4“).
+  const only = (group: string[]) => {
+    const members = active.filter((s) => group.includes(norm(s.name)));
+    return members.length === 1 ? members[0]?.id : undefined;
+  };
+  const onlyScience = only(NATURAL_SCIENCES);
+  const onlyLanguage = only(LANGUAGES);
+  return active.map((s) => {
+    const base = defaultRole(s, abi.examSubjects);
+    const auto = base === 'three' && (s.id === onlyScience || s.id === onlyLanguage) ? 'all' : base;
+    return {
       id: s.id,
       name: s.name,
-      role: abi.roles[s.id] ?? defaultRole(s, abi.examSubjects),
+      role: abi.roles[s.id] ?? auto,
       core: isGerman(s) || isMath(s) || s.major === true,
       exam: abi.examSubjects.includes(s.id),
-    }));
+    };
+  });
 }

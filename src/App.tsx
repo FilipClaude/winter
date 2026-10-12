@@ -45,7 +45,7 @@ export function App() {
               <CrashProbe name={route.id} />
               {route.id === 'heute' && <TodayScreen date={route.param} />}
               {route.id === 'training' && <TrainingScreen />}
-              {route.id === 'schule' && <SchoolScreen />}
+              {route.id === 'schule' && <SchoolScreen tab={route.param} />}
               {route.id === 'koerper' && <BodyScreen />}
               {route.id === 'rueckblick' && <ReviewScreen />}
               {route.id === 'habits' && <HabitsScreen />}

@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { AlarmClock, BookOpen, GraduationCap, ListTodo, Plus, Square, Timer, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { db } from '../../db/db';
-import { cancelTimer, deleteModule, saveModule, stopTimer, toggleDeadline, toggleTodo } from '../../db/repo';
+import { cancelTimer, deleteModule, saveModule, stopTimer, toggleDeadline, toggleTodo, ValidationError } from '../../db/repo';
 import type { Module } from '../../db/schemas';
 import { useNow, useToday } from '../../hooks/useNow';
 import { moduleEligibility } from '../../lib/calc/fernuni';
@@ -40,8 +40,8 @@ const TABS: { value: Tab; label: string }[] = [
   { value: 'lernzeit', label: 'Lernzeit' },
 ];
 
-export default function SchoolScreen() {
-  const [tab, setTab] = useState<Tab>('aufgaben');
+export default function SchoolScreen({ tab: initial }: { tab?: string | undefined }) {
+  const [tab, setTab] = useState<Tab>(TABS.find((t) => t.value === initial)?.value ?? 'aufgaben');
   return (
     <div className="screen">
       <ScreenHeader eyebrow="Q12 · Frühstudium" />
@@ -410,7 +410,7 @@ function FernUni() {
                         {el.eligible ? (
                           <Badge>prüfungsberechtigt</Badge>
                         ) : (
-                          <Badge tone={el.unreachable ? 'warn' : 'muted'}>{el.unreachable ? 'nicht mehr erreichbar' : 'noch nicht berechtigt'}</Badge>
+                          <Badge tone="muted">noch nicht berechtigt · {el.missing} EA fehlt{el.missing === 1 ? '' : 'en'}</Badge>
                         )}
                       </span>
                     )}
@@ -495,10 +495,12 @@ function ModuleSheet({ close, module }: { close: () => void; module?: Module }) 
             archived: module?.archived ?? false,
             ...(hasRule ? { rule: { minPassed: Number(minPassed || 0), passPercent: Number(passPercent === '' ? 50 : passPercent) } } : {}),
             ...(note.trim() ? { note: note.trim() } : {}),
-          }).then(() => {
-            toast('Modul gespeichert');
-            close();
           })
+            .then(() => {
+              toast('Modul gespeichert');
+              close();
+            })
+            .catch((e: unknown) => toast(e instanceof ValidationError ? e.message : 'Speichern fehlgeschlagen', { tone: 'warn' }))
         }
       >
         Speichern

@@ -252,3 +252,14 @@ Ein Subagent hat den Diff seit Beginn von v2 ohne meine Begründungen geprüft (
 - Einsendearbeiten mit erreichten/maximalen Punkten, Prüfungsberechtigung je Modul nach einstellbarer Regel (inkl. „nicht mehr erreichbar“), Modul-Notiz (z. B. Wiederholerkennzeichen). Fristen-Eskalation 14/7/2 Tage wie bisher; „rot und ganz oben“ auf dem Dashboard folgt in Phase 7.
 
 **Geprüft (Phasen 4–6):** typecheck, lint, Prettier, 807 Unit-Tests, E2E (Chromium + WebKit) inkl. 6 neuer Schul-Abläufe; CI-Lauf nach Phase 4+5 komplett grün und deployt. Screenshots Abi, Noten, Plan, Klausur-Themen, FernUni angesehen.
+
+## v2 · Unabhängiges Review 2 (Phasen 4–6) – Funde abgearbeitet ✓
+17 Funde, davon 3 kritisch (Datenintegrität Klausur ↔ Note): doppelte Klausuren, verwaiste Note nach Fachwechsel, Doppelzählung nach Notenbearbeitung → behoben mit Transaktion, Suche über alle Fächer, gemerkter ID, erhaltener Verknüpfung (DECISIONS #52). Weiter behoben: Block I > 40 HJL, Bio als einzige Naturwissenschaft „alle 4“, Kurzarbeit = klein, Halbjahr der Klausur einstellbar, Kommazahl-Punkte sperren das Speichern, wiederkehrende Aufgaben bei Überfälligkeit und Dubletten, Lernplan-Reihenfolge und Neuplanung, Ferien bis 2030 aus dem amtlichen PDF, ältere überfällige Lerneinheiten sichtbar, FernUni-Fehlalarm, Prognose-Gewichtung, Fehlerhinweis im Modul-Sheet, Löschen mit Rückfrage, ARIA-Gruppe. Tests, die das Fehlverhalten festgeschrieben hatten, wurden korrigiert und verschärft; 14 neue Regressionstests (`src/db/review2.test.ts`).
+
+## v2 · Phase 7 – Dashboard ✓
+- Heute-Screen als **anpassbares Dashboard**: 15 Widgets (Briefing, Tagesring, Hinweise, nächste Termine, Lernen heute, Training, nächstes Spiel, Schritte, Schlaf, Ernährung, Habits, Stimmung, Abi-Schnitt, Ziele, Tagesnotiz), Drag & Drop + Pfeile, ein-/ausblenden, zwei Größen, „Standard wiederherstellen“ (DECISIONS #49).
+- **Tagesbriefing** regelbasiert (DECISIONS #50), Beispiel aus dem Auftrag als Test.
+- **Ziele** (Woche/Monat): Lernzeit, Gym/Training, Ø Protein/Schlaf/Schritte, Habit-Quote, Abi-Schnitt (DECISIONS #51).
+- Kritische Fristen „rot und ganz oben“ (Phase 6 nachgeholt). Demo-Daten enthalten jetzt Noten.
+
+**Geprüft:** 835 Unit-Tests, 122 E2E (Chromium + WebKit + Offline, gegen `/winter/`-Build), Dashboard-Screenshots angesehen.

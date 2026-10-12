@@ -271,7 +271,7 @@ function HalfYearGrid({ subjects, result }: { subjects: AbiSubject[]; result: Ab
         Tippen trägt das Zeugnis ein. <b className="muted">Fett</b> = Zeugnis, normal = aus Noten, blass = Prognose,
         durchgestrichen = nicht eingebracht.
       </p>
-      <div className="abi-grid" aria-label="Halbjahresleistungen je Fach">
+      <div className="abi-grid" role="group" aria-label="Halbjahresleistungen je Fach">
         <div className="abi-grid__row abi-grid__head" aria-hidden>
           <span>Fach</span>
           {SEMESTERS.map((s) => (
@@ -444,8 +444,9 @@ function RolesCard({ settings, subjects }: { settings: Settings; subjects: Subje
       }
     >
       <p className="small muted">
-        Standard: Deutsch, Mathe, Leistungsfach und Abiturfächer alle 4 Halbjahre, übrige Fächer 3 von 4. Einzige Fremdsprache und einzige
-        Naturwissenschaft bitte auf „alle 4“ stellen.
+        Standard nach GSO Anlage 10: Deutsch, Mathe, Leistungsfach, Abiturfächer sowie die einzige Fremdsprache und die
+        einzige Naturwissenschaft alle 4 Halbjahre; Fremdsprachen, Religion/Ethik, Geschichte, Kunst/Musik und
+        Naturwissenschaften 3 von 4; übrige Fächer frei. Sonderfälle bitte selbst einstellen.
       </p>
     </Card>
   );
@@ -453,6 +454,8 @@ function RolesCard({ settings, subjects }: { settings: Settings; subjects: Subje
 
 function RolesSheet({ settings, subjects }: { settings: Settings; subjects: Subject[] }) {
   const abi = settings.abi;
+  // Automatische Rollen (inkl. einzige Fremdsprache/Naturwissenschaft) als Vorgabe anzeigen.
+  const auto = new Map(abiSubjects(subjects, { ...abi, roles: {} }).map((s) => [s.id, s.role]));
   return (
     <div className="form">
       {subjects
@@ -462,7 +465,7 @@ function RolesSheet({ settings, subjects }: { settings: Settings; subjects: Subj
             <span className="small">{s.name}</span>
             <Segmented<Role>
               label={`Einbringung ${s.name}`}
-              value={abi.roles[s.id] ?? defaultRole(s, abi.examSubjects)}
+              value={abi.roles[s.id] ?? auto.get(s.id) ?? defaultRole(s, abi.examSubjects)}
               options={ROLE_OPTIONS}
               onChange={(role) => void saveSettings({ abi: { ...abi, roles: { ...abi.roles, [s.id]: role } } })}
             />

@@ -10,15 +10,14 @@ import {
   deleteTodo,
   replaceExamPlan,
   saveDeadline,
-  saveExam,
   saveModule,
   saveTodo,
   startTimer,
   stopTimer,
-  syncExamGrade,
+  saveExamWithGrade,
   ValidationError,
 } from '../../db/repo';
-import { DEADLINE_KINDS, EXAM_KINDS, type Deadline, type Exam, type ExamTopic, type Todo } from '../../db/schemas';
+import { DEADLINE_KINDS, EXAM_KINDS, SEMESTERS, type Deadline, type Exam, type ExamTopic, type Semester, type Todo } from '../../db/schemas';
 import { useSettings } from '../../hooks/useSettings';
 import { useNow, useToday } from '../../hooks/useNow';
 import { buildStudyPlan } from '../../lib/calc/studyplan';
@@ -236,17 +235,22 @@ export function ExamSheet({ close, exam }: { close: () => void; exam?: Exam }) {
   const [progress, setProgress] = useState(exam?.progress ?? 0);
   const [points, setPoints] = useState<number | ''>(exam?.points ?? '');
   const [reflection, setReflection] = useState(exam?.reflection ?? '');
+  const [semester, setSemester] = useState<Semester | 'auto'>(exam?.semester ?? 'auto');
   const [planInfo, setPlanInfo] = useState('');
+  // Einmal gespeichert (z. B. über „Lernplan erstellen“), wird dieselbe Klausur weiter bearbeitet –
+  // sonst entstünde bei jedem Tippen eine neue (Review-Fund).
+  const [stored, setStored] = useState<Pick<Exam, 'id' | 'createdAt'> | null>(exam ? { id: exam.id, createdAt: exam.createdAt } : null);
   const { error, handle } = useError();
   const chosen = subjectId || subjects[0]?.id || '';
   // Mit Themen-Checkliste ergibt sich der Lernstand aus den Themen (0–3 je Thema).
   const effectiveProgress =
     topicList.length > 0 ? Math.round((topicList.reduce((a, t) => a + t.level, 0) / (topicList.length * 3)) * 100) : progress;
   const returned = points !== '' || (date !== '' && date < today);
+  const pointsValid = points === '' || (Number.isInteger(points) && points >= 0 && points <= 15);
 
   async function persist(): Promise<Exam> {
-    const saved = await saveExam({
-      ...(exam ? { id: exam.id, createdAt: exam.createdAt } : {}),
+    const saved = await saveExamWithGrade({
+      ...(stored ?? {}),
       subjectId: chosen,
       kind,
       date,
@@ -254,9 +258,10 @@ export function ExamSheet({ close, exam }: { close: () => void; exam?: Exam }) {
       progress: effectiveProgress,
       ...(topicList.length > 0 ? { topicList } : {}),
       ...(reflection.trim() ? { reflection: reflection.trim() } : {}),
-      ...(points !== '' ? { points: Math.round(points) } : {}),
+      ...(points !== '' ? { points } : {}),
+      ...(semester !== 'auto' ? { semester } : {}),
     });
-    await syncExamGrade(saved);
+    setStored({ id: saved.id, createdAt: saved.createdAt });
     return saved;
   }
 
@@ -322,7 +327,7 @@ export function ExamSheet({ close, exam }: { close: () => void; exam?: Exam }) {
           block
           icon={CalendarClock}
           data-testid="make-plan"
-          disabled={!chosen || !date}
+          disabled={!chosen || !date || !pointsValid}
           onClick={() =>
             void persist()
               .then(async (saved) => {
@@ -339,10 +344,16 @@ export function ExamSheet({ close, exam }: { close: () => void; exam?: Exam }) {
           Lernplan erstellen
         </Button>
       )}
+      <Segmented<Semester | 'auto'>
+        label="Halbjahr"
+        value={semester}
+        onChange={setSemester}
+        options={[{ value: 'auto', label: 'auto' }, ...SEMESTERS.map((s) => ({ value: s, label: s }))]}
+      />
       <Button
         variant="primary"
         block
-        disabled={!chosen || !date}
+        disabled={!chosen || !date || !pointsValid}
         onClick={() =>
           void persist()
             .then(() => {
@@ -354,8 +365,16 @@ export function ExamSheet({ close, exam }: { close: () => void; exam?: Exam }) {
       >
         Speichern
       </Button>
-      {exam && (
-        <Button variant="warn" block icon={Trash2} onClick={() => void deleteExam(exam.id).then(close)}>
+      {stored && (
+        <Button
+          variant="warn"
+          block
+          icon={Trash2}
+          onClick={() => {
+            // Löscht auch die verknüpfte Note und offene Lerneinheiten – deshalb nachfragen.
+            if (window.confirm('Klausur samt verknüpfter Note und offenen Lerneinheiten löschen?')) void deleteExam(stored.id).then(close);
+          }}
+        >
           Löschen
         </Button>
       )}

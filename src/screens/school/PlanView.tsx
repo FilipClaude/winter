@@ -9,7 +9,7 @@ import { useToday } from '../../hooks/useNow';
 import {
   nextBreak,
   publicHolidaysBY,
-  SCHOOL_BREAKS_2026_27,
+  SCHOOL_BREAKS,
   SCHOOL_BREAKS_SOURCE,
   schoolFreeReason,
   weekType,
@@ -27,7 +27,12 @@ export function PlanView() {
   const settings = useSettings();
   const data = useLiveQuery(async () => {
     const [blocks, lessons, subjects] = await Promise.all([
-      db.studyBlocks.where('date').between(addDays(today, -1), addDays(today, 21), true, true).toArray(),
+      // Alle offenen Einheiten aus der Vergangenheit (überfällig) plus die nächsten drei Wochen.
+      db.studyBlocks
+        .where('date')
+        .belowOrEqual(addDays(today, 21))
+        .filter((b) => b.date >= today || !b.done)
+        .toArray(),
       db.lessons.toArray(),
       db.subjects.orderBy('order').toArray(),
     ]);
@@ -285,7 +290,7 @@ function LessonSheet({
 
 function BreaksCard({ today }: { today: ISODate }) {
   const next = nextBreak(today);
-  const upcomingBreaks = SCHOOL_BREAKS_2026_27.filter((b) => b.to >= today);
+  const upcomingBreaks = SCHOOL_BREAKS.filter((b) => b.to >= today).slice(0, 8);
   const holidays = [...publicHolidaysBY(Number(today.slice(0, 4))), ...publicHolidaysBY(Number(today.slice(0, 4)) + 1)]
     .filter((h) => h.date >= today && Number(h.date.slice(5, 7)) >= 1)
     .slice(0, 4);
@@ -304,7 +309,7 @@ function BreaksCard({ today }: { today: ISODate }) {
           )}
         </p>
       ) : (
-        <p className="small faint">Für das Schuljahr 2026/27 sind keine weiteren Ferien hinterlegt.</p>
+        <p className="small faint">Keine weiteren Ferien hinterlegt (Ferienordnung reicht bis Sommer 2030).</p>
       )}
       <div className="list">
         {upcomingBreaks.map((b) => (

@@ -229,9 +229,12 @@ export function computeAbi(input: AbiInput): AbiResult {
     } else if (s.role === 'free') pool.push(...mine);
   }
   const mandatoryCount = mandatory.length;
-  const free = Math.max(0, N - seminarSlots - mandatory.length);
+  // Nie mehr als 40 Halbjahresleistungen: Ergeben die Pflichtrollen mehr (Optionsregel nötig), zählen
+  // nur die besten Pflicht-Halbjahre – die Warnung unten weist darauf hin.
+  const mandatoryUsed = sorted(mandatory).slice(0, N - seminarSlots);
+  const free = Math.max(0, N - seminarSlots - mandatoryUsed.length);
   const picked = sorted(pool).slice(0, free);
-  const included = [...mandatory, ...picked];
+  const included = [...mandatoryUsed, ...picked];
   const excluded = all.filter((h) => byId.get(h.subjectId)?.role !== 'none' && !included.includes(h));
   const block1 = included.reduce((a, h) => a + h.points, 0) + seminarPoints;
 
@@ -318,10 +321,11 @@ export function computeAbi(input: AbiInput): AbiResult {
       text: 'Keine Prüfung in Deutsch, Mathe oder Leistungsfach mit ≥ 5 Punkten.',
     });
 
+  // Anteil geschätzter Punkte am Gewicht: 40 Halbjahre (je 1) + 5 Prüfungen (je 4) = 60.
   const projectedCount =
     included.filter((h) => h.kind === 'prognose').length +
     seminarProjected +
-    examResults.filter((e) => e.projected).length;
+    examResults.filter((e) => e.projected).length * factor;
   return {
     included,
     excluded,
@@ -332,7 +336,7 @@ export function computeAbi(input: AbiInput): AbiResult {
     block2,
     total,
     grade: pointsToAbiGrade(total),
-    projectedShare: Math.min(1, projectedCount / (N + 5)),
+    projectedShare: Math.min(1, projectedCount / (N + 5 * factor)),
     warnings: w,
   };
 }

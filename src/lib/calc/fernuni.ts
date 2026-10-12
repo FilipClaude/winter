@@ -9,8 +9,11 @@ export interface Eligibility {
   eligible: boolean | null;
   /** Noch offene (nicht bewertete) Einsendearbeiten. */
   open: number;
-  /** Nicht mehr erreichbar, weil zu wenige Einsendearbeiten übrig sind. */
-  unreachable: boolean;
+  /**
+   * Wie viele bestandene EAs noch fehlen. Bewusst kein „nicht mehr erreichbar“: Winter kennt nicht alle
+   * künftigen EAs eines Moduls – das wäre oft ein Fehlalarm (Review-Fund).
+   */
+  missing: number;
 }
 
 /** Ist eine Einsendearbeit bestanden? (Punkte / Maximum ≥ Schwelle in %) */
@@ -35,5 +38,5 @@ export function moduleEligibility(
   const open = results.filter((r) => r === null).length;
   const required = rule?.minPassed ?? 0;
   const eligible = rule ? passed >= required : null;
-  return { graded, passed, required, eligible, open, unreachable: !!rule && passed + open < required };
+  return { graded, passed, required, eligible, open, missing: Math.max(0, required - passed) };
 }

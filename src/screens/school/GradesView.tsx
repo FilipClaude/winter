@@ -47,7 +47,7 @@ export function GradesView() {
       </Button>
       {inSem.length === 0 && (
         <EmptyState icon={NotebookTabs} title={`Noch keine Noten in ${semester}`}>
-          Klausuren und Kurzarbeiten zählen als große, Exen, Abfragen und Mündliches als kleine Leistungsnachweise. Groß und klein werden
+          Klausuren zählen als große, Kurzarbeiten, Exen, Abfragen und Mündliches als kleine Leistungsnachweise. Groß und klein werden
           1 : 1 gewichtet.
         </EmptyState>
       )}
@@ -111,7 +111,8 @@ export function GradesView() {
   );
 }
 
-const BIG_TYPES = new Set<Grade['type']>(['klausur', 'kurzarbeit']);
+/** In Bayern ist nur die Klausur/Schulaufgabe ein großer Leistungsnachweis (Kurzarbeit = klein). */
+const BIG_TYPES = new Set<Grade['type']>(['klausur']);
 
 function GradeSheet({
   subjects,
@@ -187,6 +188,8 @@ function GradeSheet({
             weight: f.weight === '' ? 1 : f.weight,
             date: f.date,
             note: f.note.trim(),
+            // Verknüpfung zur Klausur beim Bearbeiten erhalten (sonst entstünde beim nächsten Speichern der Klausur eine zweite Note).
+            ...(grade?.examId ? { examId: grade.examId } : {}),
           })
             .then(() => {
               toast('Note gespeichert');
