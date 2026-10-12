@@ -4,6 +4,30 @@ Apple Health hat keine Schnittstelle für Web-Apps. Deshalb liest ein Kurzbefehl
 
 > **Ehrlicher Hinweis:** Ich konnte den Kurzbefehl nicht am iPhone testen (Entwicklung auf Windows). Die **Aktionsnamen** stammen aus meinem Wissen über die deutsche Kurzbefehle-App. Wo ich mir nicht sicher bin, steht **(unsicher)** dahinter. Dann heißt die Aktion bei dir eventuell leicht anders. Such in der Aktionssuche nach dem englischen Begriff in Klammern oder nach einem Teilwort wie „Health“, „Statistik“ oder „Datum“.
 
+## Bewährter Weg (am iPhone getestet, 12.10.2026)
+
+Mit Filip Schritt für Schritt gebaut, iOS-Namen wie sie bei ihm heißen:
+
+1. **„Health-Messungen suchen“**: Typ ist *Schritte* (Pflichtfilter, nicht löschbar) + Filter **Startdatum ist heute**.
+2. **„Statistik berechnen“** → **Summe**. Die Ergebnis-Variable heißt **„Summe“** (nicht „Statistik“).
+3. **„Datum formatieren“** → Aktuelles Datum, Eigenes Format `yyyy-MM-dd`.
+4. **„Text“** als JSON-Vorlage statt Wörterbuch (robuster):
+   `{"v":1,"date":"[Formatiertes Datum]","steps":"[Summe]"}`
+   Die Werte in eckigen Klammern müssen **Variablen-Kästchen** sein, kein getippter Text. Sonst meldet Winter z. B. „Datum … nicht lesbar“.
+5. **„In Zwischenablage kopieren“** (Eingabe: Text).
+
+Distanz: Aktion 1+2 noch einmal hinzufügen (Typ **Gehen + Laufen (Distanz)**), über die Text-Aktion ziehen, im Text über „Variable auswählen“ genau die neue „Summe“ antippen. Duplizieren per Gedrückthalten klappte bei Filip nicht.
+
+**Endstand bei Filip (läuft):**
+
+```
+{"v":1,"date":"[Formatiertes Datum]","steps":"[Summe]","distanceKm":"[Summe Distanz]"}
+```
+
+- Häufigster Fehler: ein fehlendes **Komma** zwischen zwei Einträgen → Winter meldet „Kein gültiges JSON“ und zeigt den Anfang des Inhalts.
+- **Schlaf trägt Filip von Hand in Winter ein**, Teil B entfällt. Stockwerke braucht er nicht.
+- Weitere sinnvolle Werte (Ruhepuls, HRV, aktive Kalorien, VO2max) gibt es nur mit Apple Watch o. Ä. und sind in Winter noch nicht eingebaut.
+
 ## Was der Kurzbefehl am Ende liefert
 
 ```json
