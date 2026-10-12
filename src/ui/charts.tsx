@@ -4,10 +4,16 @@ import { useId, useState } from 'react';
  * Tap-Bereiche über einem Chart: Ein Tap zeigt den exakten Wert als Tooltip (nochmal tippen = aus).
  * Für Screenreader ist jeder Punkt ein Button mit vollständiger Beschriftung.
  */
-function ChartHits({ items }: { items: { label: string; text: string }[] }) {
-  const [sel, setSel] = useState<number | null>(null);
+function ChartHits({ items }: { items: { label: string; text: string; full?: string }[] }) {
+  // Auswahl gilt nur für genau diese Daten – beim Wechsel des Zeitraums verschwindet der Tooltip.
+  const sig = items.map((i) => `${i.label}=${i.text}`).join('|');
+  const [state, setState] = useState<{ sig: string; sel: number | null }>({ sig, sel: null });
+  if (state.sig !== sig) setState({ sig, sel: null });
+  const sel = state.sig === sig ? state.sel : null;
   const n = items.length;
   const cur = sel === null ? null : items[sel];
+  const describe = (it: { label: string; text: string; full?: string }) =>
+    it.full ?? `${it.label}: ${it.text}`;
   return (
     <>
       <div className="chart__hit">
@@ -15,9 +21,9 @@ function ChartHits({ items }: { items: { label: string; text: string }[] }) {
           <button
             key={i}
             type="button"
-            aria-label={`${it.label}: ${it.text}`}
+            aria-label={describe(it)}
             aria-pressed={sel === i}
-            onClick={() => setSel(sel === i ? null : i)}
+            onClick={() => setState({ sig, sel: sel === i ? null : i })}
           />
         ))}
       </div>
@@ -27,7 +33,7 @@ function ChartHits({ items }: { items: { label: string; text: string }[] }) {
           role="status"
           style={{ left: `${Math.min(88, Math.max(12, ((sel + 0.5) / n) * 100))}%` }}
         >
-          {cur.label}: {cur.text}
+          {describe(cur)}
         </span>
       )}
     </>
@@ -113,7 +119,9 @@ export function BarChart({
       <ChartHits
         items={data.map((d) => ({
           label: d.label,
-          text: d.title?.replace(/^[^:]*:\s*/, '') ?? (d.value === null ? 'keine Daten' : format(d.value)),
+          text: d.value === null ? 'keine Daten' : format(d.value),
+          // Eigener Titel (z. B. Spiel mit Ergebnis) wird vollständig gezeigt, nie zerschnitten.
+          ...(d.title ? { full: d.title } : {}),
         }))}
       />
       <div

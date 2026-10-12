@@ -3,8 +3,12 @@ import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   createBackup,
+  deleteSnapshot,
   ensureDailySnapshot,
+  ensureMigrationSnapshot,
   listSnapshots,
+  saveSafetySnapshot,
+  SAFETY_KEEP,
   previewBackup,
   previewSnapshot,
   restoreBackup,
@@ -63,15 +67,29 @@ describe('Migration v1 → v2 (echte Dexie-Datenbank)', () => {
     expect(settings.snowMode).toBe('subtle');
     expect(settings.onboarded).toBe(true);
     expect((await v2.kv.get('timer'))?.value).toEqual(f.kv.timer);
-    // Snapshot vor der Migration enthält alles
-    const snap = await v2.snapshots.get('vor-v2');
-    expect(snap?.rows).toBe(total);
-    expect(snap?.reason).toBe('migration');
+    // Das Upgrade selbst schreibt nichts (ein Fehler dort würde die App bei jedem Start blockieren),
+    // es merkt sich nur die Migration für den Snapshot danach.
+    expect(v2.migratedFromV1).toBe(true);
+    expect(await v2.snapshots.count()).toBe(0);
     v2.close();
     await Dexie.delete(name);
   });
 
+  it('nach der Migration: Sicherung „vor-v2“ mit allen Datensätzen, genau einmal', async () => {
+    const p = previewBackup(FIXTURE_TEXT);
+    if (!p.ok) throw new Error(p.error);
+    await restoreBackup(p.preview.backup);
+    db.migratedFromV1 = true;
+    expect(await ensureMigrationSnapshot(new Date('2026-10-12T19:00:00Z'))).toBe(true);
+    expect(await ensureMigrationSnapshot(new Date('2026-10-12T19:05:00Z'))).toBe(false);
+    const meta = (await listSnapshots()).find((s) => s.id === 'vor-v2');
+    expect(meta?.reason).toBe('migration');
+    expect(meta?.rows).toBe(p.preview.total);
+  });
+
   it('frische Installation: kein Migrations-Snapshot, Standardfächer vorhanden', async () => {
+    expect(db.migratedFromV1).toBe(false);
+    expect(await ensureMigrationSnapshot()).toBe(false);
     expect(await db.snapshots.count()).toBe(0);
     expect(await db.subjects.count()).toBeGreaterThan(5);
   });
@@ -140,6 +158,13 @@ describe('Einstellungen tolerant lesen', () => {
     expect(s.dashboard.length).toBeGreaterThan(5);
   });
 
+  it('ein kaputtes Unterfeld kostet nur dieses Feld (Review-Fund)', () => {
+    const s = parseSettings({ goals: { proteinG: 170, kcal: -5, steps: 12000 } });
+    expect(s.goals.proteinG).toBe(170);
+    expect(s.goals.steps).toBe(12000);
+    expect(s.goals.kcal).toBe(2900);
+  });
+
   it('ohne gespeicherte Einstellungen: Onboarding offen', () => {
     expect(parseSettings(undefined).onboarded).toBe(false);
   });
@@ -188,8 +213,68 @@ describe('Automatische Snapshots', () => {
     if (!s.ok) throw new Error(s.error);
     await restoreBackup(s.preview.backup, { countsAsBackup: false });
     expect(await db.sessions.count()).toBe(fixture().tables.sessions.length);
-    // Interner Snapshot zählt nicht als externe Sicherung
+    // Interner Snapshot zählt nicht als externe Sicherung und belebt keinen alten Lern-Timer
     expect((await db.kv.get('lastBackupAt'))?.value).toBeUndefined();
     expect(lastBackupAt).toBeDefined();
+    expect(await db.kv.get('timer')).toBeUndefined();
+    expect(fixture().kv.timer).toBeDefined();
+  });
+
+  it('„Alles löschen“ mit Sicherungen entfernt auch alle Kopien (Weitergabe des Geräts)', async () => {
+    await ensureDailySnapshot(new Date('2026-10-12T10:00:00Z'));
+    expect(await db.snapshots.count()).toBe(1);
+    await wipeAll({ withSnapshots: true });
+    expect(await db.snapshots.count()).toBe(0);
+    expect(await listSnapshots()).toEqual([]);
+  });
+
+  it('vor Importen bleiben die letzten 3 Sicherungen, ältere verschwinden', async () => {
+    for (let i = 0; i < 5; i++) await saveSafetySnapshot(new Date(Date.UTC(2026, 9, 12, 10, i)));
+    const manual = (await listSnapshots()).filter((s) => s.reason === 'manual');
+    expect(manual).toHaveLength(SAFETY_KEEP);
+    expect(manual[0]?.createdAt).toBe('2026-10-12T10:04:00.000Z');
+    expect(await db.snapshots.count()).toBe(SAFETY_KEEP);
+  });
+
+  it('„vor-v2“ wird nach 30 Tagen beim nächsten Snapshot entfernt', async () => {
+    db.migratedFromV1 = true;
+    await ensureMigrationSnapshot(new Date('2026-10-12T10:00:00Z'));
+    await ensureDailySnapshot(new Date('2026-11-05T10:00:00Z'));
+    expect((await listSnapshots()).some((s) => s.id === 'vor-v2')).toBe(true);
+    await ensureDailySnapshot(new Date('2026-11-12T10:00:00Z'));
+    expect((await listSnapshots()).some((s) => s.id === 'vor-v2')).toBe(false);
+    expect(await db.snapshots.get('vor-v2')).toBeUndefined();
+  });
+
+  it('kein Snapshot bei knappem Speicher (> 50 % belegt)', async () => {
+    const orig = Object.getOwnPropertyDescriptor(navigator, 'storage');
+    Object.defineProperty(navigator, 'storage', {
+      configurable: true,
+      value: { estimate: () => Promise.resolve({ usage: 90, quota: 100 }) },
+    });
+    try {
+      expect(await ensureDailySnapshot(new Date('2026-10-12T10:00:00Z'))).toBe(false);
+      expect(await db.snapshots.count()).toBe(0);
+    } finally {
+      if (orig) Object.defineProperty(navigator, 'storage', orig);
+      else Reflect.deleteProperty(navigator, 'storage');
+    }
+  });
+
+  it('Snapshots aus der Vorversion ohne Index: Liste baut ihn auf, ohne in der Abfrage zu schreiben', async () => {
+    await db.snapshots.put({
+      id: '2026-10-11',
+      createdAt: '2026-10-11T10:00:00.000Z',
+      schemaVersion: 2,
+      reason: 'daily',
+      rows: 5,
+      data: fixture(),
+    });
+    // Lesen in einer reinen Lesetransaktion (wie useLiveQuery) darf nicht scheitern
+    const list = await db.transaction('r', db.snapshots, db.kv, () => listSnapshots());
+    expect(list.map((s) => s.id)).toEqual(['2026-10-11']);
+    await deleteSnapshot('2026-10-11');
+    expect(await db.snapshots.count()).toBe(0);
+    expect(await listSnapshots()).toEqual([]);
   });
 });

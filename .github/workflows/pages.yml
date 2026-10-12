@@ -1,5 +1,6 @@
 # Qualitätsschranke + Deploy: Winter wird nur veröffentlicht, wenn Typecheck, Lint, Format, Unit-Tests
-# und alle E2E-Tests (Chromium und WebKit) grün sind. Läuft bei jedem Push auf main.
+# und alle E2E-Tests (Chromium und WebKit) grün sind. Die E2E-Tests prüfen genau den Build, der danach
+# live geht (mit BASE_PATH /winter/). Läuft bei jedem Push auf main.
 name: Deploy auf GitHub Pages
 
 on:
@@ -10,12 +11,16 @@ on:
 permissions:
   contents: read
 
+# Laufende Deploys nicht abbrechen (Empfehlung von GitHub für Pages); neue Läufe warten.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
+
+env:
+  BASE_PATH: /${{ github.event.repository.name }}/
 
 # Feste Runner-Version statt ubuntu-latest (Umstellung auf Ubuntu 26 ab 19.10.2026): Playwrights
-# Systempakete sind für 24.04 erprobt. Wechsel bewusst später (siehe DECISIONS.md).
+# Systempakete sind für 24.04 erprobt. Wechsel bewusst später (siehe DECISIONS.md #28).
 jobs:
   check:
     runs-on: ubuntu-24.04
@@ -31,7 +36,30 @@ jobs:
       - run: npm run format:check
       - run: npm test
 
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Build für die E2E-Tests bereitstellen
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist
+          retention-days: 3
+      - uses: actions/configure-pages@v6
+      - name: Derselbe Build als Pages-Artefakt (wird erst nach grünen Tests veröffentlicht)
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
   e2e:
+    needs: build
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -51,8 +79,11 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
       - run: npx playwright install --with-deps ${{ matrix.browsers }}
-      - run: npx vite build
       - run: npx playwright test ${{ matrix.projects }}
         env:
           CI: 'true'
@@ -66,27 +97,8 @@ jobs:
             test-results
           retention-days: 14
 
-  build:
-    needs: [check, e2e]
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - name: Build
-        run: npm run build
-        env:
-          BASE_PATH: /${{ github.event.repository.name }}/
-      - uses: actions/configure-pages@v6
-      - uses: actions/upload-pages-artifact@v5
-        with:
-          path: dist
-
   deploy:
-    needs: build
+    needs: [check, build, e2e]
     runs-on: ubuntu-24.04
     permissions:
       pages: write

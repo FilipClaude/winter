@@ -220,3 +220,14 @@
 - Nahe Schneeflocken wirkten als unscharfe Flecken → kleiner.
 
 **Ehrlich offen:** Die GPU-Last der Glas-Unschärfe über bewegtem Schnee kann ich unter Windows nicht messen. Falls das iPhone warm wird oder der Akku leidet: Schnee auf „Aus“ (dann 0 % Dauerlast).
+
+## v2 · Unabhängiges Review 1 (nach Phase 2+3) – Funde abgearbeitet ✓
+Ein Subagent hat den Diff seit Beginn von v2 ohne meine Begründungen geprüft (14 Funde).
+- **Kritisch (war live!):** Schreibzugriff im Dexie-Upgrade hätte bei Speicherproblemen die App dauerhaft blockiert → behoben (DECISIONS #35). Beim Nachtesten zusätzlich gefunden: Öffnungsfehler ließen die App still hängen → ausdrückliche Prüfung + Rettungsseite mit Rohdaten-Export. Neuer E2E-Test simuliert „Speicher voll“.
+- Mittel: Snapshot-Speicher und -Liste, Datenschutz beim Löschen, Import-Sicherungen, Lern-Timer, Spiel-Tooltip, CI testet jetzt den echten Live-Build (DECISIONS #36, #37, #40).
+- Gering: leere Canvas, Wetter beim Zurückkehren neu laden, Schneekuppen-Farbe aus Token, Einstellungen pro Unterfeld, Chart-Auswahl, CPU-Test nur lokal, `cancel-in-progress: false`.
+- Tests verschärft: Migration im Browser vergleicht jetzt jede ID jeder Tabelle (vorher nur „erste Zeile sichtbar“); 8 neue Unit-Tests für Snapshots/Einstellungen.
+- **Nicht übernommen:** Fund 14a (Zeitumstellungs-Test bei der Sonne „prüft nur Intl“) – der Test sichert ab, dass Auf-/Untergang in Wandzeit korrekt angezeigt werden; bleibt. Fund 12a (Tap-Ziele im Monats-Chart < 44 px): Tooltips sind Zusatz, alle Werte stehen auch als Text/Kennzahl im Rückblick; beobachten.
+- **CI-Fund:** Der Lauf nach Phase 2+3 war rot (WebKit ohne GPU, DECISIONS #38) – die Schranke hat gegriffen, nichts Kaputtes ging live.
+
+**Geprüft:** 786 Unit-Tests, 102 E2E (Chromium, WebKit, Offline) gegen den `/winter/`-Build.

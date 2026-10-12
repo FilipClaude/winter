@@ -14,7 +14,7 @@ async function gymSession(page: Page, kg: string) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/#/training');
+  await page.goto('./#/training');
   await expect(page.getByRole('heading', { name: 'Training', level: 1 })).toBeVisible();
 });
 

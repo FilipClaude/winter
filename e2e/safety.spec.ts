@@ -29,7 +29,7 @@ test('Start mit echten v1-Daten: Migration auf v2 im Browser, alles noch da, Sic
 }) => {
   test.setTimeout(90_000);
   // Leere Seite derselben Herkunft öffnen, ohne dass die App die Datenbank anlegt.
-  await page.goto('/robots.txt');
+  await page.goto('./robots.txt');
   const total = await page.evaluate(
     async ({ fixture, schema }) => {
       const backup = JSON.parse(fixture) as {
@@ -73,7 +73,7 @@ test('Start mit echten v1-Daten: Migration auf v2 im Browser, alles noch da, Sic
   );
   expect(total).toBeGreaterThan(300);
 
-  await page.goto('/#/einstellungen');
+  await page.goto('./#/einstellungen');
   await expect(page.getByText('Winter · Schema v2')).toBeVisible();
   const card = page.getByTestId('snapshots-card');
   await expect(card).toContainText('Vor dem Update auf v2', SLOW_WRITE);
@@ -81,14 +81,93 @@ test('Start mit echten v1-Daten: Migration auf v2 im Browser, alles noch da, Sic
   // Ziele aus v1 sind erhalten
   await expect(page.getByRole('region', { name: 'Tagesziele' })).toContainText('150 g Protein');
   // Daten sind sichtbar: Training enthält die Einheiten aus v1
-  await page.goto('/#/training');
+  await page.goto('./#/training');
   await expect(page.getByTestId('session-row').first()).toBeVisible();
   await shot(page, '11-migration-training');
+
+  // Jede v1-Tabelle hat nach der Migration exakt so viele Datensätze wie vorher, und jede ID ist da.
+  const after = await page.evaluate(
+    async (stores) => {
+      const idb = await new Promise<IDBDatabase>((res, rej) => {
+        const r = indexedDB.open('winter');
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => rej(r.error);
+      });
+      const out: Record<string, string[]> = {};
+      const tx = idb.transaction(stores, 'readonly');
+      await Promise.all(
+        stores.map(
+          (s) =>
+            new Promise<void>((res) => {
+              const r = tx.objectStore(s).getAllKeys();
+              r.onsuccess = () => {
+                out[s] = (r.result as IDBValidKey[]).map(String).sort();
+                res();
+              };
+            }),
+        ),
+      );
+      idb.close();
+      return { out, version: idb.version };
+    },
+    Object.keys(V1).filter((k) => k !== 'kv'),
+  );
+  expect(after.version).toBe(20);
+  const fixture = JSON.parse(FIXTURE) as { tables: Record<string, { id: string }[]> };
+  for (const [t, rows] of Object.entries(fixture.tables)) {
+    expect(after.out[t], t).toEqual(rows.map((r) => r.id).sort());
+  }
+});
+
+test('Datenbank öffnet nicht: Rettungsseite statt weißem Bildschirm, Rohdaten lassen sich sichern', async ({
+  page,
+}) => {
+  // Datenbank mit einem Eintrag anlegen, dann jedes Öffnen *mit Versionsnummer* (so öffnet Dexie)
+  // scheitern lassen – stellvertretend für Speicher voll, abgebrochenes Upgrade oder eine verlorene
+  // IndexedDB-Verbindung. Der Rettungs-Export öffnet ohne Versionsnummer und kommt durch.
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('winter:failopen') !== '1') return;
+    const open = IDBFactory.prototype.open;
+    IDBFactory.prototype.open = function (this: IDBFactory, name: string, version?: number) {
+      if (version !== undefined) throw new DOMException('Speicher voll (Test)', 'QuotaExceededError');
+      return open.call(this, name);
+    };
+  });
+  await page.goto('./robots.txt');
+  await page.evaluate(
+    () =>
+      new Promise<void>((res, rej) => {
+        const r = indexedDB.open('winter', 20);
+        r.onupgradeneeded = () => {
+          const store = r.result.createObjectStore('sessions', { keyPath: 'id' });
+          store.put({ id: 's1', date: '2026-10-01', type: 'gym' });
+          r.result.createObjectStore('kv', { keyPath: 'key' });
+        };
+        r.onsuccess = () => {
+          r.result.close();
+          sessionStorage.setItem('winter:failopen', '1');
+          res();
+        };
+        r.onerror = () => rej(r.error);
+      }),
+  );
+  await page.goto('./#/heute');
+  const rescue = page.getByTestId('root-error');
+  await expect(rescue).toBeVisible();
+  await expect(rescue).toContainText('Deine Daten liegen weiter auf diesem Gerät');
+  await shot(page, '11-rettung');
+  await rescue.getByRole('button', { name: 'Rohdaten sichern' }).click();
+  await expect(rescue).toContainText('1 Einträge gelesen');
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    rescue.getByRole('button', { name: 'Rohdaten teilen' }).click(),
+  ]);
+  expect(download.suggestedFilename()).toMatch(/^winter-rettung-.*\.json$/);
 });
 
 test('Fehlergrenze: Absturz eines Bereichs blockiert weder die App noch das Backup', async ({ page }) => {
   await page.addInitScript(() => sessionStorage.setItem('winter:crash', 'schule'));
-  await page.goto('/#/schule');
+  await page.goto('./#/schule');
   const panel = page.getByTestId('error-boundary');
   await expect(panel).toBeVisible();
   await expect(panel).toContainText('Deine Daten sind nicht betroffen');
@@ -107,24 +186,24 @@ test('Fehlergrenze: Absturz eines Bereichs blockiert weder die App noch das Back
 test('Tägliche Sicherung entsteht automatisch und lässt sich wiederherstellen', async ({ page }) => {
   test.setTimeout(60_000);
   // Beim Start entsteht die Tages-Sicherung (Stand: 0 Gläser).
-  await page.goto('/#/einstellungen');
+  await page.goto('./#/einstellungen');
   const card = page.getByTestId('snapshots-card');
   await expect(card.getByRole('button', { name: 'Ansehen' }).first()).toBeVisible(SLOW_WRITE);
   // Danach erfasst – am selben Tag entsteht keine zweite Sicherung.
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await page.getByRole('button', { name: 'Ein Glas Wasser' }).click();
   await page.getByRole('button', { name: 'Ein Glas Wasser' }).click();
   await expect(page.getByTestId('water-value')).toContainText('2');
   await page.reload();
   await page.waitForTimeout(2000);
-  await page.goto('/#/einstellungen');
+  await page.goto('./#/einstellungen');
   await card.getByRole('button', { name: 'Ansehen' }).first().click();
   const dialog = page.getByRole('dialog', { name: 'Sicherung wiederherstellen' });
   await dialog.getByRole('button', { name: 'Ersetzen und wiederherstellen' }).click();
   await expect(page.getByText(/wiederhergestellt/)).toBeVisible(SLOW_WRITE);
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await expect(page.getByTestId('water-value')).toHaveText('0Gläser');
   // Der Stand vor dem Wiederherstellen ist ebenfalls gesichert
-  await page.goto('/#/einstellungen');
-  await expect(card).toContainText('Vor dem letzten Import');
+  await page.goto('./#/einstellungen');
+  await expect(card).toContainText('Vor einem Import');
 });

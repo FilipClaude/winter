@@ -22,14 +22,14 @@ const health = (steps: number) =>
   });
 
 async function openHealth(page: Page) {
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await page.getByTestId('health-hint').getByRole('button', { name: 'Health holen' }).click();
   await expect(page.getByRole('dialog', { name: 'Health holen' })).toBeVisible();
 }
 
 test('Health: Text einfügen, erneuter Import überschreibt nur Health-Werte @screens', async ({ page }) => {
   // Manueller Schlaf vorher
-  await page.goto('/#/koerper');
+  await page.goto('./#/koerper');
   await page.getByRole('button', { name: 'Schlaf' }).click();
   await page.getByRole('button', { name: 'Eintragen' }).click();
   await page.getByRole('dialog').getByLabel('Bettzeit').fill('22:00');
@@ -87,13 +87,13 @@ test('Health: kaputte Daten → klare Meldung, kein Absturz', async ({ page }) =
 });
 
 test('Backup exportieren → alles löschen → importieren → alles wieder da', async ({ page }) => {
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await page.getByRole('button', { name: 'Ein Glas Wasser' }).click();
   await page.getByRole('button', { name: 'Ein Glas Wasser' }).click();
   await page.getByRole('button', { name: 'Stimmung 5' }).click();
   await expect(page.getByTestId('backup-reminder')).toBeVisible();
 
-  await page.goto('/#/einstellungen');
+  await page.goto('./#/einstellungen');
   const card = page.getByTestId('backup-card');
   await card.getByRole('button', { name: 'Backup erstellen' }).click();
   const [download] = await Promise.all([
@@ -112,11 +112,11 @@ test('Backup exportieren → alles löschen → importieren → alles wieder da'
   await expect(wipe.getByRole('button', { name: 'Endgültig löschen' })).toBeDisabled();
   await wipe.getByLabel('Zur Bestätigung LÖSCHEN eingeben').fill('LÖSCHEN');
   await wipe.getByRole('button', { name: 'Endgültig löschen' }).click();
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await expect(page.getByTestId('water-value')).toContainText('0');
 
   // Import
-  await page.goto('/#/einstellungen');
+  await page.goto('./#/einstellungen');
   await page
     .getByTestId('backup-file')
     .setInputFiles({ name: 'backup.json', mimeType: 'application/json', buffer: Buffer.from(json) });
@@ -124,14 +124,14 @@ test('Backup exportieren → alles löschen → importieren → alles wieder da'
   await expect(preview).toContainText('Einträge werden importiert');
   await shot(page, '07-import-vorschau');
   await preview.getByRole('button', { name: 'Ersetzen und importieren' }).click();
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await expect(page.getByTestId('water-value')).toContainText('2');
   await expect(page.getByRole('button', { name: 'Stimmung 5' })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByTestId('backup-reminder')).toHaveCount(0);
 });
 
 test('Backup-Import lehnt fremde Datei ab', async ({ page }) => {
-  await page.goto('/#/einstellungen');
+  await page.goto('./#/einstellungen');
   await page
     .getByTestId('backup-file')
     .setInputFiles({ name: 'x.json', mimeType: 'application/json', buffer: Buffer.from('{"hallo":1}') });
@@ -139,7 +139,7 @@ test('Backup-Import lehnt fremde Datei ab', async ({ page }) => {
 });
 
 test('Markdown-Export für Obsidian', async ({ page }) => {
-  await page.goto('/#/einstellungen');
+  await page.goto('./#/einstellungen');
   await page.getByRole('region', { name: 'Markdown-Export' }).getByRole('button', { name: 'Öffnen' }).click();
   const pre = page.getByTestId('md-preview');
   await expect(pre).toContainText(`datum: ${berlinDate()}`);
@@ -157,41 +157,41 @@ test('Markdown-Export für Obsidian', async ({ page }) => {
 
 test('Demo-Daten an → alle Screens mit Daten → aus = vollständig weg @screens', async ({ page }) => {
   test.setTimeout(90_000);
-  await page.goto('/#/einstellungen');
+  await page.goto('./#/einstellungen');
   await shot(page, '07-einstellungen', true);
   await enableDemo(page);
 
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await expect(page.getByTestId('demo-notice')).toBeVisible();
   await expect(page.getByTestId('deadline-alerts')).toContainText('EA 2');
   await shot(page, '07-demo-heute');
   await shot(page, '07-demo-heute-voll', true);
 
-  await page.goto('/#/training');
+  await page.goto('./#/training');
   await expect(page.getByTestId('load-card')).not.toContainText('mindestens 3 Wochen');
   await expect(page.getByTestId('bests-card')).toContainText('Kniebeuge');
   await shot(page, '07-demo-training', true);
 
-  await page.goto('/#/schule');
+  await page.goto('./#/schule');
   await page.getByRole('button', { name: 'Klausuren' }).click();
   await expect(page.getByTestId('grades-card')).toContainText('Gesamt');
   await shot(page, '07-demo-schule', true);
 
-  await page.goto('/#/koerper');
+  await page.goto('./#/koerper');
   await shot(page, '07-demo-koerper', true);
   await page.getByRole('button', { name: 'Schlaf' }).click();
   await shot(page, '07-demo-schlaf', true);
 
-  await page.goto('/#/rueckblick');
+  await page.goto('./#/rueckblick');
   await expect(page.getByTestId('review-season')).toContainText('Spiele');
   await shot(page, '07-demo-rueckblick', true);
   await page.getByRole('button', { name: 'Monat' }).click();
   await shot(page, '07-demo-rueckblick-monat', true);
 
-  await page.goto('/#/habits');
+  await page.goto('./#/habits');
   await shot(page, '07-demo-habits', true);
 
-  await page.goto('/#/einstellungen');
+  await page.goto('./#/einstellungen');
   // Der Schalter ist gesperrt, bis der echte Zustand geladen ist (kein Flackern auf „aus“).
   await expect(page.getByTestId('demo-toggle')).toBeChecked(SLOW_WRITE);
   await expect(page.getByTestId('demo-toggle')).toBeEnabled();
@@ -201,8 +201,8 @@ test('Demo-Daten an → alle Screens mit Daten → aus = vollständig weg @scree
   await page.waitForTimeout(500);
   await expect(page.getByTestId('demo-toggle')).not.toBeChecked();
   await expect(page.getByTestId('demo-toggle')).toBeEnabled();
-  await page.goto('/#/training');
+  await page.goto('./#/training');
   await expect(page.getByTestId('session-row')).toHaveCount(0);
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await expect(page.getByTestId('demo-notice')).toHaveCount(0);
 });

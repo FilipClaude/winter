@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { enableDemo, shot } from './helpers';
 
 async function simulate(page: Page, label: 'Echt' | 'Nacht' | 'Morgen' | 'Tag' | 'Abend') {
-  await page.goto('/#/einstellungen');
+  await page.goto('./#/einstellungen');
   await page
     .getByRole('group', { name: 'Tageszeit simulieren' })
     .getByRole('button', { name: label, exact: true })
@@ -21,7 +21,7 @@ test('Winterhimmel: alle Phasen per Entwickler-Schalter, Glas passt sich an @scr
   const glass: number[] = [];
   for (const [label, id] of phases) {
     await simulate(page, label);
-    await page.goto('/#/heute');
+    await page.goto('./#/heute');
     await expect(page.locator('html')).toHaveAttribute('data-sky', id);
     glass.push(
       await page.evaluate(() =>
@@ -37,7 +37,7 @@ test('Winterhimmel: alle Phasen per Entwickler-Schalter, Glas passt sich an @scr
 
 test('Bewegung reduzieren: statischer Himmel, kein Animations-Loop', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await expect(page.getByTestId('sky')).toBeVisible();
   const frames = await page.evaluate(async () => {
     let n = 0;
@@ -55,6 +55,8 @@ test('Bewegung reduzieren: statischer Himmel, kein Animations-Loop', async ({ pa
 
 test('Leerlauf-CPU des Himmels messen (Chromium, CDP) @perf', async ({ page, browserName }, info) => {
   test.skip(browserName !== 'chromium', 'CDP-Messung nur in Chromium');
+  // Messung auf geteilten CI-Runnern ist zu unruhig für eine harte Schranke – nur lokal.
+  test.skip(!!process.env.CI, 'CPU-Messung nur lokal');
   test.setTimeout(90_000);
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Performance.enable');
@@ -75,11 +77,11 @@ test('Leerlauf-CPU des Himmels messen (Chromium, CDP) @perf', async ({ page, bro
       scriptPercent: Math.round((((b.ScriptDuration ?? 0) - (a.ScriptDuration ?? 0)) / wall) * 1000) / 10,
     };
   };
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   const snow = await measure();
-  await page.goto('/#/einstellungen');
+  await page.goto('./#/einstellungen');
   await page.getByRole('group', { name: 'Schnee' }).getByRole('button', { name: 'Aus' }).click();
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   const still = await measure();
   const result = { snow, still, note: 'Hauptthread-Anteil im Leerlauf, 10 s, Chromium Desktop (Windows)' };
   await info.attach('sky-cpu.json', {
@@ -93,9 +95,9 @@ test('Leerlauf-CPU des Himmels messen (Chromium, CDP) @perf', async ({ page, bro
 });
 
 test('Schnee aus: kein Dauer-Loop (Akku)', async ({ page }) => {
-  await page.goto('/#/einstellungen');
+  await page.goto('./#/einstellungen');
   await page.getByRole('group', { name: 'Schnee' }).getByRole('button', { name: 'Aus' }).click();
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await page.waitForTimeout(500);
   const frames = await page.evaluate(async () => {
     let n = 0;

@@ -112,7 +112,19 @@ export function parseSettings(raw: unknown): Settings {
       value = { ...(def as object), ...value };
     }
     const r = shape[key].safeParse(value);
-    out[key] = r.success ? r.data : def;
+    if (r.success) {
+      out[key] = r.data;
+      continue;
+    }
+    // Objekt mit einem kaputten Unterfeld: nur dieses Feld auf den Standard, die übrigen behalten.
+    if (MERGED_KEYS.has(key) && value && typeof value === 'object' && def && typeof def === 'object') {
+      const merged: Record<string, unknown> = { ...(def as Record<string, unknown>) };
+      for (const [field, fieldValue] of Object.entries(value as Record<string, unknown>)) {
+        if (shape[key].safeParse({ ...merged, [field]: fieldValue }).success) merged[field] = fieldValue;
+      }
+      const again = shape[key].safeParse(merged);
+      out[key] = again.success ? again.data : def;
+    } else out[key] = def;
   }
   return out as Settings;
 }

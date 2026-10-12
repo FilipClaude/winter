@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { shot } from './helpers';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/#/koerper');
+  await page.goto('./#/koerper');
   await expect(page.getByRole('heading', { name: 'Körper', level: 1 })).toBeVisible();
 });
 

@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { shot } from './helpers';
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await expect(page.getByTestId('ring-card')).toBeVisible();
 });
 

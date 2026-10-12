@@ -26,6 +26,7 @@ import { useToday } from '../../hooks/useNow';
 import {
   backupFileName,
   createBackup,
+  deleteSnapshot,
   listSnapshots,
   markBackupDone,
   previewBackup,
@@ -34,6 +35,7 @@ import {
   saveSafetySnapshot,
   wipeAll,
   type BackupPreview,
+  type SnapshotMeta,
 } from '../../lib/backup';
 import { formatDecimal } from '../../lib/calc/insights';
 import { diffDays, formatDE, startOfWeek, toISODate, toTimeHM } from '../../lib/date';
@@ -450,10 +452,11 @@ function ImportPreview({ preview, close, snapshot = false }: { preview: BackupPr
   );
 }
 
-const SNAPSHOT_LABEL: Record<string, string> = {
-  'vor-v2': 'Vor dem Update auf v2',
-  'vor-import': 'Vor dem letzten Import',
-};
+function snapshotLabel(s: SnapshotMeta): string {
+  if (s.reason === 'migration') return 'Vor dem Update auf v2';
+  if (s.reason === 'manual') return 'Vor einem Import';
+  return `Täglich · ${formatDE(s.id)}`;
+}
 
 function SnapshotsCard() {
   const { toast, openSheet } = useOverlay();
@@ -461,14 +464,14 @@ function SnapshotsCard() {
   return (
     <Card label="Automatische Sicherungen" icon={History} ariaLabel="Automatische Sicherungen" testId="snapshots-card">
       <p className="small muted">
-        Einmal täglich legt Winter auf diesem Gerät eine Sicherung an (die letzten 7 bleiben). Sie ersetzt kein Backup als Datei, weil sie mit den Website-Daten verloren gehen kann.
+        Einmal täglich legt Winter auf diesem Gerät eine Sicherung an (die letzten 7 bleiben, vor Importen die letzten 3). Bei knappem Speicher wird ausgesetzt. Sie ersetzen kein Backup als Datei, weil sie mit den Website-Daten verloren gehen können.
       </p>
       {list && list.length > 0 ? (
         <div className="list">
           {list.map((s) => (
             <div key={s.id} className="list-item">
               <span className="grow">
-                <span className="list-item__title">{SNAPSHOT_LABEL[s.id] ?? formatDE(s.id)}</span>
+                <span className="list-item__title">{snapshotLabel(s)}</span>
                 <br />
                 <span className="list-item__meta mono">
                   {formatDE(toISODate(s.createdAt))} {toTimeHM(s.createdAt)} · {s.rows} Einträge
@@ -489,6 +492,11 @@ function SnapshotsCard() {
               >
                 Ansehen
               </Button>
+              <IconButton
+                icon={Trash2}
+                label={`Sicherung ${snapshotLabel(s)} löschen`}
+                onClick={() => void deleteSnapshot(s.id).then(() => toast('Sicherung gelöscht'))}
+              />
             </div>
           ))}
         </div>
@@ -652,16 +660,28 @@ function DangerCard() {
 function WipeSheet({ close }: { close: () => void }) {
   const { toast } = useOverlay();
   const [word, setWord] = useState('');
+  const [withSnapshots, setWithSnapshots] = useState(false);
   return (
     <div className="form">
-      <p className="small">Löscht alle Einträge und Einstellungen auf diesem Gerät. Standardfächer und -vorlagen werden neu angelegt. Das lässt sich nur mit einem Backup rückgängig machen.</p>
+      <p className="small">
+        Löscht alle Einträge und Einstellungen auf diesem Gerät. Standardfächer und -vorlagen werden neu angelegt.{' '}
+        {withSnapshots
+          ? 'Auch die automatischen Sicherungen werden gelöscht – rückgängig nur mit einem Backup als Datei.'
+          : 'Die automatischen Sicherungen bleiben erhalten; darüber lässt sich das Löschen rückgängig machen.'}
+      </p>
+      <ToggleRow
+        label="Auch automatische Sicherungen löschen"
+        hint="Sinnvoll, bevor du das Gerät weitergibst."
+        checked={withSnapshots}
+        onChange={setWithSnapshots}
+      />
       <TextField label="Zur Bestätigung LÖSCHEN eingeben" value={word} onValue={setWord} autoCapitalize="characters" autoComplete="off" />
       <Button
         variant="warn"
         block
         disabled={word.trim().toUpperCase() !== 'LÖSCHEN'}
         onClick={() =>
-          void wipeAll().then(() => {
+          void wipeAll({ withSnapshots }).then(() => {
             toast('Alle Daten gelöscht', { tone: 'warn' });
             close();
           })

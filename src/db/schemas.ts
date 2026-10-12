@@ -454,9 +454,17 @@ export const zSettings = z.object({
   abi: z.object({
     examSubjects: z.array(zId).max(5),
     examPoints: z.record(z.string(), zInt(0, 15)),
-    /** Gewichtung groß : klein bei der Halbjahresleistung. */
+    /** Gewichtung groß : klein bei der Halbjahresleistung (GSO: 1 : 1). */
     bigWeight: z.number().min(0).max(10),
     smallWeight: z.number().min(0).max(10),
+    /** Einbringungsrolle je Fach-ID (fehlt = automatisch). */
+    roles: z.record(z.string(), z.enum(['all', 'three', 'free', 'none'])),
+    /** W-Seminar: Halbjahresleistungen 12/1, 12/2 und Gesamtleistung der Seminararbeit (0–30, zählt wie 2 HJL). */
+    seminar: z.object({
+      s1: zInt(0, 15).nullable(),
+      s2: zInt(0, 15).nullable(),
+      paper: zInt(0, 30).nullable(),
+    }),
   }),
   bfv: z.object({ enabled: z.boolean(), playerName: zText(80) }),
 });
@@ -502,7 +510,14 @@ export const DEFAULT_SETTINGS: Settings = {
   pomodoro: { workMin: 25, breakMin: 5 },
   dashboard: DEFAULT_DASHBOARD,
   onboarded: false,
-  abi: { examSubjects: [], examPoints: {}, bigWeight: 1, smallWeight: 1 },
+  abi: {
+    examSubjects: [],
+    examPoints: {},
+    bigWeight: 1,
+    smallWeight: 1,
+    roles: {},
+    seminar: { s1: null, s2: null, paper: null },
+  },
   bfv: { enabled: true, playerName: '' },
 };
 

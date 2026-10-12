@@ -1,5 +1,12 @@
 import { defineConfig } from '@playwright/test';
 
+/**
+ * Unterordner wie auf GitHub Pages (BASE_PATH=/winter/). Die CI testet genau den Build, der danach
+ * veröffentlicht wird; lokal ohne BASE_PATH unter „/“. Tests navigieren deshalb relativ („./#/heute“).
+ */
+const BASE = process.env.BASE_PATH ?? '/';
+const ORIGIN = 'http://localhost:4173';
+
 const iphone = {
   viewport: { width: 390, height: 844 },
   deviceScaleFactor: 2,
@@ -20,7 +27,7 @@ export default defineConfig({
   timeout: 30_000,
   expect: { timeout: 5_000 },
   use: {
-    baseURL: 'http://localhost:4173',
+    baseURL: `${ORIGIN}${BASE}`,
     trace: 'retain-on-failure',
     serviceWorkers: 'block',
     ...iphone,
@@ -31,7 +38,12 @@ export default defineConfig({
     {
       name: 'webkit',
       testIgnore: /offline\.spec\.ts|visual\.spec\.ts/,
-      use: { browserName: 'webkit' },
+      // CI-Runner rendern WebKit ohne GPU: Glas-Unschärfe über animiertem Schnee macht jedes Bild so
+      // langsam, dass Klicks ins Zeitlimit laufen. Dort statischer Himmel (Bewegung reduzieren).
+      use: {
+        browserName: 'webkit',
+        contextOptions: { reducedMotion: process.env.CI ? 'reduce' : 'no-preference' },
+      },
     },
     {
       name: 'offline',
@@ -41,7 +53,7 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npx vite preview --port 4173 --strictPort',
-    url: 'http://localhost:4173',
+    url: `${ORIGIN}${BASE}`,
     reuseExistingServer: true,
     timeout: 60_000,
   },

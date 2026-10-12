@@ -202,7 +202,7 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
         a.fill();
         // Schneekuppen ganz dezent heller
         a.globalCompositeOperation = 'source-atop';
-        const snowCap = lerp(col, [200, 220, 240], 0.06 + 0.04 * (2 - i));
+        const snowCap = lerp(col, parseRgb(frost), 0.06 + 0.04 * (2 - i));
         const sg = a.createLinearGradient(0, 0, 0, lh * 0.6);
         sg.addColorStop(0, rgbString(snowCap));
         sg.addColorStop(1, rgbString(col));
@@ -317,6 +317,8 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
     const resize = () => {
       w = window.innerWidth;
       h = window.innerHeight;
+      // iOS meldet beim Start im Hintergrund kurz 0 × 0 – eine leere Canvas ließe drawImage werfen.
+      if (w < 1 || h < 1) return;
       dpr = Math.min(MAX_DPR, window.devicePixelRatio || 1);
       el.width = Math.round(w * dpr);
       el.height = Math.round(h * dpr);
@@ -336,7 +338,7 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
     const animating = () => snowFactor > 0 && !reduce;
     const frame = (t: number) => {
       raf = 0;
-      if (document.visibilityState !== 'visible') return;
+      if (document.visibilityState !== 'visible' || back.width < 1 || back.height < 1) return;
       if (dirty) {
         composeSky();
         dirty = false;
@@ -361,8 +363,10 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
     };
     const onVisibility = () => {
       if (document.visibilityState === 'visible') {
-        refreshSky();
+        if (back.width < 1) resize();
+        else refreshSky();
         last = performance.now();
+        loadWeather();
         kick();
       } else if (raf) {
         cancelAnimationFrame(raf);
@@ -374,6 +378,21 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
       dirty = true;
       kick();
     };
+
+    let cancelled = false;
+    // Echtes Wetter: beim Start und bei jeder Rückkehr in die App (der Cache hält 30 min).
+    function loadWeather() {
+      if (snowMode !== 'weather' || reduce) return;
+      void fetchSnowLevel().then((level: SnowLevel) => {
+        if (cancelled) return;
+        const next = [0, 1, 1.8, 2.6][level] ?? 1;
+        if (next === snowFactor) return;
+        snowFactor = next;
+        spawnLayers();
+        root.dataset.snow = String(level);
+        kick();
+      });
+    }
 
     resize();
     kick();
@@ -387,16 +406,7 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
       kick();
     }, 60_000);
 
-    let cancelled = false;
-    if (snowMode === 'weather' && !reduce) {
-      void fetchSnowLevel().then((level: SnowLevel) => {
-        if (cancelled) return;
-        snowFactor = [0, 1, 1.8, 2.6][level] ?? 1;
-        spawnLayers();
-        root.dataset.snow = String(level);
-        kick();
-      });
-    }
+    loadWeather();
 
     return () => {
       cancelled = true;

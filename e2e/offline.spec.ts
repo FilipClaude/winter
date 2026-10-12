@@ -6,7 +6,7 @@ import { shot } from './helpers';
  */
 test('PWA ist installierbar und läuft ohne Netz weiter', async ({ page, context }) => {
   test.setTimeout(60_000);
-  await page.goto('/');
+  await page.goto('./');
   await expect(page.getByTestId('ring-card')).toBeVisible();
 
   // Service Worker aktiv und kontrolliert die Seite
@@ -42,11 +42,11 @@ test('PWA ist installierbar und läuft ohne Netz weiter', async ({ page, context
     await page.getByRole('navigation').getByRole('button', { name: tab }).click();
     await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();
   }
-  await page.goto('/#/einstellungen');
+  await page.goto('./#/einstellungen');
   await expect(page.getByRole('heading', { level: 1, name: 'Einstellungen' })).toBeVisible();
 
   // Erfassen funktioniert offline und überlebt einen Neustart ohne Netz
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await page.getByRole('button', { name: 'Ein Glas Wasser' }).click();
   await expect(page.getByTestId('water-value')).toContainText('1');
   await page.reload();

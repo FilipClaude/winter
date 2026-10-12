@@ -27,7 +27,7 @@ async function addDeadline(page: Page, title: string, inDays: number, module?: s
 }
 
 test('Lern-Timer übersteht Neuladen und speichert Lernzeit', async ({ page }) => {
-  await page.goto('/#/schule');
+  await page.goto('./#/schule');
   await page.getByRole('button', { name: 'Lernen starten' }).click();
   const dialog = page.getByRole('dialog', { name: 'Lernzeit' });
   await dialog.getByRole('button', { name: 'Mathe', exact: true }).click();
@@ -45,7 +45,7 @@ test('Lern-Timer übersteht Neuladen und speichert Lernzeit', async ({ page }) =
 });
 
 test('Lernzeit nachtragen erscheint pro Fach @screens', async ({ page }) => {
-  await page.goto('/#/schule');
+  await page.goto('./#/schule');
   await page.getByTestId('fab').click();
   await page.getByTestId('qa-lernen').click();
   const dialog = page.getByRole('dialog', { name: 'Lernzeit' });
@@ -59,7 +59,7 @@ test('Lernzeit nachtragen erscheint pro Fach @screens', async ({ page }) => {
 });
 
 test('FernUni-Fristen: Warnstufen 14/7/2 Tage auf Heute, abhaken @screens', async ({ page }) => {
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await addDeadline(page, 'EA 1', 1, 'Grundlagen der BWL');
   await addDeadline(page, 'EA 2', 6);
   await addDeadline(page, 'EA 3', 12);
@@ -76,7 +76,7 @@ test('FernUni-Fristen: Warnstufen 14/7/2 Tage auf Heute, abhaken @screens', asyn
   await alerts.getByRole('checkbox', { name: 'EA 1 erledigt' }).click();
   await expect(alerts.locator('.deadline')).toHaveCount(2);
 
-  await page.goto('/#/schule');
+  await page.goto('./#/schule');
   await page.getByRole('button', { name: 'FernUni' }).click();
   await expect(page.getByTestId('deadline-list')).toContainText('Klausur Modul');
   await expect(page.getByTestId('deadline-list')).toContainText('in 30 Tagen');
@@ -84,7 +84,7 @@ test('FernUni-Fristen: Warnstufen 14/7/2 Tage auf Heute, abhaken @screens', asyn
 });
 
 test('Überfällige Frist bleibt sichtbar', async ({ page }) => {
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await addDeadline(page, 'EA verpasst', -2, 'Mikroökonomik');
   await expect(page.getByTestId('deadline-alerts').locator('.deadline--ueberfaellig')).toContainText(
     'seit 2 Tagen überfällig',
@@ -92,7 +92,7 @@ test('Überfällige Frist bleibt sichtbar', async ({ page }) => {
 });
 
 test('Klausur mit Countdown und Notenschnitt @screens', async ({ page }) => {
-  await page.goto('/#/schule');
+  await page.goto('./#/schule');
   await page.getByRole('button', { name: 'Klausuren' }).click();
   // anstehend
   await page.getByRole('button', { name: 'Klausur', exact: true }).click();
@@ -121,13 +121,13 @@ test('Klausur mit Countdown und Notenschnitt @screens', async ({ page }) => {
   await expect(grades).toContainText('12,0'); // Deutsch
   await shot(page, '05-klausuren', true);
 
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await expect(page.getByRole('button', { name: 'Nächster Termin' })).toContainText('Mathe');
   await expect(page.getByRole('button', { name: 'Nächster Termin' })).toContainText('5');
 });
 
 test('Aufgabe anlegen und abhaken', async ({ page }) => {
-  await page.goto('/#/schule');
+  await page.goto('./#/schule');
   await page.getByRole('button', { name: 'Aufgabe', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Aufgabe' });
   await dialog.getByLabel('Aufgabe').fill('Englisch Essay');
@@ -143,7 +143,7 @@ test('Aufgabe anlegen und abhaken', async ({ page }) => {
 });
 
 test('Vergessener Timer (> 6 h) wird gemeldet und lässt sich verwerfen', async ({ page }) => {
-  await page.goto('/#/schule');
+  await page.goto('./#/schule');
   await expect(page.getByRole('button', { name: 'Lernen starten' })).toBeVisible();
   // Timer direkt in IndexedDB setzen: Start vor 7 Stunden
   await page.evaluate(

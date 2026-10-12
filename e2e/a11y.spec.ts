@@ -27,11 +27,11 @@ test('Barrierefreiheit (axe, WCAG AA) aller Screens mit Demo-Daten', async ({ pa
   await page.waitForTimeout(2800); // Toast abwarten
 
   for (const route of ['heute', 'training', 'schule', 'koerper', 'rueckblick', 'habits', 'einstellungen']) {
-    await page.goto(`/#/${route}`);
+    await page.goto(`./#/${route}`);
     await audit(page, route);
   }
   // Offene Sheets
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await page.getByTestId('fab').click();
   await audit(page, 'schnellerfassung');
   await page.getByTestId('qa-training').click();
@@ -39,8 +39,8 @@ test('Barrierefreiheit (axe, WCAG AA) aller Screens mit Demo-Daten', async ({ pa
 });
 
 test('Seitentitel folgt dem Screen', async ({ page }) => {
-  await page.goto('/#/schule');
+  await page.goto('./#/schule');
   await expect(page).toHaveTitle('Schule · Winter');
-  await page.goto('/#/heute');
+  await page.goto('./#/heute');
   await expect(page).toHaveTitle('Heute · Winter');
 });

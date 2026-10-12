@@ -4,7 +4,8 @@ import './styles/base.css';
 import './styles/ui.css';
 import './styles/screens.css';
 import { App } from './App';
-import { ensureDailySnapshot } from './lib/backup';
+import { ensureDailySnapshot, ensureMigrationSnapshot } from './lib/backup';
+import { RootBoundary } from './shell/RootBoundary';
 
 // Dauerhaften Speicher anfragen, damit iOS/Browser die Daten nicht bei Speicherdruck verwerfen.
 void navigator.storage?.persist?.().catch(() => undefined);
@@ -12,7 +13,9 @@ void navigator.storage?.persist?.().catch(() => undefined);
 // Automatische Tages-Sicherung (max. 1 pro Tag, die letzten 7 bleiben). Läuft nach dem ersten Rendern,
 // und erneut, wenn die App nach längerer Zeit wieder in den Vordergrund kommt (iOS hält PWAs tagelang offen).
 const snapshot = () =>
-  void ensureDailySnapshot().catch((e: unknown) => console.warn('Snapshot fehlgeschlagen', e));
+  void ensureMigrationSnapshot()
+    .then(() => ensureDailySnapshot())
+    .catch((e: unknown) => console.warn('Snapshot fehlgeschlagen', e));
 window.setTimeout(snapshot, 1500);
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') snapshot();
@@ -23,6 +26,8 @@ if (!root) throw new Error('#root fehlt in index.html');
 
 createRoot(root).render(
   <StrictMode>
-    <App />
+    <RootBoundary>
+      <App />
+    </RootBoundary>
   </StrictMode>,
 );

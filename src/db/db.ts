@@ -112,34 +112,19 @@ export class WinterDB extends Dexie {
   goals!: EntityTable<Goal, 'id'>;
   snapshots!: EntityTable<Snapshot, 'id'>;
 
+  /** Wurde beim Öffnen von v1 auf v2 migriert? Dann legt `ensureMigrationSnapshot` die Sicherung an. */
+  migratedFromV1 = false;
+
   constructor(name = 'winter') {
     super(name);
     this.version(1).stores(V1_STORES);
+    // Bewusst ohne Schreibzugriffe im Upgrade: Schlüge dort etwas fehl (z. B. Speicher voll), bräche
+    // IndexedDB das Upgrade bei jedem Start erneut ab und die App wäre unbenutzbar. Die Migration ist
+    // rein additiv – die Sicherung „vor-v2“ entsteht danach in einer normalen Transaktion (gleicher Inhalt).
     this.version(2)
       .stores(V2_STORES)
-      .upgrade(async (tx) => {
-        // Vor der ersten v2-Nutzung den kompletten v1-Stand als Sicherung ablegen (wiederherstellbar
-        // in den Einstellungen). Bestehende Daten werden nicht verändert.
-        const tables: Record<string, unknown[]> = {};
-        let rows = 0;
-        for (const t of V1_DATA_TABLES) {
-          tables[t] = await tx.table(t).toArray();
-          rows += tables[t].length;
-        }
-        const kv: Record<string, unknown> = {};
-        for (const row of (await tx.table('kv').toArray()) as KV[]) {
-          if (BACKUP_KV_KEYS.includes(row.key)) kv[row.key] = row.value;
-        }
-        if (rows === 0) return;
-        const now = new Date().toISOString();
-        await tx.table('snapshots').put({
-          id: 'vor-v2',
-          createdAt: now,
-          schemaVersion: 1,
-          reason: 'migration',
-          rows,
-          data: { app: 'winter', format: 1, schemaVersion: 1, exportedAt: now, tables, kv },
-        } satisfies Snapshot);
+      .upgrade(() => {
+        this.migratedFromV1 = true;
       });
     this.on('populate', (tx) => seedDefaults(tx));
   }

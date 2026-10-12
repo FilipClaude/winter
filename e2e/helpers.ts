@@ -16,7 +16,7 @@ export async function shot(page: Page, name: string, fullPage = false): Promise<
 
 /** Demo-Daten in den Einstellungen einschalten und warten, bis sie geschrieben sind. */
 export async function enableDemo(page: Page): Promise<void> {
-  await page.goto('/#/einstellungen');
+  await page.goto('./#/einstellungen');
   await page.getByTestId('demo-toggle').check();
   await page.getByText(/Demo-Einträge angelegt/).waitFor(SLOW_WRITE);
   await page.getByTestId('demo-toggle').and(page.locator(':checked')).waitFor();
