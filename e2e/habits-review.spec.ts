@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { shot } from './helpers';
 
 test('Habit anlegen → auf Heute abhaken → Streak und Heatmap @screens', async ({ page }) => {

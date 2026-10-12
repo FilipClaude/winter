@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Play, Square, Trash2, X } from 'lucide-react';
+import { CalendarClock, Play, Plus, Square, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { db } from '../../db/db';
 import {
@@ -8,21 +8,26 @@ import {
   deleteDeadline,
   deleteExam,
   deleteTodo,
+  replaceExamPlan,
   saveDeadline,
   saveExam,
   saveModule,
   saveTodo,
   startTimer,
   stopTimer,
+  syncExamGrade,
   ValidationError,
 } from '../../db/repo';
-import { DEADLINE_KINDS, EXAM_KINDS, type Deadline, type Exam, type Todo } from '../../db/schemas';
-import { useNow } from '../../hooks/useNow';
+import { DEADLINE_KINDS, EXAM_KINDS, type Deadline, type Exam, type ExamTopic, type Todo } from '../../db/schemas';
+import { useSettings } from '../../hooks/useSettings';
+import { useNow, useToday } from '../../hooks/useNow';
+import { buildStudyPlan } from '../../lib/calc/studyplan';
+import { uid } from '../../lib/id';
 import { pointsToGrade } from '../../lib/calc/school';
 import { formatHM, todayISO, type ISODate } from '../../lib/date';
-import { NumberField, SelectField, TextArea, TextField } from '../../ui/controls';
+import { NumberField, Segmented, SelectField, TextArea, TextField } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
-import { Button, SectionTitle } from '../../ui/primitives';
+import { Button, IconButton, SectionTitle } from '../../ui/primitives';
 import { DEADLINE_KIND_LABEL, EXAM_KIND_LABEL, formatClock, useTimer } from './school-utils';
 
 function useSubjects() {
@@ -177,17 +182,45 @@ export function TodoSheet({ close, todo }: { close: () => void; todo?: Todo }) {
 
 // ---------- Klausuren ----------
 
+const LEVEL_LABEL = ['offen', 'angefangen', 'sitzt', 'wiederholt'] as const;
+
 export function ExamSheet({ close, exam }: { close: () => void; exam?: Exam }) {
   const { toast } = useOverlay();
   const subjects = useSubjects();
+  const settings = useSettings();
+  const today = useToday();
   const [subjectId, setSubjectId] = useState(exam?.subjectId ?? '');
   const [kind, setKind] = useState<Exam['kind']>(exam?.kind ?? 'klausur');
   const [date, setDate] = useState(exam?.date ?? '');
   const [topics, setTopics] = useState(exam?.topics ?? '');
+  const [topicList, setTopicList] = useState<ExamTopic[]>(exam?.topicList ?? []);
+  const [newTopic, setNewTopic] = useState('');
   const [progress, setProgress] = useState(exam?.progress ?? 0);
   const [points, setPoints] = useState<number | ''>(exam?.points ?? '');
+  const [reflection, setReflection] = useState(exam?.reflection ?? '');
+  const [planInfo, setPlanInfo] = useState('');
   const { error, handle } = useError();
   const chosen = subjectId || subjects[0]?.id || '';
+  // Mit Themen-Checkliste ergibt sich der Lernstand aus den Themen (0–3 je Thema).
+  const effectiveProgress =
+    topicList.length > 0 ? Math.round((topicList.reduce((a, t) => a + t.level, 0) / (topicList.length * 3)) * 100) : progress;
+  const returned = points !== '' || (date !== '' && date < today);
+
+  async function persist(): Promise<Exam> {
+    const saved = await saveExam({
+      ...(exam ? { id: exam.id, createdAt: exam.createdAt } : {}),
+      subjectId: chosen,
+      kind,
+      date,
+      topics,
+      progress: effectiveProgress,
+      ...(topicList.length > 0 ? { topicList } : {}),
+      ...(reflection.trim() ? { reflection: reflection.trim() } : {}),
+      ...(points !== '' ? { points: Math.round(points) } : {}),
+    });
+    await syncExamGrade(saved);
+    return saved;
+  }
 
   return (
     <div className="form">
@@ -196,29 +229,84 @@ export function ExamSheet({ close, exam }: { close: () => void; exam?: Exam }) {
         <SelectField label="Art" value={kind} onValue={(v) => setKind(v as Exam['kind'])} options={EXAM_KINDS.map((k) => ({ value: k, label: EXAM_KIND_LABEL[k] }))} />
       </div>
       <TextField label="Datum" type="date" value={date} onValue={setDate} />
-      <TextArea label="Themen" value={topics} onValue={setTopics} rows={3} maxLength={2000} placeholder="z. B. Analysis: Ableitungen, Kurvendiskussion" />
-      <div className="field">
-        <label className="field__label" htmlFor="exam-progress">
-          Lernstand · <span className="mono accent">{progress} %</span>
-        </label>
-        <input id="exam-progress" className="range" type="range" min={0} max={100} step={5} value={progress} onChange={(e) => setProgress(Number(e.target.value))} />
+      <TextArea label="Notiz zu den Themen" value={topics} onValue={setTopics} rows={2} maxLength={2000} placeholder="z. B. Analysis: Ableitungen, Kurvendiskussion" />
+
+      <div className="stack stack--s" data-testid="exam-topics">
+        <span className="field__label">Themen · Lernstand {effectiveProgress} %</span>
+        {topicList.map((t, i) => (
+          <div key={t.id} className="topic-row">
+            <span className="grow small">{t.title}</span>
+            <Segmented
+              label={`Lernstand ${t.title}`}
+              value={String(t.level)}
+              options={LEVEL_LABEL.map((l, lv) => ({ value: String(lv), label: l }))}
+              onChange={(v) => setTopicList(topicList.map((x, j) => (j === i ? { ...x, level: Number(v) } : x)))}
+            />
+            <IconButton icon={Trash2} label={`${t.title} entfernen`} onClick={() => setTopicList(topicList.filter((_, j) => j !== i))} />
+          </div>
+        ))}
+        <div className="row">
+          <div className="grow">
+            <TextField label="Neues Thema" value={newTopic} onValue={setNewTopic} maxLength={120} placeholder="z. B. Integrale" />
+          </div>
+          <Button
+            size="s"
+            variant="secondary"
+            icon={Plus}
+            disabled={!newTopic.trim()}
+            onClick={() => {
+              setTopicList([...topicList, { id: uid(), title: newTopic.trim(), level: 0 }]);
+              setNewTopic('');
+            }}
+          >
+            Thema
+          </Button>
+        </div>
       </div>
-      <NumberField label="Punkte (0–15, nach Rückgabe)" value={points} onValue={setPoints} min={0} max={15} hint={points !== '' ? `Note ${pointsToGrade(points)}` : 'leer lassen, solange nicht bewertet'} />
+
+      {topicList.length === 0 && (
+        <div className="field">
+          <label className="field__label" htmlFor="exam-progress">
+            Lernstand · <span className="mono accent">{progress} %</span>
+          </label>
+          <input id="exam-progress" className="range" type="range" min={0} max={100} step={5} value={progress} onChange={(e) => setProgress(Number(e.target.value))} />
+        </div>
+      )}
+      <NumberField label="Punkte (0–15, nach Rückgabe)" value={points} onValue={setPoints} min={0} max={15} hint={points !== '' ? `Note ${pointsToGrade(points)} – wird als Note im Fach übernommen` : 'leer lassen, solange nicht bewertet'} />
+      {returned && (
+        <TextArea label="Reflexion: Was war schwer, was mache ich nächstes Mal anders?" value={reflection} onValue={setReflection} rows={3} maxLength={4000} />
+      )}
+      {planInfo && <p className="small accent" data-testid="plan-info">{planInfo}</p>}
       {error && <p className="field__error">{error}</p>}
+      {topicList.length > 0 && date > today && points === '' && (
+        <Button
+          variant="secondary"
+          block
+          icon={CalendarClock}
+          data-testid="make-plan"
+          disabled={!chosen || !date}
+          onClick={() =>
+            void persist()
+              .then(async (saved) => {
+                const plan = buildStudyPlan(saved.date, today, topicList, { minutesPerSchoolDay: Math.max(15, Math.round(settings.goals.studyMin / 2)) });
+                await replaceExamPlan(
+                  saved.id,
+                  plan.blocks.map((b) => ({ date: b.date, subjectId: saved.subjectId, examId: saved.id, topic: b.topic.slice(0, 120), kind: b.kind, minutes: b.minutes, done: false })),
+                );
+                setPlanInfo(`${plan.blocks.length} Lerneinheiten geplant – sie erscheinen auf „Heute“ und unter Schule → Plan.${plan.warning ? ` ${plan.warning}` : ''}`);
+              })
+              .catch(handle)
+          }
+        >
+          Lernplan erstellen
+        </Button>
+      )}
       <Button
         variant="primary"
         block
         disabled={!chosen || !date}
         onClick={() =>
-          void saveExam({
-            ...(exam ? { id: exam.id, createdAt: exam.createdAt } : {}),
-            subjectId: chosen,
-            kind,
-            date,
-            topics,
-            progress,
-            ...(points !== '' ? { points: Math.round(points) } : {}),
-          })
+          void persist()
             .then(() => {
               toast('Klausur gespeichert');
               close();

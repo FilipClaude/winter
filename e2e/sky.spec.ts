@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { enableDemo, shot } from './helpers';
 
 async function simulate(page: Page, label: 'Echt' | 'Nacht' | 'Morgen' | 'Tag' | 'Abend') {

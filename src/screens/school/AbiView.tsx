@@ -271,18 +271,18 @@ function HalfYearGrid({ subjects, result }: { subjects: AbiSubject[]; result: Ab
         Tippen trägt das Zeugnis ein. <b className="muted">Fett</b> = Zeugnis, normal = aus Noten, blass = Prognose,
         durchgestrichen = nicht eingebracht.
       </p>
-      <div className="abi-grid" role="table" aria-label="Halbjahresleistungen je Fach">
-        <div className="abi-grid__row abi-grid__head" role="row">
-          <span role="columnheader">Fach</span>
+      <div className="abi-grid" aria-label="Halbjahresleistungen je Fach">
+        <div className="abi-grid__row abi-grid__head" aria-hidden>
+          <span>Fach</span>
           {SEMESTERS.map((s) => (
-            <span key={s} role="columnheader" className="mono">
+            <span key={s} className="mono">
               {s}
             </span>
           ))}
         </div>
         {rows.map((s) => (
-          <div key={s.id} className="abi-grid__row" role="row">
-            <span role="rowheader" className="abi-grid__name">
+          <div key={s.id} className="abi-grid__row">
+            <span className="abi-grid__name">
               {s.name}
               {s.exam && <span className="accent"> ·A</span>}
             </span>
@@ -292,7 +292,6 @@ function HalfYearGrid({ subjects, result }: { subjects: AbiSubject[]; result: Ab
                 <button
                   key={sem}
                   type="button"
-                  role="cell"
                   className={`abi-cell abi-cell--${h?.kind ?? 'leer'} ${h && !included.has(h) ? 'abi-cell--out' : ''}`}
                   aria-label={`${s.name} ${sem}: ${h ? `${h.points} Punkte (${h.kind}${included.has(h) ? '' : ', nicht eingebracht'})` : 'leer'}`}
                   onClick={() =>

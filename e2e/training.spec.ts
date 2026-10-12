@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { shot } from './helpers';
 
 async function gymSession(page: Page, kg: string) {

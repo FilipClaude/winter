@@ -321,7 +321,7 @@ export function computeAbi(input: AbiInput): AbiResult {
   const projectedCount =
     included.filter((h) => h.kind === 'prognose').length +
     seminarProjected +
-    examResults.filter((e) => e.projected).length * 4;
+    examResults.filter((e) => e.projected).length;
   return {
     included,
     excluded,
@@ -332,7 +332,7 @@ export function computeAbi(input: AbiInput): AbiResult {
     block2,
     total,
     grade: pointsToAbiGrade(total),
-    projectedShare: projectedCount / (N + 20),
+    projectedShare: Math.min(1, projectedCount / (N + 5)),
     warnings: w,
   };
 }

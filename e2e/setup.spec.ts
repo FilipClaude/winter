@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { shot } from './helpers';
 
 test('Manifest ist installierbar konfiguriert', async ({ request }) => {

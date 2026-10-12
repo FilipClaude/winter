@@ -17,13 +17,26 @@ import {
 } from '../../lib/calc/school';
 import { addDays, dateRange, diffDays, formatDE, formatHM, formatMinutes, formatShort, formatWeekdayShort, startOfWeek } from '../../lib/date';
 import { BarChart } from '../../ui/charts';
-import { FrostCheck, Segmented, TextField } from '../../ui/controls';
+import { FrostCheck, TextField } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
 import { Badge, Banner, Button, Card, EmptyState, IconButton, ProgressBar, ScreenHeader, SectionTitle, Stat } from '../../ui/primitives';
 import { DEADLINE_KIND_LABEL, EXAM_KIND_LABEL, formatClock, useTimer } from './school-utils';
+import { AbiView } from './AbiView';
+import { GradesView } from './GradesView';
+import { PlanView } from './PlanView';
 import { DeadlineSheet, ExamSheet, StudySheet, TodoSheet } from './SchoolSheets';
 
-type Tab = 'aufgaben' | 'klausuren' | 'fernuni' | 'lernzeit';
+type Tab = 'aufgaben' | 'klausuren' | 'noten' | 'abi' | 'plan' | 'fernuni' | 'lernzeit';
+
+const TABS: { value: Tab; label: string }[] = [
+  { value: 'aufgaben', label: 'Aufgaben' },
+  { value: 'klausuren', label: 'Klausuren' },
+  { value: 'noten', label: 'Noten' },
+  { value: 'abi', label: 'Abi' },
+  { value: 'plan', label: 'Plan' },
+  { value: 'fernuni', label: 'FernUni' },
+  { value: 'lernzeit', label: 'Lernzeit' },
+];
 
 export default function SchoolScreen() {
   const [tab, setTab] = useState<Tab>('aufgaben');
@@ -32,19 +45,18 @@ export default function SchoolScreen() {
       <ScreenHeader eyebrow="Q12 · Frühstudium" />
       <h1 className="screen-title">Schule</h1>
       <TimerCard />
-      <Segmented<Tab>
-        label="Bereich"
-        value={tab}
-        onChange={setTab}
-        options={[
-          { value: 'aufgaben', label: 'Aufgaben' },
-          { value: 'klausuren', label: 'Klausuren' },
-          { value: 'fernuni', label: 'FernUni' },
-          { value: 'lernzeit', label: 'Lernzeit' },
-        ]}
-      />
+      <div className="chips chips--scroll school-tabs" role="group" aria-label="Bereich">
+        {TABS.map((t) => (
+          <button key={t.value} type="button" className="chip" aria-pressed={tab === t.value} onClick={() => setTab(t.value)}>
+            {t.label}
+          </button>
+        ))}
+      </div>
       {tab === 'aufgaben' && <Todos />}
       {tab === 'klausuren' && <Exams />}
+      {tab === 'noten' && <GradesView />}
+      {tab === 'abi' && <AbiView />}
+      {tab === 'plan' && <PlanView />}
       {tab === 'fernuni' && <FernUni />}
       {tab === 'lernzeit' && <StudyStats />}
     </div>

@@ -1,6 +1,7 @@
 import type { z } from 'zod';
 import { nowISO, splitAtMidnight, todayISO, type ISODate } from '../lib/date';
 import { uid } from '../lib/id';
+import { semesterForDate } from '../lib/calc/calendar-by';
 import { normalizeExercise } from '../lib/calc/training';
 import { sleepFromWallTimes } from '../lib/calc/sleep';
 import { db } from './db';
@@ -385,7 +386,42 @@ export async function saveExam(input: WithOptionalMeta<Exam>): Promise<Exam> {
 }
 
 export async function deleteExam(id: string): Promise<void> {
-  await db.exams.delete(id);
+  await db.transaction('rw', db.exams, db.grades, db.studyBlocks, async () => {
+    await db.exams.delete(id);
+    await db.grades.filter((g) => g.examId === id).delete();
+    // Offene Lerneinheiten der Klausur entfallen, erledigte bleiben als Verlauf.
+    await db.studyBlocks
+      .where('examId')
+      .equals(id)
+      .filter((b) => !b.done)
+      .delete();
+  });
+}
+
+/**
+ * Bewertete Klausur → verknüpfte Note (für Halbjahresleistung und Abi-Rechner). Klausur = großer,
+ * Kurzarbeit/Ex/Referat = kleiner Leistungsnachweis. Ohne Punkte wird die verknüpfte Note entfernt.
+ */
+export async function syncExamGrade(exam: Exam): Promise<void> {
+  const linked = (await db.grades.where('subjectId').equals(exam.subjectId).toArray()).find(
+    (g) => g.examId === exam.id,
+  );
+  if (exam.points === undefined) {
+    if (linked) await db.grades.delete(linked.id);
+    return;
+  }
+  await saveGrade({
+    ...(linked ? { id: linked.id, createdAt: linked.createdAt } : {}),
+    date: exam.date,
+    subjectId: exam.subjectId,
+    semester: exam.semester ?? semesterForDate(exam.date),
+    size: exam.kind === 'klausur' ? 'gross' : 'klein',
+    type: exam.kind,
+    points: exam.points,
+    weight: linked?.weight ?? 1,
+    note: linked?.note ?? '',
+    examId: exam.id,
+  });
 }
 
 export async function saveModule(input: WithOptionalMeta<Module>): Promise<Module> {

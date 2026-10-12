@@ -1,4 +1,4 @@
-import { test, type Page } from '@playwright/test';
+import { test, type Page } from './fixtures';
 
 /**
  * WebKit unter Windows schreibt IndexedDB deutlich langsamer (Demo-Daten: ~11 s statt < 1 s in Chromium).

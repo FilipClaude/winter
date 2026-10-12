@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { shot } from './helpers';
 
 /** Berliner Datum in n Tagen als JJJJ-MM-TT. */

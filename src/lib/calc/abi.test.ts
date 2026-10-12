@@ -196,6 +196,56 @@ describe('Warnungen (Zulassung § 44, Bestehen § 54)', () => {
   });
 });
 
+describe('Standardrollen (Anlage 10) mit Filips Fächern', () => {
+  it('ohne Optionsregel-Warnung: 5 Abiturfächer + 3 Pflichtfächer „3 von 4“ + Seminar = 33, Rest frei', async () => {
+    const { abiSubjects } = await import('./abi-setup');
+    const names = [
+      'Deutsch',
+      'Mathe',
+      'Englisch',
+      'Geschichte',
+      'PuG',
+      'VkM',
+      'Kunst',
+      'Biophysik',
+      'Bio',
+      'Ethik',
+      'WR',
+      'FernUni',
+    ];
+    const subjects = names.map((name, i) => ({
+      id: name,
+      name,
+      short: name.slice(0, 3),
+      order: i,
+      archived: false,
+      createdAt: '2026-10-01T00:00:00.000Z',
+      updatedAt: '2026-10-01T00:00:00.000Z',
+      ...(name === 'PuG' ? { major: true } : {}),
+    }));
+    const list = abiSubjects(subjects, {
+      examSubjects: ['Deutsch', 'Mathe', 'PuG', 'Englisch', 'Geschichte'],
+      examPoints: {},
+      bigWeight: 1,
+      smallWeight: 1,
+      roles: {},
+      seminar: { s1: null, s2: null, paper: null },
+    });
+    const role = (n: string) => list.find((s) => s.id === n)?.role;
+    expect(role('Kunst')).toBe('three');
+    expect(role('Bio')).toBe('three');
+    expect(role('WR')).toBe('free');
+    expect(role('FernUni')).toBe('none');
+    const known = list.filter((s) => s.role !== 'none').flatMap((s) => hy(s.id, [10, 10, 10, 10]));
+    const examPoints = { Deutsch: 10, Mathe: 10, PuG: 10, Englisch: 10, Geschichte: 10 };
+    const r = computeAbi({ subjects: list, known, seminar: SEMINAR, examPoints });
+    expect(r.mandatoryCount).toBe(29);
+    expect(r.warnings.some((w) => w.text.includes('Optionsregel'))).toBe(false);
+    expect(r.included).toHaveLength(36);
+    expect(r.projectedShare).toBe(0);
+  });
+});
+
 describe('Regeln sind belegt oder ausdrücklich als unsicher markiert', () => {
   it('jede Regel hat Text, Quelle und Sicherheit', () => {
     for (const rule of Object.values(ABI_RULES)) {
