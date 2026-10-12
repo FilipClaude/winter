@@ -26,7 +26,7 @@ test('RÃ¼ckblick v2 mit Demo-Daten: Vergleich, Wochenbericht, Trends, ZusammenhÃ
     page.waitForEvent('download'),
     report.getByTestId('week-report-file').click(),
   ]);
-  expect(download.suggestedFilename()).toMatch(/^Wochenbericht \d{4}-KW\d{2}\.md$/);
+  expect(download.suggestedFilename()).toMatch(/^Wochenbericht-\d{4}-KW\d{2}\.md$/);
 });
 
 test('Freier Zeitraum mit Vergleich zum gleich langen Zeitraum davor', async ({ page }) => {

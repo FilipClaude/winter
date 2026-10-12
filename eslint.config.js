@@ -29,4 +29,9 @@ export default tseslint.config(
       eqeqeq: ['error', 'always'],
     },
   },
+  {
+    // Kommandozeilen-Skripte (BFV-Abgleich in der GitHub Action) dürfen auf die Konsole schreiben.
+    files: ['scripts/**/*.ts'],
+    rules: { 'no-console': 'off' },
+  },
 );

@@ -13,6 +13,7 @@ import { BarChart } from '../../ui/charts';
 import { Segmented } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
 import { Badge, Banner, Button, Card, EmptyState, ScreenHeader, SectionTitle, Stat } from '../../ui/primitives';
+import { BfvCard, PendingMatchBanners } from './BfvCard';
 import { openSessionSheet } from './openSession';
 import { SESSION_ICON } from './session-icons';
 import { ScreenSkeleton } from '../../ui/kit';
@@ -35,6 +36,9 @@ export default function TrainingScreen() {
   const weekly = weeklyLoads(sessions, weeks);
   const matches = sessions.filter((s) => s.type === 'match' && s.date >= range.from && s.date <= range.to);
   const stats = seasonStats(matches);
+  // Vorsaison zum Vergleich (Saison = 1. Juli bis 30. Juni)
+  const prevRange = seasonRange(seasonOf(addDays(range.from, -1)));
+  const prevStats = seasonStats(sessions.filter((s) => s.type === 'match' && s.date >= prevRange.from && s.date <= prevRange.to));
   const prMarks = detectPRs(sessions);
   const prSessions = new Set(prMarks.map((m) => m.sessionId));
   const bests = exerciseBests(sessions).slice(0, 6);
@@ -82,7 +86,11 @@ export default function TrainingScreen() {
         </p>
       </Card>
 
+      <PendingMatchBanners />
+
       <WeekPlanCard plan={settings.weekPlan} today={today} sessions={sessions} />
+
+      <BfvCard />
 
       <SectionTitle>Saison {season} · Spiele</SectionTitle>
       <Card ariaLabel="Saisonstatistik" testId="season-card">
@@ -101,7 +109,14 @@ export default function TrainingScreen() {
             <Stat value={stats.minutes.toLocaleString('de-DE')} label="Minuten" />
             <Stat value={formatDecimal(stats.avgRating, 1)} label="Ø Note" />
             <Stat value={`${stats.wins}-${stats.draws}-${stats.losses}`} label="S-U-N" />
+            <Stat value={stats.goals + stats.assists} label="Scorerpunkte" />
           </div>
+        )}
+        {stats.games > 0 && prevStats.games > 0 && (
+          <p className="xsmall faint" style={{ marginTop: 'var(--space-3)' }} data-testid="season-compare">
+            Vorsaison: {prevStats.goals} Tore, {prevStats.assists} Assists in {prevStats.games} Spielen · Tore/90{' '}
+            {formatDecimal(prevStats.goalsPer90, 2)}
+          </p>
         )}
       </Card>
 

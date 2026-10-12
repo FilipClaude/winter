@@ -125,6 +125,17 @@ describe('Wochenbericht', () => {
     expect(weeklyReport(d, '2026-10-12', '2026-10-13').complete).toBe(false);
   });
 
+  it('laufende Woche: nur bis heute, Vergleich mit denselben Wochentagen der Vorwoche', () => {
+    // Mittwoch 07.10.: Woche Mo–Mi (1 Einheit) gegen Mo–Mi der Vorwoche (1 Einheit am 29.09.;
+    // der Do 01.10. zählt nicht mit, obwohl die ganze Vorwoche 2 Einheiten hat)
+    const r = weeklyReport(d, '2026-10-07', '2026-10-07');
+    const k = (key: string) => r.kpis.find((x) => x.key === key);
+    expect(r.complete).toBe(false);
+    expect(k('sessions')).toMatchObject({ value: 1, prev: 1, delta: 0 });
+    // Spiel am Samstag liegt in der Zukunft → kein Einfluss auf Kennzahlen
+    expect(k('load')?.value).toBe(360);
+  });
+
   it('Markdown mit Frontmatter für Obsidian, Dateiname mit ISO-Wochenjahr', () => {
     const r = weeklyReport(d, '2026-10-07', '2026-10-13');
     const md = weeklyMarkdown(r);
@@ -132,13 +143,13 @@ describe('Wochenbericht', () => {
       md.startsWith('---\ndatum: 2026-10-11\nkw: 41\ntags: [wochenbericht]\n---\n# Wochenbericht KW 41'),
     ).toBe(true);
     expect(md).toContain('| Einheiten | 3 | 2 | ↑ |');
-    expect(weeklyFileName(r)).toBe('Wochenbericht 2026-KW41.md');
+    expect(weeklyFileName(r)).toBe('Wochenbericht-2026-KW41.md');
     // KW 53/1 über den Jahreswechsel: Woche ab Mo 28.12.2026 ist KW 53 von 2026
     expect(weeklyFileName(weeklyReport(empty(), '2026-12-29', '2027-01-10'))).toBe(
-      'Wochenbericht 2026-KW53.md',
+      'Wochenbericht-2026-KW53.md',
     );
     expect(weeklyFileName(weeklyReport(empty(), '2027-01-04', '2027-01-10'))).toBe(
-      'Wochenbericht 2027-KW01.md',
+      'Wochenbericht-2027-KW01.md',
     );
   });
 });

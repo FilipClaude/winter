@@ -1,20 +1,24 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ArrowDown, ArrowUp, BookOpenCheck, GraduationCap, GripVertical, Plus, Sparkles, Target, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, BookOpenCheck, GraduationCap, GripVertical, Plus, Shield, Sparkles, Target, Trash2 } from 'lucide-react';
 import { Reorder, useDragControls } from 'motion/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { db } from '../../db/db';
-import { deleteGoal, saveGoal, saveSettings, toggleStudyBlock, ValidationError } from '../../db/repo';
+import { deleteGoal, getSettings, saveGoal, saveSettings, toggleStudyBlock, ValidationError } from '../../db/repo';
 import { GOAL_METRICS, type DashboardWidget, type Goal, type GoalMetric } from '../../db/schemas';
+import { useBfv } from '../../hooks/useBfv';
+import { useNow } from '../../hooks/useNow';
 import { useSettings } from '../../hooks/useSettings';
+import { formatKickoff, nextMatch } from '../../lib/bfv/matches';
 import { computeAbi, knownHalfYears } from '../../lib/calc/abi';
 import { abiSubjects } from '../../lib/calc/abi-setup';
 import { buildBriefing } from '../../lib/calc/briefing';
+import { isScheduled } from '../../lib/calc/habits';
 import { nextBreak, schoolFreeReason, weekType } from '../../lib/calc/calendar-by';
 import { moveWidget, normalizeDashboard } from '../../lib/calc/dashboard-layout';
 import { GOAL_LABEL, goalProgress, goalRange } from '../../lib/calc/goals';
 import { formatDecimal } from '../../lib/calc/insights';
 import { SESSION_LABEL } from '../../lib/calc/training';
-import { addDays, formatMinutes, isoWeekday, type ISODate } from '../../lib/date';
+import { addDays, diffDays, formatMinutes, isoWeekday, toISODate, type ISODate } from '../../lib/date';
 import { navigate } from '../../router';
 import { FrostCheck, NumberField, Segmented, SelectField } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
@@ -56,7 +60,8 @@ export function BriefingWidget({ today }: { today: ISODate }) {
       },
       schoolFree: schoolFreeReason(today),
       nextBreak: nextBreak(today),
-      habitsOpen: Math.max(0, active.length - checks.length),
+      // nur heute geplante Habits zählen (Wochentage), Review-Fund
+      habitsOpen: active.filter((h) => isScheduled(h, today) && !checks.some((c) => c.habitId === h.id)).length,
     });
   }, [today, settings.weekPlan]);
   if (!lines) return null;
@@ -124,10 +129,29 @@ export function StudyTodayWidget({ date }: { date: ISODate }) {
   );
 }
 
-// ---------- Nächstes Spiel (BFV, Phase 9) ----------
+// ---------- Nächstes Spiel (BFV) ----------
 
-export function NextMatchWidget(_props: { today: ISODate }) {
-  return null;
+export function NextMatchWidget({ today }: { today: ISODate }) {
+  const bfv = useBfv();
+  const now = useNow(60_000);
+  const next = nextMatch(bfv, now);
+  if (!bfv || !next) return null;
+  const own = bfv.table.find((r) => r.own);
+  const days = diffDays(today, toISODate(next.kickoff));
+  return (
+    <Card label="Nächstes Spiel" icon={Shield} ariaLabel="Nächstes Spiel" testId="next-match" onClick={() => navigate('training')}>
+      <div className="list-item__title" style={{ lineHeight: 'var(--leading-snug)' }}>
+        {next.home ? 'gegen' : 'bei'} {next.opponent}
+      </div>
+      <div className="xsmall muted mono" style={{ marginTop: 'var(--space-1)' }}>
+        {formatKickoff(next.kickoff)}
+      </div>
+      <div className="xsmall faint" style={{ marginTop: 'var(--space-2)' }}>
+        {days === 0 ? 'heute' : days === 1 ? 'morgen' : `in ${days} Tagen`}
+        {own ? ` · Platz ${own.position}` : ''}
+      </div>
+    </Card>
+  );
 }
 
 // ---------- Abi-Schnitt ----------
@@ -281,19 +305,43 @@ function GoalSheet({ goal, close }: { goal: Goal | undefined; close: () => void 
 
 // ---------- Dashboard anpassen ----------
 
+/**
+ * Die Reihenfolge lebt beim Bearbeiten im lokalen Zustand (synchron, wie Reorder es braucht) und wird
+ * erst am Ende eines Zugs gespeichert – sonst springen Einträge beim Ziehen, und schnelle Taps auf die
+ * Pfeile arbeiten mit einem veralteten Stand (Review-Fund).
+ */
 export function DashboardEditor() {
-  const settings = useSettings();
-  const list = normalizeDashboard(settings.dashboard);
-  const save = (dashboard: DashboardWidget[]) => void saveSettings({ dashboard });
+  const stored = useLiveQuery(() => getSettings(), []);
+  const [list, setList] = useState<DashboardWidget[] | null>(null);
+  const latest = useRef<DashboardWidget[]>([]);
+  if (stored && list === null) setList(normalizeDashboard(stored.dashboard));
+  // Ref spiegelt den Stand für Ereignisse (Pfeil-Taps, Ende des Ziehens) – nie während des Renderns schreiben.
+  useEffect(() => {
+    if (list) latest.current = list;
+  }, [list]);
+  if (!list) return null;
+  const update = (next: DashboardWidget[], persist: boolean) => {
+    latest.current = next;
+    setList(next);
+    if (persist) void saveSettings({ dashboard: next });
+  };
   return (
     <div className="form" data-testid="dashboard-editor">
       <p className="small muted">Ziehen zum Sortieren (oder Pfeile), Größe und Sichtbarkeit je Widget. Kritische Fristen erscheinen immer ganz oben.</p>
-      <Reorder.Group axis="y" values={list} onReorder={save} className="dash-edit">
+      <Reorder.Group axis="y" values={list} onReorder={(next) => update(next, false)} className="dash-edit">
         {list.map((w, i) => (
-          <EditorRow key={w.id} w={w} first={i === 0} last={i === list.length - 1} onChange={(next) => save(list.map((x) => (x.id === w.id ? next : x)))} onMove={(d) => save(moveWidget(list, w.id, d))} />
+          <EditorRow
+            key={w.id}
+            w={w}
+            first={i === 0}
+            last={i === list.length - 1}
+            onChange={(next) => update(latest.current.map((x) => (x.id === w.id ? next : x)), true)}
+            onMove={(d) => update(moveWidget(latest.current, w.id, d), true)}
+            onDragEnd={() => void saveSettings({ dashboard: latest.current })}
+          />
         ))}
       </Reorder.Group>
-      <Button variant="ghost" block onClick={() => save([])}>
+      <Button variant="ghost" block onClick={() => update(normalizeDashboard([]), true)}>
         Standard wiederherstellen
       </Button>
     </div>
@@ -306,17 +354,19 @@ function EditorRow({
   last,
   onChange,
   onMove,
+  onDragEnd,
 }: {
   w: DashboardWidget;
   first: boolean;
   last: boolean;
   onChange: (w: DashboardWidget) => void;
   onMove: (delta: number) => void;
+  onDragEnd: () => void;
 }) {
   const controls = useDragControls();
   const name = WIDGET_LABEL[w.id];
   return (
-    <Reorder.Item value={w} dragListener={false} dragControls={controls} className="dash-edit__row" data-testid="dash-edit-row">
+    <Reorder.Item value={w} dragListener={false} dragControls={controls} onDragEnd={onDragEnd} className="dash-edit__row" data-testid="dash-edit-row">
       <span className="dash-edit__grip" onPointerDown={(e) => controls.start(e)} aria-hidden>
         <GripVertical size={18} strokeWidth={1.5} />
       </span>

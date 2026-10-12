@@ -163,3 +163,15 @@ describe('Zusammenhänge', () => {
     expect(ins?.detail).toContain('sonst bei 7,0');
   });
 });
+
+describe('Signifikanz (Review-Fund)', async () => {
+  const { significant } = await import('./review');
+  it('kritische Werte: n = 14 braucht |r| ≥ ~0,53, n = 30 ~0,36', () => {
+    expect(significant(0.3, 14)).toBe(false);
+    expect(significant(0.5, 14)).toBe(false);
+    expect(significant(0.55, 14)).toBe(true);
+    expect(significant(0.35, 30)).toBe(false);
+    expect(significant(0.38, 30)).toBe(true);
+    expect(significant(-0.6, 20)).toBe(true);
+  });
+});

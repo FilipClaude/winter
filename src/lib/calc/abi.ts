@@ -266,13 +266,16 @@ export function computeAbi(input: AbiInput): AbiResult {
       level: 'warnung',
       text: `${mandatoryCount + seminarSlots} Pflicht-Halbjahresleistungen > ${N}: Optionsregel nötig (Oberstufenkoordination fragen).`,
     });
-  const zeros = included.filter((h) => h.points === 0);
+  // Warnungen über alle eingebrachten UND alle Pflicht-Halbjahre: Bei mehr als 40 Pflicht-HJL fallen die
+  // schwächsten aus Block I heraus, ihre Unterkurse/0 Punkte dürfen aber nicht aus den Warnungen verschwinden.
+  const warnSet = [...new Set([...included, ...mandatory])];
+  const zeros = warnSet.filter((h) => h.points === 0);
   for (const z of zeros)
     w.push({
       level: 'kritisch',
       text: `${name(z.subjectId)} ${z.semester}: 0 Punkte – Kurs gilt als nicht belegt.`,
     });
-  const all40 = [...included.map((h) => h.points), s1, s2, paper / 2, paper / 2];
+  const all40 = [...warnSet.map((h) => h.points), s1, s2, paper / 2, paper / 2];
   const under5 = all40.filter((p) => p < 5).length;
   if (under5 > N - adm.minHalfYearsAt5)
     w.push({

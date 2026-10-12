@@ -399,11 +399,14 @@ export async function toggleTodo(id: string): Promise<void> {
       const today = todayISO();
       // Im Rhythmus weiterrücken, bis die Folgeaufgabe in der Zukunft liegt (überfällige erzeugen
       // keine neue überfällige Aufgabe).
-      let due = addDays(t.due ?? today, step);
+      // Basis: Fälligkeit, sonst Anlagedatum – nie „heute“, damit erneutes Abhaken an einem anderen Tag
+      // dieselbe Folgeaufgabe erkennt (Review-Fund).
+      const base = t.due ?? t.date;
+      let due = addDays(base, step);
       while (due <= today) due = addDays(due, step);
-      // Gibt es sie schon (auch erledigt)? Dann nicht noch einmal anlegen.
-      const exists = (await db.todos.where('due').equals(due).toArray()).some(
-        (x) => x.title === t.title && x.subjectId === t.subjectId,
+      // Gibt es schon eine spätere Instanz dieser Aufgabe (auch erledigt)? Dann keine weitere anlegen.
+      const exists = (await db.todos.where('due').above(base).toArray()).some(
+        (x) => x.id !== t.id && x.title === t.title && x.subjectId === t.subjectId && x.repeat === t.repeat,
       );
       if (!exists) {
         const { id: _id, createdAt: _c, updatedAt: _u, doneAt: _d, ...rest } = t;

@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { CalendarRange, ChevronLeft, ChevronRight, ClipboardCopy, FileText, Lightbulb, Share2, TrendingUp, Trophy } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { db } from '../../db/db';
 import type { Goal } from '../../db/schemas';
 import { useSettings } from '../../hooks/useSettings';
@@ -45,6 +45,13 @@ function range(period: 'woche' | 'monat', today: ISODate, offset: number): { fro
   return { from: m, to: endOfMonth(m), label: formatMonth(m) };
 }
 
+/** Freier Zeitraum: Reihenfolge korrigieren und auf höchstens ein Jahr begrenzen (sonst Tausende Balken). */
+function clampRange(a: ISODate, b: ISODate): { from: ISODate; to: ISODate; label: string } {
+  const from = a <= b ? a : b;
+  const to = a <= b ? b : a;
+  return { from: diffDays(from, to) > 365 ? addDays(to, -365) : from, to, label: '' };
+}
+
 export default function ReviewScreen() {
   const today = useToday();
   const settings = useSettings();
@@ -68,9 +75,7 @@ export default function ReviewScreen() {
   }, []);
 
   const r =
-    period === 'frei'
-      ? { from: custom.from <= custom.to ? custom.from : custom.to, to: custom.to >= custom.from ? custom.to : custom.from, label: '' }
-      : range(period, today, offset);
+    period === 'frei' ? clampRange(custom.from, custom.to) : range(period, today, offset);
   const to = r.to > today ? today : r.to;
 
   return (
@@ -105,7 +110,7 @@ export default function ReviewScreen() {
         </div>
       )}
       {data && r.from <= today ? (
-        <PeriodView data={data.review} from={r.from} to={to} label={period === 'monat' ? 'day' : 'weekday'} sleepGoal={settings.goals.sleepH} />
+        <PeriodView data={data.review} from={r.from} to={to} label={period === 'monat' ? 'day' : 'weekday'} sleepGoal={settings.goals.sleepH} period={period} />
       ) : null}
       {data && period === 'woche' && r.from <= today && <WeekReportCard data={data.review} goals={data.goals} weekStart={r.from} today={today} />}
       {data && <Trends data={data.review} today={today} />}
@@ -116,6 +121,23 @@ export default function ReviewScreen() {
 }
 
 // ---------- Kennzahlen mit Vergleich ----------
+
+/**
+ * Vergleichszeitraum: bei Woche/Monat dieselbe Spanne der Vorperiode (Mo–Mi gegen Mo–Mi, 1.–12. gegen
+ * 1.–12.), beim freien Zeitraum der gleich lange Zeitraum direkt davor (Review-Fund: vorher wurde z. B.
+ * montags mit dem Sonntag verglichen).
+ */
+function compareRange(period: Period, from: ISODate, to: ISODate): { from: ISODate; to: ISODate } {
+  const len = diffDays(from, to);
+  if (period === 'woche') return { from: addDays(from, -7), to: addDays(from, -7 + len) };
+  if (period === 'monat') {
+    const prevStart = startOfMonth(addDays(from, -1));
+    const prevEnd = endOfMonth(prevStart);
+    const end = addDays(prevStart, len);
+    return { from: prevStart, to: end > prevEnd ? prevEnd : end };
+  }
+  return previousRange(from, to);
+}
 
 function deltaKpis(s: PeriodSummary, p: PeriodSummary) {
   const d = (a: number | null, b: number | null) => (a === null || b === null ? null : a - b);
@@ -132,9 +154,23 @@ function deltaKpis(s: PeriodSummary, p: PeriodSummary) {
 const signed = (n: number | null, digits: number, unit = '') =>
   n === null ? '' : `${n > 0 ? '+' : n < 0 ? '−' : '±'}${formatDecimal(Math.abs(n), digits)}${unit ? ` ${unit}` : ''}`;
 
-function PeriodView({ data, from, to, label: labelMode, sleepGoal }: { data: ReviewData; from: ISODate; to: ISODate; label: 'day' | 'weekday'; sleepGoal: number }) {
+function PeriodView({
+  data,
+  from,
+  to,
+  label: labelMode,
+  sleepGoal,
+  period,
+}: {
+  data: ReviewData;
+  from: ISODate;
+  to: ISODate;
+  label: 'day' | 'weekday';
+  sleepGoal: number;
+  period: Period;
+}) {
   const s = periodSummary(data, from, to);
-  const prev = previousRange(from, to);
+  const prev = compareRange(period, from, to);
   const p = periodSummary(data, prev.from, prev.to);
   const dk = deltaKpis(s, p);
   const series = dailySeries(data, from, to);
@@ -231,8 +267,8 @@ function WeekReportCard({ data, goals, weekStart, today }: { data: ReviewData; g
             <div>
               <SectionTitle>Highlights</SectionTitle>
               <ul className="report-list">
-                {r.highlights.map((h) => (
-                  <li key={h}>{h}</li>
+                {r.highlights.map((h, i) => (
+                  <li key={i}>{h}</li>
                 ))}
               </ul>
             </div>
@@ -241,8 +277,8 @@ function WeekReportCard({ data, goals, weekStart, today }: { data: ReviewData; g
             <div>
               <SectionTitle>Ausreißer</SectionTitle>
               <ul className="report-list report-list--warn">
-                {r.outliers.map((o) => (
-                  <li key={o}>{o}</li>
+                {r.outliers.map((o, i) => (
+                  <li key={i}>{o}</li>
                 ))}
               </ul>
             </div>
@@ -251,8 +287,8 @@ function WeekReportCard({ data, goals, weekStart, today }: { data: ReviewData; g
             <div>
               <SectionTitle>Ziele</SectionTitle>
               <ul className="report-list">
-                {r.goals.map((g) => (
-                  <li key={g.label} className={g.reached ? 'accent' : ''}>
+                {r.goals.map((g, i) => (
+                  <li key={i} className={g.reached ? 'accent' : ''}>
                     {g.reached ? '✓' : '○'} {g.label}: {g.value} von {g.target}
                   </li>
                 ))}
@@ -293,7 +329,9 @@ function Trends({ data, today }: { data: ReviewData; today: ISODate }) {
   const meta = TREND_LABEL[metric];
   const from = addDays(today, -89);
   // 28 Tage Vorlauf, damit der 28-Tage-Schnitt schon am Anfang des Fensters gilt
-  const series = dailySeries(data, addDays(from, -27), today);
+  // Tagesreihe einmal pro Datenstand berechnen, nicht bei jedem Kennzahl-Wechsel (Review-Fund)
+  const yearSeries = useMemo(() => dailySeries(data, addDays(today, -380), today), [data, today]);
+  const series = yearSeries.filter((d) => d.date >= addDays(from, -27));
   const values = series.map((d) => {
     const v = metricValue(d, metric);
     return v === null ? null : meta.scale(v);
@@ -305,7 +343,7 @@ function Trends({ data, today }: { data: ReviewData; today: ISODate }) {
   const ma28 = movingAverage(values, 28).slice(start);
   const shown = series.slice(start);
   const nums = [...ma7, ...ma28].filter((v): v is number => v !== null);
-  const year = yearHeatmap(dailySeries(data, addDays(today, -380), today), metric, today);
+  const year = yearHeatmap(yearSeries, metric, today);
   const hasYear = year.flat().some((c) => (c.level ?? 0) > 0);
   return (
     <>

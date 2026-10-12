@@ -1,0 +1,61 @@
+# BFV-Abgleich: täglich Spielplan (offizieller iCal-Export) und Tabelle holen, nur bei echten Änderungen
+# committen und dann das Deployment anstoßen. Schonend: 2 Anfragen pro Lauf.
+name: BFV-Abgleich
+
+on:
+  schedule:
+    # GitHub rechnet in UTC: 05:00 UTC = 06:00 (Winterzeit) bzw. 07:00 (Sommerzeit) in Berlin.
+    - cron: '0 5 * * *'
+    # Sonntagabend zusätzlich (nach den Spielen am Wochenende): 19:00 UTC = 20:00/21:00 Berlin.
+    - cron: '0 19 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: bfv-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Abgleich (bei Fehlern bleibt die alte Datei, der Lauf wird rot)
+        id: sync
+        run: node scripts/bfv-sync.ts
+      - name: Änderungen committen
+        if: steps.sync.outputs.changed == 'true'
+        run: |
+          git config user.name "winter-bfv-bot"
+          git config user.email "winter-bfv-bot@users.noreply.github.com"
+          git add public/data/bfv.json
+          git commit -m "BFV-Abgleich $(date -u +%Y-%m-%d)"
+          git push
+      # Geplante Workflows schaltet GitHub in öffentlichen Repos nach 60 Tagen ohne Repo-Aktivität ab.
+      # Ist der letzte Commit älter als 45 Tage (z. B. Sommerpause ohne Änderungen), ein leerer
+      # Keepalive-Commit – er löst kein Deployment aus.
+      - name: Keepalive gegen die 60-Tage-Abschaltung
+        if: steps.sync.outputs.changed != 'true'
+        run: |
+          last=$(git log -1 --format=%ct)
+          now=$(date +%s)
+          if [ $(( (now - last) / 86400 )) -ge 45 ]; then
+            git config user.name "winter-bfv-bot"
+            git config user.email "winter-bfv-bot@users.noreply.github.com"
+            git commit --allow-empty -m "Keepalive (BFV-Abgleich, keine Änderungen seit 45 Tagen)"
+            git push
+          fi
+      # Commits mit dem GITHUB_TOKEN lösen keinen push-Workflow aus – deshalb das Deployment direkt starten.
+      - name: Deployment anstoßen
+        if: steps.sync.outputs.changed == 'true'
+        run: gh workflow run pages.yml --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -220,3 +220,19 @@ describe('Kalender (Fund 11)', () => {
     expect(semesterForDate('2028-03-01')).toBe('13/2');
   });
 });
+
+describe('Review 3: Wiederholung ohne Fälligkeit, an verschiedenen Tagen abgehakt', () => {
+  it('keine Dublette, auch wenn das Original mehrfach abgehakt wird', async () => {
+    const t = await saveTodo({
+      date: addDays(todayISO(), -3),
+      title: 'Lesen',
+      done: false,
+      repeat: 'weekly',
+    });
+    await toggleTodo(t.id);
+    await toggleTodo(t.id);
+    await toggleTodo(t.id);
+    const all = await db.todos.toArray();
+    expect(all.filter((x) => x.id !== t.id)).toHaveLength(1);
+  });
+});

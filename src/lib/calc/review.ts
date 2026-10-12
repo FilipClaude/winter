@@ -123,6 +123,31 @@ export const MIN_INSIGHT_N = 14;
 /** Ab hier gilt ein Zusammenhang als mehr als schwach. */
 export const MIN_INSIGHT_R = 0.3;
 
+/** Kritische t-Werte (zweiseitig, p < 0,05) nach Freiheitsgraden – genug Genauigkeit für die Einordnung. */
+const T_CRIT: [number, number][] = [
+  [10, 2.23],
+  [12, 2.18],
+  [15, 2.13],
+  [20, 2.09],
+  [25, 2.06],
+  [30, 2.04],
+  [40, 2.02],
+  [60, 2.0],
+  [120, 1.98],
+];
+
+/**
+ * Ist r bei n Punkten signifikant von 0 verschieden (t-Test, p < 0,05)? Bei n = 14 braucht es
+ * |r| ≥ 0,53, bei n = 30 ≥ 0,36 (Review-Fund: |r| ≥ 0,3 allein wäre oft Zufall).
+ */
+export function significant(r: number, n: number): boolean {
+  if (n < 3 || Math.abs(r) >= 1) return n >= 3;
+  const df = n - 2;
+  const t = Math.abs(r) * Math.sqrt(df / (1 - r * r));
+  const crit = T_CRIT.find(([d]) => df <= d)?.[1] ?? 1.96;
+  return t >= crit;
+}
+
 const fmt1 = (n: number | null) => formatDecimal(n, 1);
 const fmtR = (r: number) => r.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -135,13 +160,13 @@ function correlationInsight(
 ): Insight {
   const n = pairs.length;
   const r = pearson(pairs);
-  const enough = n >= MIN_INSIGHT_N && r !== null && Math.abs(r) >= MIN_INSIGHT_R;
+  const enough = n >= MIN_INSIGHT_N && r !== null && Math.abs(r) >= MIN_INSIGHT_R && significant(r, n);
   let text: string;
   if (n < MIN_INSIGHT_N)
     text = `Noch kein belastbarer Zusammenhang – erst ${n} von mindestens ${MIN_INSIGHT_N} Datenpunkten.`;
   else if (r === null) text = `Noch kein belastbarer Zusammenhang – die Werte schwanken kaum (n = ${n}).`;
   else if (!enough)
-    text = `Noch kein belastbarer Zusammenhang: ${describeCorrelation(r, n)} (r = ${fmtR(r)}, n = ${n}).`;
+    text = `Noch kein belastbarer Zusammenhang: ${describeCorrelation(r, n)} (r = ${fmtR(r)}, n = ${n})${Math.abs(r) >= MIN_INSIGHT_R ? ' – bei so wenigen Punkten noch gut mit Zufall erklärbar' : ''}.`;
   else
     text = `${describeCorrelation(r, n).replace(/^./, (c) => c.toUpperCase())} (r = ${fmtR(r)}, n = ${n}): ${r > 0 ? wording.up : wording.down}`;
   return { id, title, n, r, enough, text, ...(comparison ? { detail: comparison } : {}) };
@@ -185,7 +210,7 @@ export function buildInsights(data: ReviewData, today: ISODate, days = 90): Insi
   out.push(
     correlationInsight(
       'lernen-note',
-      'Lernzeit vor Klausuren und Punkte',
+      'Lernzeit vor Klausuren und Punkte (alle Klausuren)',
       examPairs,
       {
         up: 'Mehr Lernzeit vorher ging mit mehr Punkten einher.',

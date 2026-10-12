@@ -44,9 +44,13 @@ export function weeklyReport(
 ): WeeklyReport {
   const weekStart = startOfWeek(anyDay);
   const weekEnd = addDays(weekStart, 6);
+  // Laufende Woche nur bis heute rechnen und mit denselben Wochentagen der Vorwoche vergleichen –
+  // sonst zählen künftige Tage als „nicht erledigt“ (Review-Fund: Habit-Quote am Mittwoch ≤ 43 %).
+  const until = weekEnd > today ? today : weekEnd;
+  const span = Math.max(0, Math.round((Date.parse(until) - Date.parse(weekStart)) / 86_400_000));
   const prevStart = addDays(weekStart, -7);
-  const s = periodSummary(data, weekStart, weekEnd);
-  const p = periodSummary(data, prevStart, addDays(prevStart, 6));
+  const s = periodSummary(data, weekStart, until);
+  const p = periodSummary(data, prevStart, addDays(prevStart, span));
   const kpi = (
     key: string,
     label: string,
@@ -110,7 +114,7 @@ export function weeklyReport(
   for (const e of data.exams.filter(
     (x) => x.points !== undefined && x.date >= weekStart && x.date <= weekEnd,
   ))
-    highlights.push(`Klausur zurück: ${e.points} Punkte.`);
+    highlights.push(`Klausur vom ${formatDE(e.date).slice(0, 6)}: ${e.points} Punkte.`);
   const bestMood = series.filter((d) => d.mood !== null).sort((a, b) => (b.mood ?? 0) - (a.mood ?? 0))[0];
   if (bestMood && (bestMood.mood ?? 0) >= 4)
     highlights.push(`Beste Stimmung am ${formatWeekdayShort(bestMood.date)} (${bestMood.mood}/5).`);
@@ -134,7 +138,8 @@ export function weeklyReport(
       outliers.push(`Sehr hohe Last am ${formatWeekdayShort(d.date)}: ${d.load}.`);
 
   const goalRows = goals
-    .filter((g) => !g.archived && g.period === 'week')
+    // Abi-Ziel nur mit bekanntem Schnitt – sonst stünde es immer auf „–“ (Review-Fund)
+    .filter((g) => !g.archived && g.period === 'week' && (g.metric !== 'abiAverage' || abiAverage !== null))
     .map((g) => {
       const pr = goalProgress(g, data, weekEnd > today ? today : weekEnd, abiAverage);
       const meta = GOAL_LABEL[g.metric];
@@ -206,5 +211,5 @@ export function weeklyMarkdown(r: WeeklyReport): string {
 
 export function weeklyFileName(r: WeeklyReport): string {
   // Jahr der ISO-Woche = Jahr ihres Donnerstags (KW 1 kann im Dezember beginnen – v1-Fund)
-  return `Wochenbericht ${addDays(r.weekStart, 3).slice(0, 4)}-KW${String(r.kw).padStart(2, '0')}.md`;
+  return `Wochenbericht-${addDays(r.weekStart, 3).slice(0, 4)}-KW${String(r.kw).padStart(2, '0')}.md`;
 }

@@ -31,6 +31,7 @@ import { NumberTicker, Ring } from '../../ui/visual';
 import { MealSheet } from '../body/MealSheet';
 import { openHealthSheet } from '../health/openHealth';
 import { DeadlineAlerts, NextDateCard } from '../school/DeadlineAlerts';
+import { PendingMatchBanners } from '../training/BfvCard';
 import { openSessionSheet } from '../training/openSession';
 import { SESSION_ICON } from '../training/session-icons';
 import { JournalSheet } from './JournalSheet';
@@ -254,6 +255,7 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
           l: (
             <div className="stack stack--s">
               <DeadlineAlerts today={today} />
+              <PendingMatchBanners />
               <BackupReminder today={today} />
               <DemoNotice />
               {!data.health && !importedToday && (
@@ -290,7 +292,7 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
       s: (
         <Card label="Ernährung" icon={Activity} ariaLabel="Ernährung kompakt" action={<IconButton icon={Plus} label="Mahlzeit eintragen" variant="accent" onClick={openMeal} />}>
           <div className="big big--s num" data-testid="protein-value">
-            {data.proteinG}
+            {Math.round(data.proteinG)}
             <span className="unit">g</span>
           </div>
           <div className="of" style={{ marginTop: 4 }}>

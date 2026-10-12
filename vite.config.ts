@@ -42,6 +42,14 @@ export default defineConfig({
         globIgnores: ['**/apple-splash-*.png'],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
+        // BFV-Daten (vom täglichen Abgleich): Netz zuerst, offline die letzte Kopie.
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.endsWith('/data/bfv.json'),
+            handler: 'NetworkFirst',
+            options: { cacheName: 'winter-bfv', networkTimeoutSeconds: 5, expiration: { maxEntries: 2 } },
+          },
+        ],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
       },
       devOptions: { enabled: false },

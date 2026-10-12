@@ -208,6 +208,14 @@ describe('Warnungen (Zulassung § 44, Bestehen § 54)', () => {
     expect(r.included).toHaveLength(36);
     expect(r.block1).toBe(400);
   });
+
+  it('0 Punkte in einem Pflicht-Halbjahr warnen auch, wenn es wegen der 40er-Grenze nicht eingebracht wird', () => {
+    const many = [...SUBJECTS, subj('Ch', 'all'), subj('Ph', 'all')];
+    const known = many.flatMap((s) => hy(s.id, s.id === 'Ch' ? [10, 10, 10, 0] : [10, 10, 10, 10]));
+    const r = computeAbi({ subjects: many, known, seminar: SEMINAR, examPoints: EXAMS });
+    expect(r.included.some((h) => h.subjectId === 'Ch' && h.points === 0)).toBe(false);
+    expect(r.warnings.some((w) => w.text.includes('nicht belegt'))).toBe(true);
+  });
 });
 
 describe('Standardrollen (Anlage 10) mit Filips Fächern', () => {

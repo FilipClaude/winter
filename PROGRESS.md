@@ -271,3 +271,17 @@ Ein Subagent hat den Diff seit Beginn von v2 ohne meine Begründungen geprüft (
 - **Gefunden & behoben:** Achsenbeschriftung langer Linien-Charts war unlesbar (90 Spalten) → frei positionierte Beschriftungen; Trend startet erst ab ersten Daten.
 
 **Geprüft:** 97 Rechen-Tests in `src/lib/calc` (u. a. Wochenbericht mit KW 53 über den Jahreswechsel), E2E Rückblick (Demo, Download, freier Zeitraum), Screenshot Rückblick/Trends angesehen.
+
+**CI-Fund:** WebKit ersetzte Leerzeichen im Download-Dateinamen durch `_` → Dateiname jetzt `Wochenbericht-JJJJ-KWnn.md`.
+
+## v2 · Unabhängiges Review 3 (Phasen 7–8) – Funde abgearbeitet ✓
+11 Funde. Behoben: Zusammenhänge zusätzlich mit Signifikanztest (DECISIONS #63); laufende Woche/Monat fair verglichen, freier Zeitraum begrenzt (#64); wiederkehrende Aufgaben ohne Dubletten (#65); Abi-Warnungen über alle Pflicht-Halbjahre (#66); Dashboard-Editor verliert bei schnellen Änderungen nichts mehr (lokaler Zustand, Speichern nach dem Ziehen); Briefing zählt nur heute fällige Habits; Protein gerundet; Klausur-Highlight mit Datum statt Fachkürzel; Abi-Ziel im Wochenbericht nur mit bekanntem Schnitt; doppelte React-Keys; Trend-Berechnung memoisiert. 4 neue Regressionstests.
+
+## v2 · Phase 9 – BFV ✓
+- **Recherche** (Playwright, `scripts/bfv-explore.mjs`): Mannschaftsseite von SV Planegg-Krailling, offizieller iCal-Export des Spielplans, Tabelle im HTML. Ergebnisse sind per Schriftart verschleiert → bewusst nicht ausgelesen (DECISIONS #59, #60). Alles in `docs/BFV.md` inkl. Reparaturanleitung.
+- **Abgleich** `scripts/bfv-sync.ts` (3 Versuche mit Backoff, Zeitlimit, Zod-Prüfung, schreibt nur bei Änderung) in der Action `bfv-sync.yml`; bei Änderung Commit + Deploy. Keepalive gegen das 60-Tage-Pausieren (#62). Lokal erfolgreich: 21 Spiele, 14 Tabellenplätze.
+- **App:** Karte „BFV“ im Training (nächstes Spiel, Formkurve S/U/N, Tabelle mit eigener Zeile hervorgehoben), Widget „Nächstes Spiel“ mit Tabellenplatz, Hinweis „Spiel eintragen“ nach Abpfiff auf Heute und im Training (Gegner, Heim/Auswärts vorbefüllt und als „vom BFV“ markiert), Saisonvergleich mit Vorsaison, Scorerpunkte. Daten offline per Service Worker (NetworkFirst).
+- **Tests:** 11 Unit-Tests auf echten Fixtures (iCal, Tabellen-HTML), 3 E2E (Chromium + WebKit) mit gemockten Daten.
+- **Gefunden & behoben:** Tabellenspalten klebten aneinander (Screenshot); axe meldete unerlaubtes `aria-label` an der Formkurve → `role="img"`.
+
+**Geprüft:** typecheck, lint, Prettier, 863 Unit-Tests, 133 E2E (Chromium + WebKit + Offline) gegen den `/winter/`-Build.

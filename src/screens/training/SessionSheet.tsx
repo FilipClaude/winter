@@ -5,7 +5,7 @@ import { db } from '../../db/db';
 import { deleteSession, saveSession, ValidationError } from '../../db/repo';
 import { SESSION_TYPES, type GymExercise, type Match, type Session, type SessionType } from '../../db/schemas';
 import { detectPRs, normalizeExercise, SESSION_LABEL, sessionLoad } from '../../lib/calc/training';
-import { todayISO, type ISODate } from '../../lib/date';
+import { toISODate, todayISO, type ISODate } from '../../lib/date';
 import { parseNumberDE } from '../../lib/number';
 import { NumberField, Scale, TextArea, TextField } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
@@ -26,22 +26,33 @@ interface ExIn {
 
 const emptyMatch = { opponent: '', goalsFor: 0 as NumIn, goalsAgainst: 0 as NumIn, minutes: 80 as NumIn, goals: 0 as NumIn, assists: 0 as NumIn, shots: 0 as NumIn, rating: 6, reflection: '' };
 
+/** Spiel aus dem BFV-Abgleich, das nach dem Abpfiff eingetragen wird. */
+export interface BfvPreset {
+  id: string;
+  kickoff: string;
+  home: boolean;
+  opponent: string;
+}
+
 export interface SessionSheetProps {
   date?: ISODate | undefined;
   type?: SessionType | undefined;
   session?: Session | undefined;
+  bfv?: BfvPreset | undefined;
   close: () => void;
 }
 
-export function SessionSheet({ date, type: initialType, session, close }: SessionSheetProps) {
+export function SessionSheet({ date, type: initialType, session, bfv, close }: SessionSheetProps) {
   const { toast } = useOverlay();
   const templates = useLiveQuery(() => db.exerciseTemplates.orderBy('order').toArray(), []);
-  const [type, setType] = useState<SessionType>(session?.type ?? initialType ?? 'football');
-  const [day, setDay] = useState<ISODate>(session?.date ?? date ?? todayISO());
+  const [type, setType] = useState<SessionType>(session?.type ?? (bfv ? 'match' : undefined) ?? initialType ?? 'football');
+  const [day, setDay] = useState<ISODate>(session?.date ?? (bfv ? toISODate(bfv.kickoff) : undefined) ?? date ?? todayISO());
+  // BFV-Verknüpfung: bestehend (Bearbeiten) oder neu aus dem Abgleich. Manuelle Werte haben immer Vorrang.
+  const bfvLink = session?.bfv ?? (bfv ? { id: bfv.id, kickoff: bfv.kickoff, home: bfv.home, prefilled: ['opponent' as const] } : undefined);
   const [duration, setDuration] = useState<NumIn>(session?.durationMin ?? DEFAULT_DURATION[initialType ?? 'football']);
   const [rpe, setRpe] = useState<number | undefined>(session?.rpe ?? DEFAULT_RPE[initialType ?? 'football']);
   const [note, setNote] = useState(session?.note ?? '');
-  const [match, setMatch] = useState(session?.match ? { ...session.match } : emptyMatch);
+  const [match, setMatch] = useState(session?.match ? { ...session.match } : bfv ? { ...emptyMatch, opponent: bfv.opponent } : emptyMatch);
   const [exercises, setExercises] = useState<ExIn[]>(session?.gym?.exercises.map((e) => ({ name: e.name, sets: e.sets.map((s) => ({ ...s })) })) ?? []);
   const [customName, setCustomName] = useState('');
   const [error, setError] = useState<string>();
@@ -96,6 +107,7 @@ export function SessionSheet({ date, type: initialType, session, close }: Sessio
         note,
         ...(m ? { match: m } : {}),
         ...(gym ? { gym } : {}),
+        ...(type === 'match' && bfvLink ? { bfv: bfvLink, bfvId: bfvLink.id } : {}),
       });
       let msg = `${SESSION_LABEL[type]} gespeichert · Load ${sessionLoad(saved.durationMin, saved.rpe)}`;
       if (saved.gym) {
@@ -141,7 +153,18 @@ export function SessionSheet({ date, type: initialType, session, close }: Sessio
       {type === 'match' && (
         <>
           <SectionTitle>Spiel</SectionTitle>
-          <TextField label="Gegner" value={match.opponent} onValue={(v) => setMatch({ ...match, opponent: v })} maxLength={80} placeholder="z. B. TSV Gräfelfing" />
+          <TextField
+            label="Gegner"
+            value={match.opponent}
+            onValue={(v) => setMatch({ ...match, opponent: v })}
+            maxLength={80}
+            placeholder="z. B. TSV Gräfelfing"
+            hint={
+              bfvLink
+                ? `vom BFV · ${bfvLink.home ? 'Heimspiel' : 'Auswärtsspiel'} · Ergebnis und deine Werte trägst du selbst ein`
+                : undefined
+            }
+          />
           <div className="form-row">
             <NumberField label="Tore wir" value={match.goalsFor} onValue={(v) => setMatch({ ...match, goalsFor: v })} min={0} max={99} />
             <NumberField label="Tore Gegner" value={match.goalsAgainst} onValue={(v) => setMatch({ ...match, goalsAgainst: v })} min={0} max={99} />
