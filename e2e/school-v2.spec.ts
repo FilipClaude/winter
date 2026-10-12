@@ -97,6 +97,7 @@ test('Klausur mit Themen → Lernplan mit Wiederholungen, bewertete Klausur wird
   const e = page.getByRole('dialog', { name: 'Klausur' });
   await e.getByLabel('Punkte (0–15, nach Rückgabe)').fill('10');
   await e.getByRole('button', { name: 'Speichern' }).click();
+  await expect(e).toBeHidden();
   await openSchoolTab(page, 'Noten');
   await expect(page.getByTestId('grade-row').first()).toContainText('Klausur · groß');
 });
