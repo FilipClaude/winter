@@ -3,6 +3,7 @@ import { useSettings } from './hooks/useSettings';
 import { useRoute, type RouteId } from './router';
 import { TodayScreen } from './screens/today/TodayScreen';
 import { CrashProbe, ScreenBoundary } from './shell/ErrorBoundary';
+import { Onboarding } from './shell/Onboarding';
 import { Sky } from './shell/Sky';
 import { TabBar } from './shell/TabBar';
 import { UpdatePrompt } from './shell/UpdatePrompt';
@@ -55,6 +56,7 @@ export function App() {
         </ScreenBoundary>
       </main>
       <TabBar active={route.id} />
+      <Onboarding />
     </OverlayProvider>
   );
 }

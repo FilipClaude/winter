@@ -10,6 +10,7 @@ import {
   HardDrive,
   HeartPulse,
   History,
+  MoonStar,
   Plus,
   Share2,
   Snowflake,
@@ -45,6 +46,7 @@ import { dayMarkdown, weekFileName, weekMarkdown, type MarkdownData } from '../.
 import { NumberField, Segmented, TextField } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
 import { Badge, Banner, Button, Card, IconButton, ScreenHeader, SectionTitle } from '../../ui/primitives';
+import { showOnboarding } from '../../shell/onboarding-control';
 import { openHealthSheet } from '../health/openHealth';
 
 export default function SettingsScreen() {
@@ -63,7 +65,12 @@ export default function SettingsScreen() {
       <DemoCard />
       <AppearanceCard settings={settings} />
       <DangerCard />
-      <p className="xsmall faint" style={{ textAlign: 'center', margin: 'var(--space-6) 0' }}>
+      <div style={{ textAlign: 'center', marginTop: 'var(--space-6)' }}>
+        <Button variant="ghost" size="s" icon={MoonStar} onClick={showOnboarding} data-testid="show-onboarding">
+          Einführung erneut zeigen
+        </Button>
+      </div>
+      <p className="xsmall faint" style={{ textAlign: 'center', margin: 'var(--space-3) 0 var(--space-6)' }}>
         Alle Daten liegen nur auf diesem Gerät. Kein Konto, keine Cloud.
       </p>
     </div>

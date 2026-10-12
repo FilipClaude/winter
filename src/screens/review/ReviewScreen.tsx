@@ -356,7 +356,8 @@ function Trends({ data, today }: { data: ReviewData; today: ISODate }) {
             </button>
           ))}
         </div>
-        {nums.length === 0 ? (
+        {/* Summen-Kennzahlen zählen leere Tage als 0 – eine reine Nulllinie sagt nichts, also Hinweis statt Chart */}
+        {nums.every((v) => v === 0) ? (
           <p className="small faint" style={{ marginTop: 'var(--space-3)' }}>
             Zu wenig Daten für {meta.label}-Trends (nötig: mindestens 4 Tage mit Werten in einer Woche).
           </p>

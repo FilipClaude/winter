@@ -1,15 +1,6 @@
 import { expect, test, type Page } from './fixtures';
 import { readFileSync } from 'node:fs';
-import { allowClipboard, enableDemo, shot, SLOW_WRITE } from './helpers';
-
-function berlinDate(offsetDays = 0): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Berlin',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date(Date.now() + offsetDays * 86_400_000));
-}
+import { berlinDate, allowClipboard, enableDemo, shot, SLOW_WRITE } from './helpers';
 
 const health = (steps: number) =>
   JSON.stringify({

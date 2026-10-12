@@ -168,8 +168,10 @@ function Todos() {
       </SectionTitle>
       <Card ariaLabel="Offene Aufgaben" testId="todo-list">
         {open.length === 0 ? (
-          <EmptyState icon={ListTodo} title="Alles erledigt">
-            Neue Hausaufgaben über das Plus oder die Schnellerfassung.
+          <EmptyState icon={ListTodo} title={todos.length === 0 ? 'Noch keine Aufgaben' : 'Alles erledigt'}>
+            {todos.length === 0
+              ? 'Hausaufgaben mit Fälligkeit, Priorität und auf Wunsch wöchentlicher Wiederholung – über „Aufgabe“ oder das Plus.'
+              : 'Neue Hausaufgaben über das Plus oder die Schnellerfassung.'}
           </EmptyState>
         ) : (
           <div className="list">

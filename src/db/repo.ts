@@ -141,6 +141,38 @@ export async function saveSettings(patch: Partial<Settings>): Promise<Settings> 
   return next;
 }
 
+/** Tabellen mit eigenen Einträgen (ohne Vorlagen und Fächer, die beim ersten Start angelegt werden). */
+const USER_TABLES = [
+  'sessions',
+  'meals',
+  'days',
+  'sleep',
+  'health',
+  'studySessions',
+  'todos',
+  'exams',
+  'modules',
+  'deadlines',
+  'habits',
+  'grades',
+] as const;
+
+/**
+ * Soll die Einführung erscheinen? Nur beim echten Erststart: noch nicht gesehen **und** keine Einträge.
+ * Wer schon Daten hat (v1-Nutzer ohne gespeicherte Einstellungen, importiertes Backup), wird still als
+ * eingeführt markiert – die Einführung soll nie vor vorhandenen Daten auftauchen.
+ */
+export async function needsOnboarding(): Promise<boolean> {
+  if ((await getSettings()).onboarded) return false;
+  for (const name of USER_TABLES) {
+    if ((await db.table(name).limit(1).count()) > 0) {
+      await saveSettings({ onboarded: true });
+      return false;
+    }
+  }
+  return true;
+}
+
 // ---------- Tageswerte (Wasser, Stimmung, Journal) ----------
 
 export function emptyDay(date: ISODate): Day {

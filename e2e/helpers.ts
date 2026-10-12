@@ -14,6 +14,22 @@ export async function shot(page: Page, name: string, fullPage = false): Promise<
   await page.screenshot({ path: `screens/${name}.png`, fullPage, animations: 'disabled' });
 }
 
+/**
+ * Berliner Kalenderdatum in n Tagen als JJJJ-MM-TT. Gerechnet wird in Kalendertagen, nicht in 24-h-Schritten –
+ * sonst landet man über eine Zeitumstellung hinweg kurz nach Mitternacht einen Tag zu früh (Fund 13.10.2026).
+ */
+export function berlinDate(offsetDays = 0): string {
+  const today = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Berlin',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+  const d = new Date(`${today}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + offsetDays);
+  return d.toISOString().slice(0, 10);
+}
+
 /** Demo-Daten in den Einstellungen einschalten und warten, bis sie geschrieben sind. */
 export async function enableDemo(page: Page): Promise<void> {
   await page.goto('./#/einstellungen');

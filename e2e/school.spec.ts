@@ -1,16 +1,5 @@
 import { expect, test, type Page } from './fixtures';
-import { shot } from './helpers';
-
-/** Berliner Datum in n Tagen als JJJJ-MM-TT. */
-function berlinDate(offsetDays: number): string {
-  const d = new Date(Date.now() + offsetDays * 86_400_000);
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Berlin',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(d);
-}
+import { berlinDate, shot } from './helpers';
 
 async function addDeadline(page: Page, title: string, inDays: number, module?: string) {
   await page.getByTestId('fab').click();

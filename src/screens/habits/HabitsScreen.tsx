@@ -48,6 +48,8 @@ export default function HabitsScreen() {
         </Button>
       </div>
 
+      {/* Ohne Habits wäre die Heatmap nur ein leeres Raster – dann erst die Einladung unten */}
+      {active.length > 0 && (
       <Card label={`${WEEKS} Wochen`} icon={Repeat} ariaLabel="Habit-Heatmap" testId="habit-heatmap">
         <Heatmap weeks={weeks} label="Erfüllung pro Tag, dunkel = nichts, hell = alles erledigt" />
         <div className="row row--between xsmall faint" style={{ marginTop: 'var(--space-3)' }}>
@@ -57,6 +59,7 @@ export default function HabitsScreen() {
           </span>
         </div>
       </Card>
+      )}
 
       <SectionTitle>Heute & Streaks</SectionTitle>
       {active.length === 0 ? (

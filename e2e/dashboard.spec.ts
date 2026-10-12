@@ -1,14 +1,5 @@
 import { expect, test } from './fixtures';
-import { enableDemo, shot } from './helpers';
-
-function berlinDate(offsetDays = 0): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Berlin',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date(Date.now() + offsetDays * 86_400_000));
-}
+import { berlinDate, enableDemo, shot } from './helpers';
 
 test('Dashboard mit Demo-Daten: Briefing, Widgets, Abi-Schnitt @screens', async ({ page }) => {
   test.setTimeout(90_000);

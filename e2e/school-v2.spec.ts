@@ -1,18 +1,9 @@
 import { expect, test, type Page } from './fixtures';
-import { shot } from './helpers';
+import { berlinDate, shot } from './helpers';
 
 async function openSchoolTab(page: Page, tab: string) {
   await page.goto('./#/schule');
   await page.getByRole('group', { name: 'Bereich' }).getByRole('button', { name: tab, exact: true }).click();
-}
-
-function berlinDate(offsetDays = 0): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Berlin',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date(Date.now() + offsetDays * 86_400_000));
 }
 
 test('Noten: große und kleine Leistungsnachweise → Halbjahresschnitt 1 : 1 @screens', async ({ page }) => {

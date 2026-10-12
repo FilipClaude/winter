@@ -284,4 +284,13 @@ Ein Subagent hat den Diff seit Beginn von v2 ohne meine Begründungen geprüft (
 - **Tests:** 11 Unit-Tests auf echten Fixtures (iCal, Tabellen-HTML), 3 E2E (Chromium + WebKit) mit gemockten Daten.
 - **Gefunden & behoben:** Tabellenspalten klebten aneinander (Screenshot); axe meldete unerlaubtes `aria-label` an der Formkurve → `role="img"`.
 
-**Geprüft:** typecheck, lint, Prettier, 863 Unit-Tests, 133 E2E (Chromium + WebKit + Offline) gegen den `/winter/`-Build.
+**Geprüft:** typecheck, lint, Prettier, 863 Unit-Tests, 133 E2E (Chromium + WebKit + Offline) gegen den `/winter/`-Build. CI grün und deployt; `bfv.json` live erreichbar (21 Spiele); BFV-Action auf GitHub manuell gestartet → erfolgreich.
+
+## v2 · Phase 10 – Feinschliff ✓
+- **Einführung** beim echten Erststart (DECISIONS #67): 4 Schritte über dem Himmel, überspringbar, erneut aufrufbar in den Einstellungen, optional mit Demo-Daten. Erscheint nie vor vorhandenen Daten (Unit-Tests für v1-Einstellungen, vorhandene Einträge, „gesehen“).
+- **Icon & Startbildschirme** im Nachthimmel-Stil (DECISIONS #69), reproduzierbar über `npm run icons`.
+- **Leerzustände** überarbeitet (DECISIONS #70); alle Screens einer frischen App per Screenshot angesehen.
+- **Visuelle Regression** (DECISIONS #68): 16 Referenzbilder, zweimal hintereinander stabil.
+- **Gefunden & behoben:** Fokusring an der Einführungs-Überschrift; Glas ließ den Heute-Screen verschwommen durchscheinen → App ausgeblendet, Himmel sichtbar. XML-Kommentar mit `--` brach die Icon-Erzeugung. **Testfehler um Mitternacht:** Datumsrechnung in 24-h-Schritten landete über die Zeitumstellung (25.10.) einen Tag zu früh → gemeinsamer Helfer rechnet in Kalendertagen.
+
+**Geprüft:** typecheck, lint, Prettier, 869 Unit-Tests, 142 E2E (Chromium + WebKit + Offline + visuell) gegen den `/winter/`-Build.

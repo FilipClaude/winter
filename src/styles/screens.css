@@ -738,3 +738,85 @@
   color: var(--color-accent);
   font-weight: var(--weight-semibold);
 }
+
+/* ---------- Einführung (Erststart) ---------- */
+.onboarding {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-sheet);
+  display: flex;
+  flex-direction: column;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: calc(var(--safe-top) + var(--space-3)) calc(var(--safe-right) + var(--space-6))
+    calc(var(--safe-bottom) + var(--space-6)) calc(var(--safe-left) + var(--space-6));
+  /* Kein Glas: Hier soll der Himmel wirken. Textfarben sind direkt auf allen Himmelsphasen kontrastgeprüft. */
+}
+[data-onboarding] .app,
+[data-onboarding] .tabbar,
+[data-onboarding] .fab {
+  visibility: hidden;
+}
+.onboarding__top {
+  display: flex;
+  justify-content: flex-end;
+  min-height: var(--touch);
+}
+.onboarding__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-4);
+}
+.onboarding__icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-l);
+  border: var(--hairline-strong);
+  background: var(--color-accent-08);
+  color: var(--color-accent);
+}
+.onboarding__title {
+  margin: 0;
+  font-size: var(--type-headline-size);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+/* Fokus wird nur gesetzt, damit VoiceOver den neuen Schritt vorliest – kein sichtbarer Ring an der Überschrift. */
+.onboarding__title:focus {
+  outline: none;
+  box-shadow: none;
+}
+.onboarding__text {
+  margin: 0;
+  color: var(--color-text-2);
+  font-size: var(--text-lg);
+  line-height: var(--leading-body);
+}
+.onboarding__foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+.onboarding__dots {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+}
+.onboarding__dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-line-strong);
+  transition:
+    width var(--dur) var(--ease-out),
+    background var(--dur) var(--ease-out);
+}
+.onboarding__dots span.is-active {
+  width: 20px;
+  background: var(--color-accent);
+}
