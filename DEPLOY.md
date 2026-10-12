@@ -1,49 +1,54 @@
 # DEPLOY – Winter kostenlos mit HTTPS hosten und aufs iPhone holen
 
-HTTPS ist Pflicht: Ohne HTTPS gibt es keinen Service Worker, also kein Offline und keine echte App. Beide Wege unten sind kostenlos und haben automatisch HTTPS. **Empfehlung: Vercel**, weil es am einfachsten ist.
+HTTPS ist Pflicht: Ohne HTTPS gibt es keinen Service Worker, also kein Offline und keine echte App. Alle Wege unten sind kostenlos und haben automatisch HTTPS. **Gewählt: GitHub Pages** (alles bei GitHub, kein weiteres Konto). Adresse: `https://filipclaude.github.io/winter/`.
 
-> **Wichtig, bevor es losgeht:** Die Daten hängen an der **Adresse (Domain)** der App. Wechselst du später die Adresse (z. B. von Vercel zu Cloudflare oder auf eine eigene Domain), startet die App dort **leer**. Vorher in der alten App ein **Backup** machen und in der neuen importieren.
+> **Wichtig, bevor es losgeht:** Die Daten hängen an der **Adresse (Domain)** der App. Wechselst du später die Adresse (z. B. von GitHub Pages zu Vercel oder auf eine eigene Domain), startet die App dort **leer**. Vorher in der alten App ein **Backup** machen und in der neuen importieren.
 
-## Schritt 1 – Code auf GitHub (einmalig, ca. 5 min)
+## Schritt 1 – Code auf GitHub (erledigt)
 
-1. Auf <https://github.com> ein Konto anlegen (falls nicht vorhanden).
-2. Oben rechts **+** → **New repository** → Name `winter` → **Private** → **Create repository**.
-3. Am Windows-PC im Projektordner `C:\Users\HP\Downloads\App` (PowerShell):
+Repository `FilipClaude/winter`, Branch `main`. Für einen neuen Rechner:
 
 ```bash
-git remote add origin https://github.com/DEIN-NAME/winter.git
+git remote add origin https://github.com/FilipClaude/winter.git
 ```
 
 ```bash
 git push -u origin main
 ```
 
-   Git fragt beim ersten Push nach der Anmeldung (Browserfenster). Der Commit-Autor ist lokal `Filip <filip@winter.local>`. Wenn du deine GitHub-E-Mail sehen willst: `git config user.email "…"`.
+Der Commit-Autor ist lokal `Filip <filip@winter.local>`. Wenn du deine GitHub-E-Mail sehen willst: `git config user.email "…"`.
 
-## Schritt 2a – Vercel (empfohlen)
+## Schritt 2 – GitHub Pages einschalten (einmalig)
 
-1. <https://vercel.com> → **Sign Up** → **Continue with GitHub** (Hobby-Plan, kostenlos).
-2. **Add New… → Project** → Repository `winter` → **Import**.
-3. Vercel erkennt **Vite** automatisch. Die Werte stehen auch in `vercel.json`:
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-4. **Deploy** klicken. Nach ca. 1 Minute gibt es eine Adresse wie `https://winter-xyz.vercel.app`.
-5. Ab jetzt baut jeder `git push` automatisch eine neue Version.
+1. **Sichtbarkeit:** GitHub Pages ist im kostenlosen Plan nur für **öffentliche** Repositories verfügbar. Entweder:
+   - Repository öffentlich machen: **Settings → General → ganz unten „Danger Zone“ → Change visibility → Public**. Öffentlich ist nur der **Code**. Deine Daten liegen ausschließlich auf deinem iPhone und landen nie auf GitHub.
+   - oder GitHub Pro abonnieren, dann geht Pages auch privat.
+2. **Settings → Pages → Build and deployment → Source: „GitHub Actions“** auswählen.
+3. **Actions**-Tab öffnen → Workflow **„Deploy auf GitHub Pages“** → **Run workflow** (oder einfach den nächsten `git push` abwarten).
+4. Nach ca. 2 Minuten ist die App unter `https://filipclaude.github.io/winter/` erreichbar.
+5. Ab jetzt baut jeder `git push` auf `main` automatisch neu. Der Workflow (`.github/workflows/pages.yml`) prüft vorher Typen und Unit-Tests. Schlägt etwas fehl, bleibt die alte Version online.
 
-`vercel.json` sorgt dafür, dass `sw.js` nie gecacht wird. Sonst kämen Updates verspätet an.
+Technik: Die App liegt in einem Unterordner (`/winter/`). Der Workflow setzt dafür `BASE_PATH=/winter/`, Vite und das Manifest richten sich danach. Lokal bleibt alles unter `/`. Prüfen lässt sich ein Unterordner-Build mit `node scripts/check-base.mjs /winter/` (nach einem Build mit gesetztem `BASE_PATH`).
 
-## Schritt 2b – Alternative: Cloudflare Pages
+GitHub Pages erlaubt keine eigenen Cache-Header. Das ist unkritisch: Browser laden `sw.js` für die Update-Prüfung ohnehin am HTTP-Cache vorbei. Updates können trotzdem bis zu ca. 10 Minuten verzögert ankommen.
 
-1. <https://dash.cloudflare.com> → Konto anlegen → **Workers & Pages** → **Create** → **Pages** → **Connect to Git** → Repository `winter`.
-2. Framework preset **Vite** (oder „None“), Build command `npm run build`, Build output directory `dist`.
-3. Unter Environment variables `NODE_VERSION` = `22` setzen (falls der Build über eine alte Node-Version klagt).
-4. **Save and Deploy** → Adresse `https://winter.pages.dev`.
+## Alternativen
 
-Die Cache-Regeln stehen in `public/_headers`.
+### Vercel
+
+1. <https://vercel.com> → **Sign Up** → **Continue with GitHub** (Hobby-Plan, kostenlos, geht auch mit privatem Repository).
+2. **Add New… → Project** → Repository `winter` → **Import** → **Deploy**. Werte in `vercel.json` (Build `npm run build`, Ausgabe `dist`, `sw.js` nie cachen).
+3. Adresse wie `https://winter-xyz.vercel.app`.
+
+### Cloudflare Pages
+
+1. <https://dash.cloudflare.com> → **Workers & Pages** → **Create** → **Pages** → **Connect to Git** → Repository `winter`.
+2. Build command `npm run build`, Build output directory `dist`, ggf. Environment variable `NODE_VERSION` = `22`.
+3. Adresse `https://winter.pages.dev`. Cache-Regeln in `public/_headers`.
 
 ## Schritt 3 – Auf dem iPhone installieren
 
-1. **Safari** öffnen (nicht Chrome; nur Safari kann Web-Apps auf den Homescreen legen) → die Adresse aus Schritt 2 eingeben.
+1. **Safari** öffnen (nicht Chrome; nur Safari kann Web-Apps auf den Homescreen legen) → `https://filipclaude.github.io/winter/` eingeben.
 2. Unten auf **Teilen** (Quadrat mit Pfeil) → nach unten scrollen → **Zum Home-Bildschirm**.
 3. Name **Winter** lassen → **Hinzufügen**.
 4. Winter **vom Homescreen** öffnen, nicht aus Safari. Nur dort läuft es als App: ohne Browserleisten, mit eigenem Speicher, offline.
@@ -53,7 +58,7 @@ Die Cache-Regeln stehen in `public/_headers`.
 
 ## Updates
 
-- `git push` → Vercel/Cloudflare baut neu.
+- `git push` → GitHub Actions baut neu (Fortschritt im **Actions**-Tab).
 - Beim nächsten Öffnen erscheint oben **„Neue Version verfügbar · Aktualisieren“**. Erst nach dem Tap wird neu geladen, damit nichts Halbgetipptes verloren geht.
 - Daten bleiben bei Updates erhalten (IndexedDB, versioniertes Schema mit Migrationen).
 
@@ -73,7 +78,9 @@ Dann <http://localhost:4173> öffnen. Am iPhone im selben WLAN funktioniert `htt
 
 | Problem | Lösung |
 |---|---|
+| Unter Settings → Pages steht „Upgrade or make this repository public“ | Repository öffentlich machen (siehe Schritt 2) oder GitHub Pro |
+| Actions-Lauf rot | Im **Actions**-Tab den Lauf öffnen, der fehlgeschlagene Schritt zeigt den Grund (meist Test oder Typfehler) |
+| Seite zeigt 404 | Source unter Settings → Pages muss „GitHub Actions“ sein; Adresse mit `/winter/` am Ende |
 | App zeigt alte Version | App ganz schließen (App-Umschalter hochwischen) und neu öffnen, dann „Aktualisieren“ tippen |
 | Nach Adresswechsel alles leer | Daten hängen an der Domain: Backup aus der alten Adresse importieren |
 | „Zum Home-Bildschirm“ fehlt | Nur in Safari vorhanden, nicht in Chrome oder der Google-App |
-| Build schlägt fehl (Node) | Node 20.19 oder neuer einstellen (Vercel: Project Settings → Node.js Version) |

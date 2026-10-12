@@ -19,14 +19,18 @@ test('Habit anlegen → auf Heute abhaken → Streak und Heatmap @screens', asyn
   await dialog.getByRole('button', { name: 'Speichern' }).click();
   await expect(page.getByTestId('habit-streaks')).toContainText('Mo, Di, Mi, Do, Fr, Sa');
 
+  // Alle heute geplanten Habits abhaken (Vokabeln ist sonntags nicht geplant), damit der Tag
+  // an jedem Wochentag 100 % erreicht.
   await page.goto('/#/heute');
-  await page.getByTestId('habit-list').getByRole('checkbox', { name: 'Dehnen 10 min' }).click();
-  await expect(
-    page.getByTestId('habit-list').getByRole('checkbox', { name: 'Dehnen 10 min' }),
-  ).toHaveAttribute('aria-checked', 'true');
+  const checks = page.getByTestId('habit-list').getByRole('checkbox');
+  await expect(checks.first()).toBeVisible();
+  for (const box of await checks.all()) {
+    await box.click();
+    await expect(box).toHaveAttribute('aria-checked', 'true');
+  }
 
   await page.goto('/#/habits');
-  await expect(page.getByLabel('Aktueller Streak 1')).toBeVisible();
+  await expect(page.getByLabel('Aktueller Streak 1').first()).toBeVisible();
   await expect(page.getByTestId('habit-heatmap').locator('.heatmap .heatmap__cell.l4')).toHaveCount(1);
   await shot(page, '06-habits');
 });

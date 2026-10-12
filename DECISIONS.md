@@ -25,3 +25,6 @@ Begründete Entscheidungen bei Unklarheiten. Neueste unten.
 | 19 | 2026-10-11 | Lighthouse als Dev-Abhängigkeit mit eigenem Skript (`npm run lighthouse`) | Das Playwright-Chromium ließ sich unter Windows nicht direkt starten (Side-by-Side-Fehler), über Playwright schon. Die Audit-Werkzeugkette hat bekannte Lücken in Dev-Paketen (Puppeteer/Telemetrie). Die App selbst: 0 Lücken (`npm audit --omit=dev`). |
 | 20 | 2026-10-11 | axe-Audit mit „Bewegung reduzieren“ | Sonst misst axe halbtransparente Zwischenstände der Überblendung. Die Kontraste der Tokens sichert zusätzlich ein eigener Unit-Test ab. |
 | 21 | 2026-10-11 | Warnung bei Lern-Timer über 6 h | Ein vergessener Timer würde sonst Tage an Lernzeit buchen. |
+| 22 | 2026-10-12 | Hosting über GitHub Pages statt Vercel (Filips Wunsch), Build per GitHub Actions | Alles an einem Ort, kein weiteres Konto. Die App liegt unter `/winter/`; `base`, `start_url`, `scope` und `id` kommen aus `BASE_PATH`, lokal bleibt `/`. `vercel.json` und `_headers` bleiben für die Alternativen. |
+| 23 | 2026-10-12 | Zusätzlich `<meta name="robots" content="noindex">` | `robots.txt` wirkt nur im Domain-Root, unter `github.io/winter/` also nicht. |
+| 24 | 2026-10-12 | Habit-E2E hakt alle heute geplanten Habits ab | Der Test hing vom Wochentag ab (sonntags war nur ein Habit geplant). Kein Fehler in der App. |
