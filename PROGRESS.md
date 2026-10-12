@@ -231,3 +231,24 @@ Ein Subagent hat den Diff seit Beginn von v2 ohne meine Begründungen geprüft (
 - **CI-Fund:** Der Lauf nach Phase 2+3 war rot (WebKit ohne GPU, DECISIONS #38) – die Schranke hat gegriffen, nichts Kaputtes ging live.
 
 **Geprüft:** 786 Unit-Tests, 102 E2E (Chromium, WebKit, Offline) gegen den `/winter/`-Build.
+
+## v2 · Phase 4 – Abi-Rechner ✓
+- Regelrecherche in der GSO (Anlage 10, §§ 44, 53, 54; Fassung ab 01.08.2026) und auf gymnasiale-oberstufe.bayern.de. Regeln als Daten mit Quelle und Sicherheitsstufe, in der App unter „Regeln & Quellen“ (DECISIONS #41).
+- Halbjahresleistung aus Noten (groß : klein = 1 : 1) oder Zeugnis (Vorrang), Einbringungs-Optimierung (Pflicht nach Rolle, Rest bestmöglich bis 40), W-Seminar + Seminararbeit, Block I/II, Durchschnittsnote, Prognose fehlender Werte (markiert), Szenario „Was brauche ich in Prüfung X für Note Y?“, Warnungen nach § 44/§ 54 (Unterkurse, 0 Punkte, Mindestsummen, Prüfungsbedingungen, Optionsregel).
+- 26 Unit-Tests mit von Hand nachgerechneten Beispielen (u. a. 823 P = 1,0 / 822 P = 1,1, 1 : 1-Schnitt, Streichung des schwächsten Halbjahrs, Szenario 12 Punkte für 2,2).
+- **Fund beim Ansehen des Screenshots:** Standardrollen zu streng (42 Pflicht-HJL, Optionsregel-Warnung) und Prognoseanteil „102 %“ → korrigiert, Regressionstest mit Filips Fächern.
+- **Unsicher (ehrlich):** Rundung der Halbjahresleistung, Umrechnungstabelle Anlage 13, nicht modellierte Sonderfälle. Verbindlich bleibt die Oberstufenkoordination.
+
+## v2 · Phase 5 – Noten, Klausuren, Lernplanung, Stundenplan, Ferien ✓
+- Noten: große/kleine Leistungsnachweise je Fach und Halbjahr, Gewicht, Halbjahresschnitt, Notenverlauf-Chart.
+- Klausur-Detail: Themen-Checkliste mit Lernstand (offen/angefangen/sitzt/wiederholt), Reflexion nach der Rückgabe, bewertete Klausur wird automatisch Note (DECISIONS #44).
+- Lernplan-Generator mit Spaced Repetition (DECISIONS #45), Einheiten abhakbar unter Schule → Plan (auf „Heute“ ab Phase 7).
+- Pomodoro (25/5, einstellbar) im Lern-Timer: zeigt Phase und Restzeit, bucht nur Fokuszeit; Schutz vor vergessenen Timern bleibt.
+- Stundenplan mit A/B-Wochen, Ferien Bayern 2026/27 mit Quelle, Feiertage berechnet, schulfreie Tage im Lernplan berücksichtigt.
+- Hausaufgaben mit Priorität (Sortierung: überfällig/heute → Priorität → Fälligkeit) und Wiederholung (wöchentlich/zweiwöchentlich, genau eine Folgeaufgabe).
+- **Gefunden & behoben:** Abi-Raster-Zellen waren für Screenreader keine Buttons (ARIA-Tabellenrolle überschrieb sie) → Rollen entfernt, Beschriftungen bleiben.
+
+## v2 · Phase 6 – FernUni ✓
+- Einsendearbeiten mit erreichten/maximalen Punkten, Prüfungsberechtigung je Modul nach einstellbarer Regel (inkl. „nicht mehr erreichbar“), Modul-Notiz (z. B. Wiederholerkennzeichen). Fristen-Eskalation 14/7/2 Tage wie bisher; „rot und ganz oben“ auf dem Dashboard folgt in Phase 7.
+
+**Geprüft (Phasen 4–6):** typecheck, lint, Prettier, 807 Unit-Tests, E2E (Chromium + WebKit) inkl. 6 neuer Schul-Abläufe; CI-Lauf nach Phase 4+5 komplett grün und deployt. Screenshots Abi, Noten, Plan, Klausur-Themen, FernUni angesehen.

@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
-import type { Deadline, Exam } from '../../db/schemas';
+import type { Deadline, Exam, Timer } from '../../db/schemas';
 import { useKV } from '../../hooks/useSettings';
 import { deadlineLevel } from '../../lib/calc/school';
 import { addDays, type ISODate } from '../../lib/date';
@@ -26,7 +26,7 @@ export function useUrgentDeadlines(today: ISODate) {
 }
 
 export function useTimer() {
-  return useKV<{ subjectId: string; startedAt: string }>('timer');
+  return useKV<Timer>('timer');
 }
 
 /** Sekunden → "m:ss" bzw. "h:mm:ss". */

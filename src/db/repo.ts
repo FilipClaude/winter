@@ -1,7 +1,8 @@
 import type { z } from 'zod';
-import { nowISO, splitAtMidnight, todayISO, type ISODate } from '../lib/date';
+import { addDays, nowISO, splitAtMidnight, todayISO, type ISODate } from '../lib/date';
 import { uid } from '../lib/id';
 import { semesterForDate } from '../lib/calc/calendar-by';
+import { pomodoroState } from '../lib/calc/school';
 import { normalizeExercise } from '../lib/calc/training';
 import { sleepFromWallTimes } from '../lib/calc/sleep';
 import { db } from './db';
@@ -306,19 +307,34 @@ export async function getTimer(): Promise<Timer | null> {
   return r.success ? r.data : null;
 }
 
-export async function startTimer(subjectId: string, now = new Date()): Promise<Timer> {
+export async function startTimer(
+  subjectId: string,
+  now = new Date(),
+  pomodoro?: Timer['pomodoro'],
+): Promise<Timer> {
   const running = await getTimer();
   if (running) await stopTimer(now);
-  const t: Timer = { subjectId, startedAt: now.toISOString() };
-  await kvSet('timer', t);
+  const t: Timer = { subjectId, startedAt: now.toISOString(), ...(pomodoro ? { pomodoro } : {}) };
+  await kvSet('timer', validate(zTimer, t));
   return t;
 }
 
-/** Stoppt den Timer und speichert die Lernzeit, an Mitternacht auf Kalendertage aufgeteilt. */
+/**
+ * Stoppt den Timer und speichert die Lernzeit, an Mitternacht auf Kalendertage aufgeteilt. Im
+ * Pomodoro-Modus zählt nur die Fokuszeit (anteilig auf die Tage verteilt).
+ */
 export async function stopTimer(now = new Date()): Promise<number> {
   const t = await getTimer();
   if (!t) return 0;
-  const segments = splitAtMidnight(t.startedAt, now.toISOString());
+  const raw = splitAtMidnight(t.startedAt, now.toISOString());
+  const totalSec = (now.getTime() - new Date(t.startedAt).getTime()) / 1000;
+  const share =
+    t.pomodoro && totalSec > 0
+      ? pomodoroState(totalSec, t.pomodoro.workMin, t.pomodoro.breakMin).focusSec / totalSec
+      : 1;
+  const segments = raw
+    .map((s) => ({ ...s, minutes: Math.round(s.minutes * share) }))
+    .filter((s) => s.minutes > 0);
   await db.transaction('rw', db.studySessions, db.kv, async () => {
     for (const seg of segments) {
       await db.studySessions.put(
@@ -365,14 +381,32 @@ export async function saveTodo(input: WithOptionalMeta<Todo>): Promise<Todo> {
   return t;
 }
 
+/**
+ * Hakt eine Aufgabe ab bzw. öffnet sie wieder. Wiederkehrende Aufgaben (wöchentlich/zweiwöchentlich)
+ * legen beim Abhaken die nächste an – einmalig, auch wenn mehrfach getippt wird.
+ */
 export async function toggleTodo(id: string): Promise<void> {
-  const t = await db.todos.get(id);
-  if (!t) return;
-  const done = !t.done;
-  const next: Todo = { ...t, done, updatedAt: nowISO() };
-  if (done) next.doneAt = nowISO();
-  else delete next.doneAt;
-  await db.todos.put(next);
+  await db.transaction('rw', db.todos, async () => {
+    const t = await db.todos.get(id);
+    if (!t) return;
+    const done = !t.done;
+    const next: Todo = { ...t, done, updatedAt: nowISO() };
+    if (done) next.doneAt = nowISO();
+    else delete next.doneAt;
+    await db.todos.put(next);
+    if (done && t.repeat && t.repeat !== 'none') {
+      const step = t.repeat === 'weekly' ? 7 : 14;
+      const base = t.due ?? todayISO();
+      const due = addDays(base, step);
+      const exists = (await db.todos.where('due').equals(due).toArray()).some(
+        (x) => x.title === t.title && x.subjectId === t.subjectId && !x.done,
+      );
+      if (!exists) {
+        const { id: _id, createdAt: _c, updatedAt: _u, doneAt: _d, ...rest } = t;
+        await db.todos.put(validate(zTodo, stamp({ ...rest, date: todayISO(), due, done: false })));
+      }
+    }
+  });
 }
 
 export async function deleteTodo(id: string): Promise<void> {

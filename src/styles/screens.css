@@ -573,3 +573,7 @@
 .topic-row .segmented button {
   font-size: var(--text-xs);
 }
+
+.timer-card--pause .timer-card__time {
+  color: var(--color-text-2);
+}

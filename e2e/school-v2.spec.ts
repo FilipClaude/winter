@@ -118,3 +118,61 @@ test('Stundenplan mit A/B-Wochen und Ferien-Hinweis', async ({ page }) => {
   await expect(tt).toContainText(/[AB]-Woche/);
   await expect(page.getByTestId('breaks')).toContainText('Quelle');
 });
+
+test('FernUni: Regel „1 EA mit 50 %“ → nach Korrektur prüfungsberechtigt, Notiz sichtbar @screens', async ({
+  page,
+}) => {
+  await openSchoolTab(page, 'FernUni');
+  await page.getByRole('button', { name: 'Frist', exact: true }).click();
+  const d = page.getByRole('dialog', { name: 'FernUni-Frist' });
+  await d.getByLabel('Neues Modul').fill('Grundlagen der BWL');
+  await d.getByLabel('Nummer').fill('31001');
+  await d.getByLabel('Bezeichnung').fill('EA 1');
+  await d.getByLabel('Fällig am').fill(berlinDate(5));
+  await d.getByRole('button', { name: 'Speichern' }).click();
+  await expect(d).toBeHidden();
+
+  await page.getByTestId('module-row').click();
+  const m = page.getByRole('dialog', { name: 'Modul' });
+  await m.getByRole('switch').check();
+  await m.getByLabel(/Notiz/).fill('Wiederholerkennzeichen setzen');
+  await m.getByRole('button', { name: 'Speichern' }).click();
+  await expect(page.getByTestId('module-row')).toContainText('noch nicht berechtigt');
+  await expect(page.getByTestId('module-row')).toContainText('Wiederholerkennzeichen');
+
+  await page.getByTestId('deadline-list').getByRole('button', { name: /EA 1/ }).click();
+  const e = page.getByRole('dialog', { name: 'FernUni-Frist' });
+  await e.getByLabel('Erreichte Punkte').fill('62');
+  await e.getByRole('button', { name: 'Speichern' }).click();
+  await expect(page.getByTestId('module-row')).toContainText('prüfungsberechtigt');
+  await expect(page.getByTestId('module-row')).toContainText('EA 1/1 bestanden');
+  await shot(page, '12-fernuni', true);
+});
+
+test('Pomodoro-Timer zeigt Fokusphase; wiederkehrende Aufgabe erzeugt Folgeaufgabe', async ({ page }) => {
+  await page.goto('./#/schule');
+  await page.getByRole('button', { name: 'Lernen starten' }).click();
+  const s = page.getByRole('dialog', { name: 'Lernzeit' });
+  await s
+    .getByRole('group', { name: 'Timer-Modus' })
+    .getByRole('button', { name: /Pomodoro/ })
+    .click();
+  await s.getByRole('button', { name: 'Timer starten' }).click();
+  await expect(page.getByTestId('timer-card')).toContainText('Fokus 1');
+  await expect(page.getByTestId('pomodoro-info')).toContainText('nur die Fokuszeit');
+
+  await openSchoolTab(page, 'Aufgaben');
+  await page.getByRole('button', { name: 'Aufgabe', exact: true }).click();
+  const t = page.getByRole('dialog', { name: 'Aufgabe' });
+  await t.getByLabel('Aufgabe').fill('Vokabeln lernen');
+  await t.getByLabel('Fällig').fill(berlinDate(1));
+  await t.getByRole('group', { name: 'Wiederholen' }).getByRole('button', { name: 'Wöchentlich' }).click();
+  await t.getByRole('group', { name: 'Priorität' }).getByRole('button', { name: 'Hoch' }).click();
+  await t.getByRole('button', { name: 'Speichern' }).click();
+  const list = page.getByTestId('todo-list');
+  await expect(list).toContainText('wöchentlich');
+  await list.getByRole('checkbox', { name: 'Vokabeln lernen erledigt' }).click();
+  // Die Folgeaufgabe erscheint sofort wieder offen
+  await expect(list.getByRole('checkbox', { name: 'Vokabeln lernen erledigt' })).toHaveCount(1);
+  await expect(list).toContainText('in 8 Tagen');
+});

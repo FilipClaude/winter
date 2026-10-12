@@ -522,5 +522,10 @@ export const DEFAULT_SETTINGS: Settings = {
 };
 
 /** Laufender Lern-Timer: gespeicherte Startzeit, damit er Schließen/Neuladen übersteht. */
-export const zTimer = z.object({ subjectId: zId, startedAt: zInstant });
+export const zTimer = z.object({
+  subjectId: zId,
+  startedAt: zInstant,
+  /** v2: Pomodoro – abwechselnd Fokus und Pause; gebucht wird nur die Fokuszeit. */
+  pomodoro: z.object({ workMin: zInt(5, 120), breakMin: zInt(1, 60) }).optional(),
+});
 export type Timer = z.infer<typeof zTimer>;

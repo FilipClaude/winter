@@ -5,6 +5,7 @@ import { db } from '../../db/db';
 import { cancelTimer, deleteModule, saveModule, stopTimer, toggleDeadline, toggleTodo } from '../../db/repo';
 import type { Module } from '../../db/schemas';
 import { useNow, useToday } from '../../hooks/useNow';
+import { moduleEligibility } from '../../lib/calc/fernuni';
 import { formatDecimal } from '../../lib/calc/insights';
 import {
   countdownLabel,
@@ -12,12 +13,13 @@ import {
   pointsAverage,
   pointsToDecimalGrade,
   pointsToGrade,
+  pomodoroState,
   studyBySubject,
   studyMinutesInRange,
 } from '../../lib/calc/school';
 import { addDays, dateRange, diffDays, formatDE, formatHM, formatMinutes, formatShort, formatWeekdayShort, startOfWeek } from '../../lib/date';
 import { BarChart } from '../../ui/charts';
-import { FrostCheck, TextField } from '../../ui/controls';
+import { FrostCheck, NumberField, TextArea, TextField } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
 import { Badge, Banner, Button, Card, EmptyState, IconButton, ProgressBar, ScreenHeader, SectionTitle, Stat } from '../../ui/primitives';
 import { DEADLINE_KIND_LABEL, EXAM_KIND_LABEL, formatClock, useTimer } from './school-utils';
@@ -80,11 +82,18 @@ function TimerCard() {
   if (timer) {
     const name = names.get(timer.subjectId) ?? 'Fach';
     const secs = (now.getTime() - new Date(timer.startedAt).getTime()) / 1000;
+    const pomo = timer.pomodoro ? pomodoroState(secs, timer.pomodoro.workMin, timer.pomodoro.breakMin) : null;
     return (
-      <Card label={`Lernen · ${name}`} icon={Timer} ariaLabel="Lern-Timer läuft" testId="timer-card" className="timer-card">
+      <Card
+        label={pomo ? `${pomo.phase === 'fokus' ? `Fokus ${pomo.round}` : 'Pause'} · ${name}` : `Lernen · ${name}`}
+        icon={Timer}
+        ariaLabel="Lern-Timer läuft"
+        testId="timer-card"
+        className={`timer-card ${pomo?.phase === 'pause' ? 'timer-card--pause' : ''}`}
+      >
         <div className="row row--between">
           <span className="big num timer-card__time" data-testid="timer-clock">
-            {formatClock(secs)}
+            {pomo ? formatClock(pomo.remainingSec) : formatClock(secs)}
           </span>
           <IconButton
             icon={Square}
@@ -106,6 +115,10 @@ function TimerCard() {
           >
             Läuft seit über {Math.floor(secs / 3600)} h – vergessen? Verwerfen und die Zeit über „Lernzeit“ nachtragen.
           </Banner>
+        ) : pomo ? (
+          <p className="xsmall faint" data-testid="pomodoro-info">
+            {pomo.phase === 'fokus' ? 'Fokus' : 'Pause'} – noch {formatClock(pomo.remainingSec)}. Gebucht wird nur die Fokuszeit ({formatMinutes(pomo.focusSec / 60)}).
+          </p>
         ) : (
           <p className="xsmall faint">Läuft weiter, auch wenn die App geschlossen wird.</p>
         )}
@@ -135,7 +148,18 @@ function Todos() {
   const { openSheet } = useOverlay();
   const todos = useLiveQuery(() => db.todos.toArray(), []);
   if (!todos) return null;
-  const open = todos.filter((t) => !t.done).sort((a, b) => (a.due ?? '9999').localeCompare(b.due ?? '9999') || a.createdAt.localeCompare(b.createdAt));
+  const prio = { hoch: 0, normal: 1, niedrig: 2 } as const;
+  // Überfällige und heute fällige zuerst, dann Priorität, dann Fälligkeit.
+  const urgent = (t: (typeof todos)[number]) => (t.due !== undefined && t.due <= today ? 0 : 1);
+  const open = todos
+    .filter((t) => !t.done)
+    .sort(
+      (a, b) =>
+        urgent(a) - urgent(b) ||
+        prio[a.priority ?? 'normal'] - prio[b.priority ?? 'normal'] ||
+        (a.due ?? '9999').localeCompare(b.due ?? '9999') ||
+        a.createdAt.localeCompare(b.createdAt),
+    );
   const done = todos.filter((t) => t.done).sort((a, b) => (b.doneAt ?? '').localeCompare(a.doneAt ?? '')).slice(0, 5);
   return (
     <>
@@ -156,6 +180,8 @@ function Todos() {
                   <FrostCheck checked={false} label={`${t.title} erledigt`} onChange={() => void toggleTodo(t.id)} />
                   <button type="button" className="grow" style={{ textAlign: 'left', minHeight: 44 }} onClick={() => openSheet({ title: 'Aufgabe', render: (close) => <TodoSheet close={close} todo={t} /> })}>
                     <span className="list-item__title">{t.title}</span>
+                    {t.priority === 'hoch' && <Badge tone="warn">hoch</Badge>}
+                    {t.repeat && t.repeat !== 'none' && <Badge tone="muted">{t.repeat === 'weekly' ? 'wöchentlich' : '2-wöchentlich'}</Badge>}
                     <br />
                     <span className={`list-item__meta ${overdue ? 'warn' : ''}`}>
                       {[t.subjectId && names.get(t.subjectId), t.due && (t.due === today ? 'heute fällig' : overdue ? `überfällig seit ${formatShort(t.due)}` : `fällig ${countdownLabel(t.due, today)}`)].filter(Boolean).join(' · ') || 'ohne Frist'}
@@ -360,15 +386,34 @@ function FernUni() {
           <div className="list">
             {data.modules.map((m) => {
               const count = open.filter((d) => d.moduleId === m.id).length;
+              const el = moduleEligibility(m, data.deadlines.filter((d) => d.moduleId === m.id));
               return (
-                <button key={m.id} type="button" className="list-item" onClick={() => openSheet({ title: 'Modul', render: (close) => <ModuleSheet close={close} module={m} /> })}>
+                <button key={m.id} type="button" className="list-item" data-testid="module-row" onClick={() => openSheet({ title: 'Modul', render: (close) => <ModuleSheet close={close} module={m} /> })}>
                   <span className="list-item__icon">
                     <BookOpen size={16} strokeWidth={1.5} aria-hidden />
                   </span>
-                  <span className="grow">
+                  <span className="grow" style={{ minWidth: 0 }}>
                     {m.name}
                     <br />
-                    <span className="list-item__meta">{m.number ? `Nr. ${m.number} · ` : ''}{count} offen</span>
+                    <span className="list-item__meta">
+                      {m.number ? `Nr. ${m.number} · ` : ''}
+                      {count} offen
+                      {el.eligible !== null && ` · EA ${el.passed}/${el.required} bestanden`}
+                    </span>
+                    {m.note && (
+                      <span className="list-item__meta truncate" style={{ display: 'block' }}>
+                        {m.note}
+                      </span>
+                    )}
+                    {el.eligible !== null && (
+                      <span style={{ display: 'block', marginTop: 'var(--space-1)' }}>
+                        {el.eligible ? (
+                          <Badge>prüfungsberechtigt</Badge>
+                        ) : (
+                          <Badge tone={el.unreachable ? 'warn' : 'muted'}>{el.unreachable ? 'nicht mehr erreichbar' : 'noch nicht berechtigt'}</Badge>
+                        )}
+                      </span>
+                    )}
                   </span>
                 </button>
               );
@@ -387,7 +432,11 @@ function FernUni() {
                   <FrostCheck checked label={`${d.title} wieder öffnen`} onChange={() => void toggleDeadline(d.id)} />
                   <span className="grow muted">
                     {d.title}
-                    <span className="faint xsmall"> · {formatDE(d.date)}</span>
+                    <span className="faint xsmall">
+                      {' '}
+                      · {formatDE(d.date)}
+                      {d.points !== undefined && d.maxPoints !== undefined && ` · ${d.points}/${d.maxPoints} P`}
+                    </span>
                   </span>
                 </div>
               ))}
@@ -403,16 +452,50 @@ function ModuleSheet({ close, module }: { close: () => void; module?: Module }) 
   const { toast } = useOverlay();
   const [name, setName] = useState(module?.name ?? '');
   const [number, setNumber] = useState(module?.number ?? '');
+  const [hasRule, setHasRule] = useState(module?.rule !== undefined);
+  const [minPassed, setMinPassed] = useState<number | ''>(module?.rule?.minPassed ?? 1);
+  const [passPercent, setPassPercent] = useState<number | ''>(module?.rule?.passPercent ?? 50);
+  const [note, setNote] = useState(module?.note ?? '');
   return (
     <div className="form">
       <TextField label="Name" value={name} onValue={setName} maxLength={80} placeholder="z. B. Grundlagen der BWL" />
       <TextField label="Modulnummer" value={number} onValue={setNumber} maxLength={20} placeholder="31001" />
+      <label className="toggle-row">
+        <span className="grow">
+          <span className="list-item__title">Prüfungsberechtigung über Einsendearbeiten</span>
+          <span className="list-item__meta" style={{ display: 'block' }}>
+            Regel steht im Modulhandbuch bzw. in Moodle – sie ist je Modul verschieden.
+          </span>
+        </span>
+        <input type="checkbox" role="switch" className="switch" checked={hasRule} onChange={(e) => setHasRule(e.target.checked)} />
+      </label>
+      {hasRule && (
+        <div className="form-row">
+          <NumberField label="Mindestens bestandene EA" value={minPassed} onValue={setMinPassed} min={0} max={20} />
+          <NumberField label="Bestanden ab (%)" value={passPercent} onValue={setPassPercent} min={0} max={100} />
+        </div>
+      )}
+      <TextArea
+        label="Notiz (z. B. Belegung, Wiederholerkennzeichen)"
+        value={note}
+        onValue={setNote}
+        rows={3}
+        maxLength={4000}
+        placeholder="z. B. Bei der Rückmeldung Wiederholerkennzeichen setzen"
+      />
       <Button
         variant="primary"
         block
         disabled={!name.trim()}
         onClick={() =>
-          void saveModule({ ...(module ? { id: module.id, createdAt: module.createdAt } : {}), name, number, archived: module?.archived ?? false }).then(() => {
+          void saveModule({
+            ...(module ? { id: module.id, createdAt: module.createdAt } : {}),
+            name,
+            number,
+            archived: module?.archived ?? false,
+            ...(hasRule ? { rule: { minPassed: Number(minPassed || 0), passPercent: Number(passPercent === '' ? 50 : passPercent) } } : {}),
+            ...(note.trim() ? { note: note.trim() } : {}),
+          }).then(() => {
             toast('Modul gespeichert');
             close();
           })

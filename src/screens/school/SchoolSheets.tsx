@@ -48,6 +48,8 @@ export function StudySheet({ close, subjectId: preset }: { close: () => void; su
   const timer = useTimer();
   const now = useNow(1000);
   const [subjectId, setSubjectId] = useState(preset ?? '');
+  const settings = useSettings();
+  const [mode, setMode] = useState<'frei' | 'pomodoro'>('frei');
   const [minutes, setMinutes] = useState<number | ''>('');
   const [date, setDate] = useState<ISODate>(todayISO());
   const { error, handle } = useError();
@@ -91,13 +93,24 @@ export function StudySheet({ close, subjectId: preset }: { close: () => void; su
         ))}
       </div>
       {!timer && (
+        <Segmented
+          label="Timer-Modus"
+          value={mode}
+          onChange={setMode}
+          options={[
+            { value: 'frei', label: 'Frei' },
+            { value: 'pomodoro', label: `Pomodoro ${settings.pomodoro.workMin}/${settings.pomodoro.breakMin}` },
+          ]}
+        />
+      )}
+      {!timer && (
         <Button
           variant="primary"
           block
           icon={Play}
           disabled={!chosen}
           onClick={() =>
-            void startTimer(chosen).then(() => {
+            void startTimer(chosen, new Date(), mode === 'pomodoro' ? settings.pomodoro : undefined).then(() => {
               toast('Timer läuft – auch wenn die App geschlossen wird');
               close();
             })
@@ -139,6 +152,8 @@ export function TodoSheet({ close, todo }: { close: () => void; todo?: Todo }) {
   const [title, setTitle] = useState(todo?.title ?? '');
   const [subjectId, setSubjectId] = useState(todo?.subjectId ?? '');
   const [due, setDue] = useState(todo?.due ?? '');
+  const [priority, setPriority] = useState<NonNullable<Todo['priority']>>(todo?.priority ?? 'normal');
+  const [repeat, setRepeat] = useState<NonNullable<Todo['repeat']>>(todo?.repeat ?? 'none');
   const { error, handle } = useError();
 
   return (
@@ -148,6 +163,27 @@ export function TodoSheet({ close, todo }: { close: () => void; todo?: Todo }) {
         <SelectField label="Fach" value={subjectId} onValue={setSubjectId} options={[{ value: '', label: 'ohne Fach' }, ...subjects.map((s) => ({ value: s.id, label: s.name }))]} />
         <TextField label="Fällig" type="date" value={due} onValue={setDue} />
       </div>
+      <Segmented<NonNullable<Todo['priority']>>
+        label="Priorität"
+        value={priority}
+        onChange={setPriority}
+        options={[
+          { value: 'hoch', label: 'Hoch' },
+          { value: 'normal', label: 'Normal' },
+          { value: 'niedrig', label: 'Niedrig' },
+        ]}
+      />
+      <Segmented<NonNullable<Todo['repeat']>>
+        label="Wiederholen"
+        value={repeat}
+        onChange={setRepeat}
+        options={[
+          { value: 'none', label: 'Einmalig' },
+          { value: 'weekly', label: 'Wöchentlich' },
+          { value: 'biweekly', label: '2-wöchentl.' },
+        ]}
+      />
+      {repeat !== 'none' && <p className="xsmall faint">Beim Abhaken entsteht die nächste Aufgabe {repeat === 'weekly' ? '7' : '14'} Tage nach der Fälligkeit.</p>}
       {error && <p className="field__error">{error}</p>}
       <Button
         variant="primary"
@@ -161,6 +197,8 @@ export function TodoSheet({ close, todo }: { close: () => void; todo?: Todo }) {
             done: todo?.done ?? false,
             ...(subjectId ? { subjectId } : {}),
             ...(due ? { due } : {}),
+            ...(priority !== 'normal' ? { priority } : {}),
+            ...(repeat !== 'none' ? { repeat } : {}),
           })
             .then(() => {
               toast(todo ? 'Aufgabe gespeichert' : 'Aufgabe angelegt');
@@ -337,6 +375,8 @@ export function DeadlineSheet({ close, deadline, moduleId: presetModule }: { clo
   const [title, setTitle] = useState(deadline?.title ?? '');
   const [date, setDate] = useState(deadline?.date ?? '');
   const [time, setTime] = useState(deadline?.time ?? '');
+  const [points, setPoints] = useState<number | ''>(deadline?.points ?? '');
+  const [maxPoints, setMaxPoints] = useState<number | ''>(deadline?.maxPoints ?? 100);
   const { error, handle } = useError();
   const chosen = moduleId || modules[0]?.id || '';
   const creating = modules.length === 0 || chosen === '__neu';
@@ -353,8 +393,11 @@ export function DeadlineSheet({ close, deadline, moduleId: presetModule }: { clo
       kind,
       title: title.trim() || DEADLINE_KIND_LABEL[kind],
       date,
-      done: deadline?.done ?? false,
+      // Mit eingetragenen Punkten ist die Einsendearbeit abgegeben und bewertet.
+      done: points !== '' ? true : (deadline?.done ?? false),
       ...(time ? { time } : {}),
+      ...(kind === 'einsendearbeit' && points !== '' ? { points } : {}),
+      ...(kind === 'einsendearbeit' && maxPoints !== '' ? { maxPoints } : {}),
     });
     toast('Frist gespeichert – Warnung 14, 7 und 2 Tage vorher');
     close();
@@ -382,6 +425,12 @@ export function DeadlineSheet({ close, deadline, moduleId: presetModule }: { clo
         <TextField label="Fällig am" type="date" value={date} onValue={setDate} />
         <TextField label="Uhrzeit (optional)" type="time" value={time} onValue={setTime} />
       </div>
+      {kind === 'einsendearbeit' && (
+        <div className="form-row">
+          <NumberField label="Erreichte Punkte" value={points} onValue={setPoints} min={0} max={1000} decimal hint="nach der Korrektur" />
+          <NumberField label="Maximal" value={maxPoints} onValue={setMaxPoints} min={1} max={1000} />
+        </div>
+      )}
       {error && <p className="field__error">{error}</p>}
       <Button variant="primary" block disabled={!date || (creating && !newModule.trim())} onClick={() => void submit().catch(handle)}>
         Speichern

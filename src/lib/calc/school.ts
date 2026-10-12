@@ -69,6 +69,25 @@ export function studyBySubject(sessions: Pick<StudySession, 'subjectId' | 'minut
   return m;
 }
 
+/**
+ * Pomodoro-Stand nach `elapsedSec` Sekunden: aktuelle Phase, Restzeit der Phase, abgeschlossene
+ * Fokusrunden und bisherige Fokuszeit (Pausen zählen nicht als Lernzeit).
+ */
+export function pomodoroState(elapsedSec: number, workMin: number, breakMin: number) {
+  const work = workMin * 60;
+  const cycle = (workMin + breakMin) * 60;
+  const e = Math.max(0, elapsedSec);
+  const rounds = Math.floor(e / cycle);
+  const inCycle = e - rounds * cycle;
+  const focus = inCycle < work;
+  return {
+    phase: focus ? ('fokus' as const) : ('pause' as const),
+    remainingSec: focus ? work - inCycle : cycle - inCycle,
+    round: rounds + 1,
+    focusSec: rounds * work + Math.min(inCycle, work),
+  };
+}
+
 /** Lernminuten eines Fachs in den `days` Tagen vor einem Termin (Termintag ausgeschlossen). */
 export function studyBefore(
   sessions: Pick<StudySession, 'subjectId' | 'date' | 'minutes'>[],

@@ -1,4 +1,87 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { db } from '../../db/db';
+import { saveTodo, startTimer, stopTimer, toggleTodo } from '../../db/repo';
+import { eaPassed, moduleEligibility } from './fernuni';
+import { pomodoroState } from './school';
+
+beforeEach(async () => {
+  await db.delete();
+  await db.open();
+});
+
+describe('Pomodoro', () => {
+  it('Phasen 25/5: Fokus, Pause, nächste Runde; nur Fokuszeit zählt', () => {
+    expect(pomodoroState(0, 25, 5)).toMatchObject({
+      phase: 'fokus',
+      round: 1,
+      remainingSec: 1500,
+      focusSec: 0,
+    });
+    expect(pomodoroState(26 * 60, 25, 5)).toMatchObject({
+      phase: 'pause',
+      round: 1,
+      remainingSec: 240,
+      focusSec: 1500,
+    });
+    expect(pomodoroState(31 * 60, 25, 5)).toMatchObject({ phase: 'fokus', round: 2, focusSec: 1560 });
+  });
+
+  it('Timer im Pomodoro-Modus bucht nur die Fokuszeit (60 min → 50 min)', async () => {
+    const start = new Date('2026-10-13T14:00:00Z');
+    await startTimer('fach', start, { workMin: 25, breakMin: 5 });
+    const min = await stopTimer(new Date('2026-10-13T15:00:00Z'));
+    expect(min).toBe(50);
+    expect((await db.studySessions.toArray()).reduce((a, s) => a + s.minutes, 0)).toBe(50);
+  });
+});
+
+describe('Aufgaben mit Wiederholung', () => {
+  it('wöchentlich: Abhaken legt genau eine Folgeaufgabe 7 Tage nach der Fälligkeit an', async () => {
+    const t = await saveTodo({
+      date: '2026-10-12',
+      title: 'Vokabeln',
+      due: '2026-10-14',
+      done: false,
+      repeat: 'weekly',
+      priority: 'hoch',
+    });
+    await toggleTodo(t.id);
+    await toggleTodo(t.id); // wieder öffnen
+    await toggleTodo(t.id); // erneut abhaken: keine zweite Folgeaufgabe
+    const all = await db.todos.toArray();
+    const next = all.filter((x) => x.due === '2026-10-21');
+    expect(next).toHaveLength(1);
+    expect(next[0]).toMatchObject({ title: 'Vokabeln', done: false, repeat: 'weekly', priority: 'hoch' });
+  });
+});
+
+describe('FernUni: Prüfungsberechtigung', () => {
+  it('EA bestanden ab Schwelle (Rand genau 50 %)', () => {
+    expect(eaPassed({ points: 50, maxPoints: 100 }, 50)).toBe(true);
+    expect(eaPassed({ points: 49, maxPoints: 100 }, 50)).toBe(false);
+    expect(eaPassed({ maxPoints: 100 }, 50)).toBeNull();
+  });
+
+  it('„mindestens eine EA mit 50 %“: offen → bestanden; nicht mehr erreichbar wird erkannt', () => {
+    const rule = { rule: { minPassed: 1, passPercent: 50 } };
+    const ea = (points?: number) => ({
+      kind: 'einsendearbeit' as const,
+      maxPoints: 100,
+      ...(points !== undefined ? { points } : {}),
+    });
+    expect(moduleEligibility(rule, [ea(), ea()])).toMatchObject({
+      eligible: false,
+      open: 2,
+      unreachable: false,
+    });
+    expect(moduleEligibility(rule, [ea(30), ea(62)])).toMatchObject({ eligible: true, passed: 1 });
+    expect(moduleEligibility({ rule: { minPassed: 2, passPercent: 50 } }, [ea(30), ea(62)])).toMatchObject({
+      eligible: false,
+      unreachable: true,
+    });
+    expect(moduleEligibility({}, [ea(80)]).eligible).toBeNull();
+  });
+});
 import {
   easterSunday,
   isSchoolDay,
