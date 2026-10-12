@@ -48,7 +48,9 @@ test('Habit archivieren', async ({ page }) => {
 test('Rückblick leer, Woche/Monat umschalten, ehrlicher Datenhinweis @screens', async ({ page }) => {
   await page.goto('./#/rueckblick');
   await expect(page.getByText('Keine Daten in diesem Zeitraum')).toBeVisible();
-  await expect(page.getByTestId('insight-schlaf-stimmung')).toContainText('Zu wenig Datenpunkte');
+  await expect(page.getByTestId('insight-schlaf-stimmung')).toContainText(
+    'Noch kein belastbarer Zusammenhang',
+  );
   await shot(page, '06-rueckblick-leer', true);
   await expect(page.getByTestId('period-label')).toContainText('KW');
   await page.getByRole('button', { name: 'Monat' }).click();

@@ -644,3 +644,26 @@
   touch-action: none;
   cursor: grab;
 }
+
+/* ---------- Rückblick v2 ---------- */
+.report-list {
+  margin: 0;
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.report-list--warn {
+  color: var(--color-warn);
+}
+
+.heatmap-year {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.heatmap-year .heatmap {
+  min-width: 100%;
+}

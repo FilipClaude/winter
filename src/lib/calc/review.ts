@@ -11,14 +11,7 @@ import type {
 } from '../../db/schemas';
 import { addDays, dateRange, type ISODate } from '../date';
 import { habitRate } from './habits';
-import {
-  compareByThreshold,
-  describeCorrelation,
-  formatDecimal,
-  median,
-  MIN_PER_GROUP,
-  pearson,
-} from './insights';
+import { compareByThreshold, describeCorrelation, formatDecimal, median, pearson } from './insights';
 import { studyBefore } from './school';
 import { effectiveSleep } from './sleep';
 import { sessionLoad } from './training';
@@ -115,16 +108,49 @@ export function periodSummary(data: ReviewData, from: ISODate, to: ISODate): Per
 export interface Insight {
   id: string;
   title: string;
-  /** Ehrlich formulierte Aussage oder Hinweis auf zu wenig Daten. */
+  /** Klartext-Einordnung: belastbarer Zusammenhang oder ausdrücklich „noch kein belastbarer Zusammenhang“. */
   text: string;
+  /** Belastbar: mindestens MIN_INSIGHT_N Datenpunkte und |r| ≥ MIN_INSIGHT_R. */
   enough: boolean;
   n: number;
+  r: number | null;
+  /** Gegenüberstellung der Mittelwerte (anschaulich), falls beide Gruppen genug Punkte haben. */
   detail?: string;
 }
 
-const fmt1 = (n: number | null) => formatDecimal(n, 1);
+/** Mindestanzahl Datenpunkte für eine Aussage (Auftrag: unter 14 keine). */
+export const MIN_INSIGHT_N = 14;
+/** Ab hier gilt ein Zusammenhang als mehr als schwach. */
+export const MIN_INSIGHT_R = 0.3;
 
-/** Einfache Gegenüberstellungen über die letzten `days` Tage. Keine Kausalaussagen. */
+const fmt1 = (n: number | null) => formatDecimal(n, 1);
+const fmtR = (r: number) => r.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function correlationInsight(
+  id: string,
+  title: string,
+  pairs: [number, number][],
+  wording: { up: string; down: string },
+  comparison?: string,
+): Insight {
+  const n = pairs.length;
+  const r = pearson(pairs);
+  const enough = n >= MIN_INSIGHT_N && r !== null && Math.abs(r) >= MIN_INSIGHT_R;
+  let text: string;
+  if (n < MIN_INSIGHT_N)
+    text = `Noch kein belastbarer Zusammenhang – erst ${n} von mindestens ${MIN_INSIGHT_N} Datenpunkten.`;
+  else if (r === null) text = `Noch kein belastbarer Zusammenhang – die Werte schwanken kaum (n = ${n}).`;
+  else if (!enough)
+    text = `Noch kein belastbarer Zusammenhang: ${describeCorrelation(r, n)} (r = ${fmtR(r)}, n = ${n}).`;
+  else
+    text = `${describeCorrelation(r, n).replace(/^./, (c) => c.toUpperCase())} (r = ${fmtR(r)}, n = ${n}): ${r > 0 ? wording.up : wording.down}`;
+  return { id, title, n, r, enough, text, ...(comparison ? { detail: comparison } : {}) };
+}
+
+/**
+ * Zusammenhänge über die letzten `days` Tage mit Pearson-r, Anzahl und Klartext. Unter 14 Punkten oder
+ * bei |r| < 0,3 steht ausdrücklich „noch kein belastbarer Zusammenhang“. Keine Kausalaussagen.
+ */
 export function buildInsights(data: ReviewData, today: ISODate, days = 90): Insight[] {
   const from = addDays(today, -days + 1);
   const series = dailySeries(data, from, today);
@@ -135,54 +161,78 @@ export function buildInsights(data: ReviewData, today: ISODate, days = 90): Insi
     .filter((d) => d.sleepMin !== null && d.mood !== null)
     .map((d) => [(d.sleepMin ?? 0) / 60, d.mood ?? 0] as [number, number]);
   const c1 = compareByThreshold(sleepMood, 7.5);
-  out.push({
-    id: 'schlaf-stimmung',
-    title: 'Schlaf und Stimmung',
-    n: sleepMood.length,
-    enough: c1.enough,
-    text: c1.enough
-      ? `Nach mehr als 7,5 h Schlaf lag deine Stimmung im Schnitt bei ${fmt1(c1.meanHigh)}, nach 7,5 h oder weniger bei ${fmt1(c1.meanLow)}.`
-      : `Zu wenig Datenpunkte: ${c1.nHigh} Tage über und ${c1.nLow} Tage bis 7,5 h Schlaf mit Stimmung. Nötig sind je ${MIN_PER_GROUP}.`,
-    detail: `${describeCorrelation(pearson(sleepMood), sleepMood.length)} · n = ${sleepMood.length}`,
-  });
+  out.push(
+    correlationInsight(
+      'schlaf-stimmung',
+      'Schlaf und Stimmung',
+      sleepMood,
+      {
+        up: 'Nach mehr Schlaf war deine Stimmung eher besser.',
+        down: 'Nach mehr Schlaf war deine Stimmung eher schlechter.',
+      },
+      c1.enough
+        ? `Nach mehr als 7,5 h Schlaf lag deine Stimmung im Schnitt bei ${fmt1(c1.meanHigh)}, nach 7,5 h oder weniger bei ${fmt1(c1.meanLow)}.`
+        : undefined,
+    ),
+  );
 
-  // 2) Trainingslast ↔ Energie am Folgetag
+  // 2) Lernzeit in den 14 Tagen vor einer Klausur ↔ Punkte (alle bewerteten Klausuren)
+  const examPairs = data.exams
+    .filter((e) => e.points !== undefined)
+    .map((e) => [studyBefore(data.study, e.subjectId, e.date, 14) / 60, e.points ?? 0] as [number, number]);
+  const studyThreshold = median(examPairs.map(([h]) => h)) ?? 0;
+  const c2 = compareByThreshold(examPairs, studyThreshold);
+  out.push(
+    correlationInsight(
+      'lernen-note',
+      'Lernzeit vor Klausuren und Punkte',
+      examPairs,
+      {
+        up: 'Mehr Lernzeit vorher ging mit mehr Punkten einher.',
+        down: 'Mehr Lernzeit vorher ging mit weniger Punkten einher.',
+      },
+      c2.enough
+        ? `Bei mehr als ${fmt1(studyThreshold)} h Lernzeit in den 14 Tagen davor lagen deine Klausuren im Schnitt bei ${fmt1(c2.meanHigh)} Punkten, sonst bei ${fmt1(c2.meanLow)}.`
+        : undefined,
+    ),
+  );
+
+  // 3) Trainingslast ↔ Energie am Folgetag
   const loadEnergy: [number, number][] = [];
   series.forEach((d, i) => {
     const next = series[i + 1];
     if (next && next.energy !== null) loadEnergy.push([d.load, next.energy]);
   });
-  const trainedLoads = loadEnergy.map(([l]) => l).filter((l) => l > 0);
-  const threshold = median(trainedLoads) ?? 0;
-  const c2 = compareByThreshold(loadEnergy, threshold);
-  out.push({
-    id: 'last-energie',
-    title: 'Trainingslast und Energie',
-    n: loadEnergy.length,
-    enough: c2.enough && trainedLoads.length >= MIN_PER_GROUP,
-    text:
-      c2.enough && trainedLoads.length >= MIN_PER_GROUP
-        ? `Am Tag nach mehr als ${Math.round(threshold)} Load lag deine Energie im Schnitt bei ${fmt1(c2.meanHigh)}, sonst bei ${fmt1(c2.meanLow)}.`
-        : `Zu wenig Datenpunkte: ${loadEnergy.length} Tage mit Energie-Eintrag am Folgetag, davon ${trainedLoads.length} nach Training.`,
-    detail: `${describeCorrelation(pearson(loadEnergy), loadEnergy.length)} · n = ${loadEnergy.length}`,
-  });
+  const threshold = median(loadEnergy.map(([l]) => l).filter((l) => l > 0)) ?? 0;
+  const c3 = compareByThreshold(loadEnergy, threshold);
+  out.push(
+    correlationInsight(
+      'last-energie',
+      'Trainingslast und Energie am Folgetag',
+      loadEnergy,
+      {
+        up: 'Nach härteren Tagen war deine Energie am Folgetag eher höher.',
+        down: 'Nach härteren Tagen war deine Energie am Folgetag eher niedriger.',
+      },
+      c3.enough
+        ? `Am Tag nach mehr als ${Math.round(threshold)} Load lag deine Energie im Schnitt bei ${fmt1(c3.meanHigh)}, sonst bei ${fmt1(c3.meanLow)}.`
+        : undefined,
+    ),
+  );
 
-  // 3) Lernzeit in den 14 Tagen vor einer Klausur ↔ Punkte (alle bewerteten Klausuren)
-  const examPairs = data.exams
-    .filter((e) => e.points !== undefined)
-    .map((e) => [studyBefore(data.study, e.subjectId, e.date, 14) / 60, e.points ?? 0] as [number, number]);
-  const studyThreshold = median(examPairs.map(([h]) => h)) ?? 0;
-  const c3 = compareByThreshold(examPairs, studyThreshold);
-  out.push({
-    id: 'lernen-note',
-    title: 'Lernzeit vor Klausuren und Punkte',
-    n: examPairs.length,
-    enough: c3.enough,
-    text: c3.enough
-      ? `Bei mehr als ${fmt1(studyThreshold)} h Lernzeit in den 14 Tagen davor lagen deine Klausuren im Schnitt bei ${fmt1(c3.meanHigh)} Punkten, sonst bei ${fmt1(c3.meanLow)}.`
-      : `Zu wenig bewertete Klausuren mit erfasster Lernzeit (${examPairs.length}). Nötig sind mindestens ${MIN_PER_GROUP * 2}.`,
-    detail: `${describeCorrelation(pearson(examPairs), examPairs.length)} · n = ${examPairs.length}`,
+  // 4) Schritte ↔ Schlaf in der Nacht danach (Schlaf zählt zum Aufwachtag = Folgetag)
+  const stepsSleep: [number, number][] = [];
+  series.forEach((d, i) => {
+    const next = series[i + 1];
+    if (d.steps !== null && next && next.sleepMin !== null)
+      stepsSleep.push([d.steps / 1000, next.sleepMin / 60]);
   });
+  out.push(
+    correlationInsight('schritte-schlaf', 'Schritte und Schlaf danach', stepsSleep, {
+      up: 'An bewegten Tagen hast du danach eher länger geschlafen.',
+      down: 'An bewegten Tagen hast du danach eher kürzer geschlafen.',
+    }),
+  );
 
   return out;
 }

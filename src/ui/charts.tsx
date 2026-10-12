@@ -231,15 +231,29 @@ export function LineChart({
               : `${formatChartNumber(d.value)}${typeof secondary?.[i]?.value === 'number' ? ` · ${formatChartNumber(secondary[i]?.value ?? 0)}` : ''}`,
         }))}
       />
-      <div
-        className="chart__labels"
-        style={{ gridTemplateColumns: `repeat(${data.length}, 1fr)` }}
-        aria-hidden
-      >
-        {data.map((d, i) => (
-          <span key={i}>{i % step === 0 ? d.label : ''}</span>
-        ))}
-      </div>
+      {data.length > 14 ? (
+        // Lange Verläufe: nur jede n-te Beschriftung, frei positioniert (sonst werden die Spalten so
+        // schmal, dass die Texte abgeschnitten werden).
+        <div className="chart__labels chart__labels--free" aria-hidden>
+          {data.map((d, i) =>
+            i % step === 0 ? (
+              <span key={i} style={{ left: `${(x(i) / w) * 100}%` }}>
+                {d.label}
+              </span>
+            ) : null,
+          )}
+        </div>
+      ) : (
+        <div
+          className="chart__labels"
+          style={{ gridTemplateColumns: `repeat(${data.length}, 1fr)` }}
+          aria-hidden
+        >
+          {data.map((d, i) => (
+            <span key={i}>{i % step === 0 ? d.label : ''}</span>
+          ))}
+        </div>
+      )}
     </figure>
   );
 }

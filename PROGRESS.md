@@ -263,3 +263,11 @@ Ein Subagent hat den Diff seit Beginn von v2 ohne meine Begründungen geprüft (
 - Kritische Fristen „rot und ganz oben“ (Phase 6 nachgeholt). Demo-Daten enthalten jetzt Noten.
 
 **Geprüft:** 835 Unit-Tests, 122 E2E (Chromium + WebKit + Offline, gegen `/winter/`-Build), Dashboard-Screenshots angesehen.
+
+## v2 · Phase 8 – Insights & Wochenbericht ✓
+- **Zusammenhänge** mit Pearson-r, n und Klartext; unter 14 Punkten oder |r| < 0,3 ausdrücklich „noch kein belastbarer Zusammenhang“ (DECISIONS #56). Paare: Schlaf ↔ Stimmung, Lernzeit vor Klausuren ↔ Punkte, Trainingslast ↔ Energie am Folgetag, Schritte ↔ Schlaf.
+- **Wochenbericht** im Rückblick: Kennzahlen gegen Vorwoche mit Pfeilen, Highlights (Lernrekord, Spiele, Klausuren, Stimmung), Ausreißer (kurzer/sehr langer Schlaf, sehr hohe Last), Wochenziele erreicht/verfehlt, Export als Markdown für Obsidian (DECISIONS #57).
+- **Trends:** 7-/28-Tage-Schnitt je Kennzahl, Jahres-Heatmap, **freier Zeitraum** mit Vergleich zum gleich langen Zeitraum davor; alle Kennzahlen mit Trendpfeil gegenüber dem Vergleichszeitraum.
+- **Gefunden & behoben:** Achsenbeschriftung langer Linien-Charts war unlesbar (90 Spalten) → frei positionierte Beschriftungen; Trend startet erst ab ersten Daten.
+
+**Geprüft:** 97 Rechen-Tests in `src/lib/calc` (u. a. Wochenbericht mit KW 53 über den Jahreswechsel), E2E Rückblick (Demo, Download, freier Zeitraum), Screenshot Rückblick/Trends angesehen.

@@ -1325,3 +1325,20 @@ button.list-item:active {
 .icon-btn:active:not(:disabled) {
   transform: scale(0.97);
 }
+
+.chart__labels--free {
+  position: relative;
+  display: block;
+  height: 14px;
+}
+
+.chart__labels--free span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  overflow: visible;
+}
+
+.chart__labels--free span:first-child {
+  transform: none;
+}

@@ -70,14 +70,19 @@ describe('Rückblick', () => {
 });
 
 describe('Zusammenhänge', () => {
-  it('meldet ehrlich zu wenig Daten', () => {
+  it('meldet ehrlich „noch kein belastbarer Zusammenhang“ ohne Daten', () => {
     const ins = buildInsights(empty(), T);
-    expect(ins).toHaveLength(3);
+    expect(ins.map((i) => i.id)).toEqual([
+      'schlaf-stimmung',
+      'lernen-note',
+      'last-energie',
+      'schritte-schlaf',
+    ]);
     expect(ins.every((i) => !i.enough)).toBe(true);
-    expect(ins[0]?.text).toContain('Zu wenig Datenpunkte');
+    expect(ins[0]?.text).toBe('Noch kein belastbarer Zusammenhang – erst 0 von mindestens 14 Datenpunkten.');
   });
 
-  it('formuliert den Schlaf-Stimmungs-Vergleich mit echten Mittelwerten', () => {
+  it('unter 14 Punkten keine Aussage, auch wenn der Zusammenhang perfekt wäre', () => {
     const d = empty();
     for (let i = 0; i < 10; i++) {
       const date = addDays(T, -i);
@@ -86,17 +91,50 @@ describe('Zusammenhänge', () => {
       d.days.push(day(date, long ? 4 : 3));
     }
     const ins = buildInsights(d, T).find((i) => i.id === 'schlaf-stimmung');
+    expect(ins?.enough).toBe(false);
+    expect(ins?.n).toBe(10);
+    expect(ins?.text).toContain('erst 10 von mindestens 14');
+  });
+
+  it('ab 14 Punkten: r, n und Klartext plus anschauliche Mittelwerte', () => {
+    const d = empty();
+    for (let i = 0; i < 16; i++) {
+      const date = addDays(T, -i);
+      const long = i % 2 === 0;
+      d.sleep.push(sleep(date, long ? 8.5 : 6));
+      d.days.push(day(date, long ? 4 : 3));
+    }
+    const ins = buildInsights(d, T).find((i) => i.id === 'schlaf-stimmung');
     expect(ins?.enough).toBe(true);
+    expect(ins?.r).toBeCloseTo(1, 9);
     expect(ins?.text).toBe(
+      'Deutlicher positiver Zusammenhang (r = 1,00, n = 16): Nach mehr Schlaf war deine Stimmung eher besser.',
+    );
+    expect(ins?.detail).toBe(
       'Nach mehr als 7,5 h Schlaf lag deine Stimmung im Schnitt bei 4,0, nach 7,5 h oder weniger bei 3,0.',
     );
   });
 
-  it('Lernzeit vor Klausuren gegen Punkte', () => {
+  it('schwacher Zusammenhang trotz vieler Punkte: ausdrücklich nicht belastbar', () => {
     const d = empty();
-    for (let i = 0; i < 8; i++) {
+    const moods = [3, 4, 3, 3, 4, 3, 4, 4, 3, 3, 4, 3, 3, 4, 4, 3, 3, 4, 3, 4];
+    moods.forEach((m, i) => {
+      const date = addDays(T, -i);
+      d.sleep.push(sleep(date, 6 + (i % 5) * 0.5));
+      d.days.push(day(date, m));
+    });
+    const ins = buildInsights(d, T).find((i) => i.id === 'schlaf-stimmung');
+    expect(ins?.n).toBe(20);
+    expect(Math.abs(ins?.r ?? 1)).toBeLessThan(0.3);
+    expect(ins?.enough).toBe(false);
+    expect(ins?.text).toMatch(/^Noch kein belastbarer Zusammenhang: /);
+  });
+
+  it('Lernzeit vor Klausuren gegen Punkte (16 Klausuren)', () => {
+    const d = empty();
+    for (let i = 0; i < 16; i++) {
       const date = addDays(T, -20 * i);
-      const lots = i < 4;
+      const lots = i < 8;
       d.exams.push({
         ...meta,
         id: `e${i}`,
@@ -119,7 +157,9 @@ describe('Zusammenhänge', () => {
     }
     const ins = buildInsights(d, T, 400).find((i) => i.id === 'lernen-note');
     expect(ins?.enough).toBe(true);
-    expect(ins?.text).toContain('12,0 Punkten');
-    expect(ins?.text).toContain('sonst bei 7,0');
+    expect(ins?.n).toBe(16);
+    expect(ins?.text).toContain('Mehr Lernzeit vorher ging mit mehr Punkten einher.');
+    expect(ins?.detail).toContain('12,0 Punkten');
+    expect(ins?.detail).toContain('sonst bei 7,0');
   });
 });
