@@ -3,7 +3,17 @@ import type { SkyWeights } from './phase';
 
 export type RGB = [number, number, number];
 
-export const SKY_STOPS = ['top', 'mid', 'horizon', 'glow', 'alp-1', 'alp-2', 'alp-3', 'snow'] as const;
+export const SKY_STOPS = [
+  'top',
+  'mid',
+  'horizon',
+  'glow',
+  'alp-1',
+  'alp-2',
+  'alp-3',
+  'snow',
+  'alpenglow',
+] as const;
 export type SkyStop = (typeof SKY_STOPS)[number];
 
 export interface SkyPalette {

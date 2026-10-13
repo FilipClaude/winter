@@ -308,6 +308,17 @@ Ein Subagent hat den Diff seit Beginn von v2 ohne meine Begründungen geprüft (
 - **Nebenbei gefunden:** Mitten in den Phasenübergängen konnte der Himmel heller werden als jede der beiden Phasen (Text-Kontrast knapp unter 4,5) → Mischung der sichtbaren Farbe, Test in 5-%-Schritten für alle Übergänge.
 - **Geprüft:** 955 Unit-Tests (u. a. 664 Kontrastprüfungen), 142 E2E, visuelle Referenzbilder neu erzeugt und angesehen (Heute, Schule, Einführung in Nacht und Tag).
 
+## v2 · Lebendiger Himmel (13.10.2026, Filips Auswahl) ✓
+- Alpenglühen, Nebel zwischen den Ketten (Wettermodus: nach echter Bewölkung), Lichter am Hang, funkelnde Sterne, Sternschnuppe alle 7 s nachts (DECISIONS #79). „Schneemenge nach Wetter als Standard“ auf Filips Wunsch weggelassen.
+- **Gefunden & behoben:**
+  - Ziehender Nebel kostete 17 % CPU → Nebel und vordere Ketten als eigene GPU-Ebenen, jetzt 5,8–6,1 %.
+  - Sternschnuppen erschienen im Test nicht, weil rAF-Zeit und `performance.now()` mit der Test-Uhr auseinanderliefen → eine Zeitquelle. Gemessen: Start bei 7,2 s und 14,2 s.
+  - Nebel war zu schwach und lag hinter der mittleren Kette → höher und kräftiger.
+- **Geprüft:**
+  - 1050 Unit-Tests: Alpenglühen-Verlauf, Nebelmenge, 1000 Sternschnuppen-Bahnen bleiben über den Bergen, Funkel-Grenzen, Lichter nur an hohen Hängen; Kontrast inkl. Alpenglühen-Farben in allen Übergängen.
+  - 146 E2E: neu Nebel zieht nur mit Schnee an, nie bei reduzierter Bewegung.
+  - Screenshots bei Aufgang, Mittag, Abend, Nacht und mitten in einer Sternschnuppe angesehen.
+
 ## v2 · Sonne, Mond, mehr Schnee (13.10.2026, Filips Wunsch) ✓
 - Sonne und Mond stehen am echten Stand über München und gehen hinter dem Grat der fernen Kette auf und unter (DECISIONS #78). Der Mond zeigt seine echte Phase und ist auch tagsüber blass zu sehen. Im Simulationsmodus gibt es typische Stände.
 - Schnee: etwa 2,5× so viele Flocken, vor allem kleine Punkte.

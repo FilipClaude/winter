@@ -57,7 +57,7 @@ describe('Design-Tokens: Kontrast nach WCAG AA', () => {
 describe('Winterhimmel: Lesbarkeit in jeder Phase (WCAG AA)', () => {
   // Jede Stelle des Himmels kann hinter Text liegen – also jede Farbe der Palette prüfen,
   // auch das hellste Horizontlicht und die Alpen.
-  const STOPS = ['top', 'mid', 'horizon', 'glow', 'alp-1', 'alp-2', 'alp-3', 'snow'];
+  const STOPS = ['top', 'mid', 'horizon', 'glow', 'alp-1', 'alp-2', 'alp-3', 'snow', 'alpenglow'];
   for (const phase of ['night', 'dawn', 'day', 'dusk']) {
     const veil = numberToken(`sky-${phase}-veil`);
     const glass = numberToken(`sky-${phase}-glass`);

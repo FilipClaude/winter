@@ -53,6 +53,7 @@
   --sky-night-alp-2: #090b0e;
   --sky-night-alp-3: #040406;
   --sky-night-snow: #1d242e;
+  --sky-night-alpenglow: #2f1f1d;
   --sky-night-veil: 0;
   --sky-night-glass: 0.72;
 
@@ -64,6 +65,7 @@
   --sky-dawn-alp-2: #07090a;
   --sky-dawn-alp-3: #010100;
   --sky-dawn-snow: #3a495f;
+  --sky-dawn-alpenglow: #6b3c2f;
   --sky-dawn-veil: 0.62;
   --sky-dawn-glass: 0.78;
 
@@ -75,6 +77,7 @@
   --sky-day-alp-2: #0c0d0e;
   --sky-day-alp-3: #020100;
   --sky-day-snow: #3b4655;
+  --sky-day-alpenglow: #663a2e;
   --sky-day-veil: 0.6;
   --sky-day-glass: 0.84;
 
@@ -87,6 +90,7 @@
   --sky-dusk-alp-2: #0c080c;
   --sky-dusk-alp-3: #050204;
   --sky-dusk-snow: #3a354d;
+  --sky-dusk-alpenglow: #512f27;
   --sky-dusk-veil: 0.48;
   --sky-dusk-glass: 0.78;
 
@@ -95,6 +99,8 @@
   /* Sonne: warm-golden (vom kühlen Mond klar zu unterscheiden), am Horizont wärmer */
   --color-sun: #f6e2b0;
   --color-sun-low: #eeb47e;
+  /* Lichter am Hang (nachts), warm wie Fenster */
+  --color-valley-light: #f2c58c;
   /* wird vom Himmel je nach Phase gesetzt (gemischt), Standard = Nacht */
   --glass-alpha: 0.72;
   --glass-blur: blur(14px) saturate(120%);

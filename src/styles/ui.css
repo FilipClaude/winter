@@ -1015,6 +1015,37 @@ button.list-item:active {
   z-index: 1;
 }
 
+/* Vordere Bergketten und Nebelbänder als eigene Ebenen (Position per transform aus Sky.tsx) */
+.sky-layer,
+.sky-fog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+.sky-fog {
+  width: 100vw;
+  overflow: hidden;
+}
+.sky-fog__tex {
+  display: block;
+}
+/* Nebel zieht langsam nach links; Strecke und Dauer setzt Sky.tsx (Breite / Geschwindigkeit) */
+.sky-fog--moving .sky-fog__tex {
+  animation: sky-fog-drift var(--fog-duration, 60s) linear infinite;
+  will-change: transform;
+}
+@keyframes sky-fog-drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(var(--fog-shift, -100vw));
+  }
+}
+
 /* ---------- Charts ---------- */
 .chart {
   margin: 0;

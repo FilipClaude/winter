@@ -2,17 +2,41 @@ import { useReducedMotion } from 'motion/react';
 import { useEffect, useRef } from 'react';
 import type { Settings, SkyPhase } from '../db/schemas';
 import { skyState, type SkyState } from '../lib/sky/phase';
-import { blendPalette, readPalettes, rgbString, type RGB, type SkyPalette } from '../lib/sky/palette';
+import {
+  blendPalette,
+  readPalettes,
+  rgbString,
+  shownColor,
+  type RGB,
+  type SkyPalette,
+} from '../lib/sky/palette';
+import {
+  alpenglow,
+  fogAmount,
+  makeTwinklers,
+  meteorAt,
+  METEOR_INTERVAL_MS,
+  spawnMeteor,
+  twinkleAlpha,
+  villageLights,
+  type Light,
+  type Meteor,
+  type Twinkler,
+} from '../lib/sky/effects';
 import { celestialToScreen, ridgeHeightAt } from '../lib/sky/placement';
-import { fetchSnowLevel, type SnowLevel } from '../lib/sky/weather';
+import { fetchWeather, type Weather } from '../lib/sky/weather';
 
 /**
  * Winterhimmel hinter der UI: Verlauf nach echter Tageszeit (München), Sterne, Mond in der echten
  * Phase, Horizontlicht, Alpensilhouette in drei Ebenen (Parallaxe) und Schnee in drei Tiefen.
  *
- * Akku/Leistung: eine Canvas, statische Teile vorgerendert (nur jede Minute neu), Animation nur für
- * Schnee mit max. 30 fps, Pause bei verdecktem Tab, Pixeldichte ≤ 1,5. Bei „Bewegung reduzieren“
- * ein einziges statisches Bild ohne Schnee und Parallaxe.
+ * Dazu: Sonne/Mond am echten Stand, Alpenglühen, Nebel zwischen den Ketten, Lichter am Hang,
+ * funkelnde Sterne und alle 7 s eine Sternschnuppe (nachts).
+ *
+ * Akku/Leistung: ruhendes Himmelsbild (nur jede Minute bzw. beim Scrollen neu), mittlere/nahe Kette und
+ * Nebel als eigene Ebenen (Ziehen und Parallaxe per CSS-Transform auf der GPU), animierte Ebene mit
+ * max. 30 fps, Pause bei verdecktem Tab, Pixeldichte ≤ 1,5. Bewegung (Schnee, Nebelziehen, Funkeln, Sternschnuppen) nur, wenn
+ * Schnee nicht „Aus“ ist – „Aus“ ist der Akku-Sparmodus. Bei „Bewegung reduzieren“ ein statisches Bild.
  */
 
 const FPS = 30;
@@ -92,6 +116,11 @@ const PARALLAX = [0.03, 0.06, 0.1];
 const PARALLAX_MAX = 80;
 /** Deckkraft der Sonnenscheibe (über dem abgedunkelten Himmel). */
 const SUN_ALPHA = 0.78;
+/** Nebelbänder: Mitte (Anteil der Höhe), Höhe (Anteil), Zug-Geschwindigkeit (px/s), Deckkraft. */
+const FOG_BANDS = [
+  { y: 0.6, h: 0.14, speed: 6, alpha: 1 },
+  { y: 0.76, h: 0.1, speed: 10, alpha: 0.85 },
+] as const;
 /** Anteil der Schneefarbe auf den Gipfeln je Ebene (fern → nah). */
 const SNOW_MIX = [1, 0.7, 0.45];
 
@@ -103,6 +132,12 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
   const reduce = useReducedMotion() ?? false;
   const canvas = useRef<HTMLCanvasElement>(null);
   const snowCanvas = useRef<HTMLCanvasElement>(null);
+  const midCv = useRef<HTMLCanvasElement>(null);
+  const nearCv = useRef<HTMLCanvasElement>(null);
+  const fogWrap0 = useRef<HTMLDivElement>(null);
+  const fogWrap1 = useRef<HTMLDivElement>(null);
+  const fogCv0 = useRef<HTMLCanvasElement>(null);
+  const fogCv1 = useRef<HTMLCanvasElement>(null);
   const { snowMode, skySimulate, tilt } = settings;
 
   useEffect(() => {
@@ -121,7 +156,18 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
     const sunColor = readCssVar('--color-sun');
     const sunLowColor = readCssVar('--color-sun-low');
     const frost = readCssVar('--color-frost');
+    const valleyLight = parseRgb(readCssVar('--color-valley-light'));
     const root = document.documentElement;
+    // Bewegung nur mit Schnee an (Akku) und ohne „Bewegung reduzieren“
+    const motion = !reduce && snowMode !== 'off';
+    let fog = fogAmount(snowMode, null);
+    // Nebel-Ebenen (DOM, per CSS bewegt) – ohne Elemente (z. B. Tests) wird einfach kein Nebel gezeigt
+    const fogTex = [fogCv0.current, fogCv1.current];
+    const fogWraps = [fogWrap0.current, fogWrap1.current];
+    let twinklers: Twinkler[] = [];
+    let meteor: Meteor | null = null;
+    let lastMeteor = performance.now();
+    let lights: Light[] = [];
 
     let w = 0;
     let h = 0;
@@ -129,7 +175,12 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
     let state: SkyState = skyState(new Date(), skySimulate);
     let pal: SkyPalette = blendPalette(palettes, state.weights, bgRgb);
     const back = document.createElement('canvas');
-    const alps = [0, 1, 2].map(() => document.createElement('canvas'));
+    // Ferne Kette: unsichtbare Canvas, wird ins Himmelsbild gemalt. Mittlere/nahe Kette: eigene Ebenen.
+    const alps = [
+      document.createElement('canvas'),
+      midCv.current ?? document.createElement('canvas'),
+      nearCv.current ?? document.createElement('canvas'),
+    ];
     let snowFactor = snowMode === 'off' || reduce ? 0 : 1;
     let layers: Layer[] = [];
     let scrollY = window.scrollY;
@@ -260,7 +311,9 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
         a.closePath();
         a.fill();
         a.globalCompositeOperation = 'source-atop';
-        const snowCap = lerp(col, pal.colors.snow, SNOW_MIX[i] ?? 0.5);
+        // Alpenglühen: Kuppen um Sonnenauf- und -untergang zart rosa-orange (Token `alpenglow`)
+        const capColor = lerp(pal.colors.snow, pal.colors.alpenglow, alpenglow(state.sun.altitude));
+        const snowCap = lerp(col, capColor, SNOW_MIX[i] ?? 0.5);
         const sg = a.createLinearGradient(0, 0, 0, ridgeH * 0.55);
         sg.addColorStop(0, rgbString(snowCap));
         sg.addColorStop(0.35, rgbString(lerp(col, snowCap, 0.5)));
@@ -272,6 +325,63 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
           a.fillRect(0, 0, w, lh);
         }
         a.globalCompositeOperation = 'source-over';
+        // Lichter am Hang der mittleren Kette: nachts an, in der Dämmerung schwächer, tagsüber aus
+        const lit = Math.min(1, state.weights.night + 0.6 * (state.weights.dawn + state.weights.dusk));
+        if (i === 1 && lit > 0.02) {
+          for (const l of lights) {
+            const ridgeLine = ridgeH - ridgeHeightAt(RIDGES[1] ?? [], (l.x + 0.05) / 1.1) * ridgeH;
+            const ly = ridgeLine + l.below;
+            const halo = a.createRadialGradient(l.x * w, ly, 0, l.x * w, ly, l.r * 4);
+            halo.addColorStop(0, rgbString(valleyLight, 0.35 * l.alpha * lit));
+            halo.addColorStop(1, rgbString(valleyLight, 0));
+            a.fillStyle = halo;
+            a.fillRect(l.x * w - l.r * 4, ly - l.r * 4, l.r * 8, l.r * 8);
+            a.fillStyle = rgbString(valleyLight, l.alpha * lit);
+            a.beginPath();
+            a.arc(l.x * w, ly, l.r, 0, Math.PI * 2);
+            a.fill();
+          }
+        }
+      });
+    };
+
+    /**
+     * Nebelband als weiche Schwaden (doppelt so breit wie der Bildschirm, nahtlos kachelbar) in der
+     * sichtbaren Schneefarbe – bleibt dadurch im getesteten Helligkeitsbereich für Text.
+     */
+    const renderFog = () => {
+      const color = shownColor(pal, 'snow', bgRgb);
+      const rnd = seeded(77);
+      FOG_BANDS.forEach((band, i) => {
+        const cv = fogTex[i];
+        const f = cv?.getContext('2d');
+        if (!cv || !f) return;
+        const bh = Math.max(1, Math.round(h * band.h));
+        cv.width = Math.round(w * 2);
+        cv.height = bh;
+        f.clearRect(0, 0, cv.width, bh);
+        const blobs = Array.from({ length: 7 }, () => ({
+          x: rnd() * w,
+          y: bh * (0.35 + rnd() * 0.3),
+          rx: w * (0.18 + rnd() * 0.22),
+          ry: bh * (0.22 + rnd() * 0.18),
+          a: 0.5 + rnd() * 0.5,
+        }));
+        for (const b of blobs) {
+          // jede Schwade zweimal (x und x + w), damit das Band nahtlos weiterzieht
+          for (const dx of [0, w, -w]) {
+            const g = f.createRadialGradient(b.x + dx, b.y, 0, b.x + dx, b.y, b.rx);
+            g.addColorStop(0, rgbString(color, b.a));
+            g.addColorStop(1, rgbString(color, 0));
+            f.save();
+            f.translate(b.x + dx, b.y);
+            f.scale(1, b.ry / b.rx);
+            f.translate(-(b.x + dx), -b.y);
+            f.fillStyle = g;
+            f.fillRect(b.x + dx - b.rx, b.y - b.rx, b.rx * 2, b.rx * 2);
+            f.restore();
+          }
+        }
       });
     };
 
@@ -326,27 +436,93 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
       sctx.fillRect(0, 0, 32, 32);
     }
 
-    /** Ruhende Ebene: Himmel, Alpen (mit Parallaxe), Abdunklung. Nur bei Änderungen neu. */
+    /** Parallaxe je Ebene: nach oben (wie ein ferner Hintergrund beim Scrollen), nah = mehr. */
+    const offOf = (i: number) =>
+      reduce ? 0 : Math.min(PARALLAX_MAX, Math.max(0, scrollY) * (PARALLAX[i] ?? 0));
+    const tiltOf = (i: number) => (reduce ? 0 : tiltX * (i + 1) * 3);
+
+    /**
+     * Ruhendes Himmelsbild: Verlauf, Sterne, Sonne/Mond und die ferne Kette. Nur bei Änderungen neu
+     * (Minute, Scrollen, Neigen). Die Abdunklung (veil) steckt schon in Himmel und Bergen – so liegt sie
+     * nicht über Sonne und Mond, die sonst tagsüber grau wie ein Mond wirkten.
+     */
     const composeSky = () => {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.drawImage(back, 0, 0, w, h);
-      drawBodies(reduce ? 0 : Math.min(PARALLAX_MAX, Math.max(0, scrollY) * (PARALLAX[0] ?? 0)));
-      alps.forEach((cv, i) => {
-        const lh = cv.height / dpr;
-        // Nach oben (wie ein ferner Hintergrund beim Scrollen) – vorher wanderten sie nach unten weg.
-        const off = reduce ? 0 : Math.min(PARALLAX_MAX, Math.max(0, scrollY) * (PARALLAX[i] ?? 0));
-        const tx = reduce ? 0 : tiltX * (i + 1) * 3;
-        ctx.drawImage(cv, tx - 12, h - (lh - PARALLAX_MAX) - off, w + 24, lh);
-      });
-      // Die Abdunklung (veil) steckt schon in Himmel und Bergen (renderBack/renderAlps) – so liegt sie
-      // nicht über Sonne und Mond, die sonst tagsüber grau wie ein Mond wirkten.
+      drawBodies(offOf(0));
+      const far = alps[0];
+      if (far && far.width > 0) {
+        const lh = far.height / dpr;
+        ctx.drawImage(far, tiltOf(0) - 12, h - (lh - PARALLAX_MAX) - offOf(0), w + 24, lh);
+      }
+      positionLayers();
     };
 
-    /** Animierte Ebene: nur die Flocken auf einer durchsichtigen Canvas darüber. */
-    const drawSnow = (dt: number) => {
+    /** Mittlere/nahe Kette und Nebelbänder als eigene Ebenen platzieren (nur CSS, kein Neumalen). */
+    const positionLayers = () => {
+      for (const i of [1, 2]) {
+        const cv = alps[i];
+        if (!cv?.isConnected) continue;
+        const lh = cv.height / dpr;
+        cv.style.width = `${w + 24}px`;
+        cv.style.height = `${lh}px`;
+        cv.style.transform = `translate3d(${tiltOf(i) - 12}px, ${h - (lh - PARALLAX_MAX) - offOf(i)}px, 0)`;
+      }
+      FOG_BANDS.forEach((band, i) => {
+        const wrap = fogWraps[i];
+        const tex = fogTex[i];
+        if (!wrap || !tex) return;
+        const bh = tex.height;
+        // Band 0 liegt zwischen ferner und mittlerer Kette, Band 1 zwischen mittlerer und naher
+        wrap.style.height = `${bh}px`;
+        wrap.style.transform = `translate3d(0, ${h * band.y - bh / 2 - offOf(i)}px, 0)`;
+        wrap.style.opacity = String(band.alpha * fog);
+        wrap.classList.toggle('sky-fog--moving', motion && fog > 0.01);
+        tex.style.width = `${w * 2}px`;
+        tex.style.height = `${bh}px`;
+        tex.style.setProperty('--fog-shift', `${-w}px`);
+        tex.style.setProperty('--fog-duration', `${(w / band.speed).toFixed(1)}s`);
+      });
+    };
+
+    /** Funkelnde Sterne und Sternschnuppe (nur nachts) auf der animierten Ebene. */
+    const drawNightSky = (now: number) => {
+      if (!snowCtx || state.stars < 0.05) return;
+      const sec = now / 1000;
+      snowCtx.fillStyle = starColor;
+      for (const t of twinklers) {
+        snowCtx.globalAlpha = twinkleAlpha(t, sec) * state.stars;
+        snowCtx.beginPath();
+        snowCtx.arc(t.x, t.y, t.r, 0, Math.PI * 2);
+        snowCtx.fill();
+      }
+      if (state.stars > 0.5 && now - lastMeteor >= METEOR_INTERVAL_MS) {
+        meteor = spawnMeteor(Math.random, w, h, now);
+        lastMeteor = now;
+      }
+      const m = meteor ? meteorAt(meteor, now) : null;
+      if (m) {
+        const g = snowCtx.createLinearGradient(m.tx, m.ty, m.hx, m.hy);
+        g.addColorStop(0, rgbString(parseRgb(starColor), 0));
+        g.addColorStop(1, rgbString(parseRgb(starColor), 0.85 * m.alpha * state.stars));
+        snowCtx.globalAlpha = 1;
+        snowCtx.strokeStyle = g;
+        snowCtx.lineWidth = 1.4;
+        snowCtx.lineCap = 'round';
+        snowCtx.beginPath();
+        snowCtx.moveTo(m.tx, m.ty);
+        snowCtx.lineTo(m.hx, m.hy);
+        snowCtx.stroke();
+      } else meteor = null;
+      snowCtx.globalAlpha = 1;
+    };
+
+    /** Animierte Ebene: Flocken, funkelnde Sterne, Sternschnuppe – auf einer durchsichtigen Canvas darüber. */
+    const drawSnow = (dt: number, now = performance.now()) => {
       if (!snowCtx) return;
       snowCtx.setTransform(snowDpr, 0, 0, snowDpr, 0, 0);
       snowCtx.clearRect(0, 0, w, h);
+      if (motion) drawNightSky(now);
       if (snowFactor <= 0) return;
       snowCtx.fillStyle = frost;
       for (const layer of layers) {
@@ -375,6 +551,7 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
       applyRootVars(state.phase, pal.glass);
       renderBack();
       renderAlps();
+      renderFog();
       dirty = true;
     };
 
@@ -392,6 +569,8 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
         snowEl.width = w;
         snowEl.height = h;
       }
+      twinklers = makeTwinklers(seeded(99), w, h);
+      lights = villageLights(seeded(53), (x01) => ridgeHeightAt(RIDGES[1] ?? [], (x01 + 0.05) / 1.1));
       refreshSky();
       spawnLayers();
       composeSky();
@@ -399,7 +578,7 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
       drawSnow(0);
     };
 
-    const animating = () => snowFactor > 0 && !reduce;
+    const animating = () => motion;
     const frame = (t: number) => {
       raf = 0;
       if (document.visibilityState !== 'visible' || back.width < 1 || back.height < 1) return;
@@ -410,7 +589,8 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
       if (animating()) {
         const elapsed = t - last;
         if (elapsed >= 1000 / FPS - 2) {
-          drawSnow(Math.min(0.1, elapsed / 1000));
+          // Effekte (Funkeln, Sternschnuppen-Takt) mit derselben Uhr wie lastMeteor
+          drawSnow(Math.min(0.1, elapsed / 1000), performance.now());
           last = t;
         }
         raf = requestAnimationFrame(frame);
@@ -447,13 +627,20 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
     // Echtes Wetter: beim Start und bei jeder Rückkehr in die App (der Cache hält 30 min).
     function loadWeather() {
       if (snowMode !== 'weather' || reduce) return;
-      void fetchSnowLevel().then((level: SnowLevel) => {
+      void fetchWeather().then(({ level, clouds }: Weather) => {
         if (cancelled) return;
+        const nextFog = fogAmount(snowMode, clouds);
+        if (nextFog !== fog) {
+          fog = nextFog;
+          dirty = true;
+        }
+        root.dataset.clouds = clouds === null ? '' : String(Math.round(clouds));
         const next = [0, 1, 1.8, 2.6][level] ?? 1;
-        if (next === snowFactor) return;
-        snowFactor = next;
-        spawnLayers();
-        root.dataset.snow = String(level);
+        if (next !== snowFactor) {
+          snowFactor = next;
+          spawnLayers();
+          root.dataset.snow = String(level);
+        }
         kick();
       });
     }
@@ -483,9 +670,20 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
     };
   }, [reduce, snowMode, skySimulate, tilt]);
 
+  // Reihenfolge = Tiefe: Himmel mit ferner Kette → Nebel → mittlere Kette → Nebel → nahe Kette → Schnee.
+  // Nebel und vordere Ketten sind eigene Ebenen: Ziehen und Parallaxe laufen als CSS-Transform auf der
+  // GPU, ohne das ganze Bild neu zu malen (vorher 17 % CPU durch Neuzusammensetzen, jetzt wie ohne Nebel).
   return (
     <>
       <canvas ref={canvas} className="sky" aria-hidden data-testid="sky" />
+      <div ref={fogWrap0} className="sky-fog" aria-hidden>
+        <canvas ref={fogCv0} className="sky-fog__tex" />
+      </div>
+      <canvas ref={midCv} className="sky-layer" aria-hidden />
+      <div ref={fogWrap1} className="sky-fog" aria-hidden>
+        <canvas ref={fogCv1} className="sky-fog__tex" />
+      </div>
+      <canvas ref={nearCv} className="sky-layer" aria-hidden />
       <canvas ref={snowCanvas} className="sky sky--snow" aria-hidden />
     </>
   );

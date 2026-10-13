@@ -51,6 +51,22 @@ test('Bewegung reduzieren: statischer Himmel, kein Animations-Loop', async ({ pa
   });
   // Einzelne Frames anderer Komponenten sind erlaubt, aber kein 30-fps-Loop (≈ 45 in 1,5 s).
   expect(frames).toBeLessThan(3);
+  // Nebel steht still (keine CSS-Animation)
+  await expect(page.locator('.sky-fog--moving')).toHaveCount(0);
+});
+
+test('Nebel zieht zwischen den Bergketten (zwei Bänder), mit Schnee „Aus“ steht er still', async ({
+  page,
+}) => {
+  await page.goto('./#/heute');
+  await expect(page.locator('.sky-fog')).toHaveCount(2);
+  // CI-WebKit läuft mit „Bewegung reduzieren“ (playwright.config) – dann steht der Nebel zu Recht still
+  const reduced = await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
+  await expect(page.locator('.sky-fog--moving')).toHaveCount(reduced ? 0 : 2);
+  await page.goto('./#/einstellungen');
+  await page.getByRole('group', { name: 'Schnee' }).getByRole('button', { name: 'Aus' }).click();
+  await page.goto('./#/heute');
+  await expect(page.locator('.sky-fog--moving')).toHaveCount(0);
 });
 
 test('Leerlauf-CPU des Himmels messen (Chromium, CDP) @perf', async ({ page, browserName }, info) => {
@@ -89,7 +105,8 @@ test('Leerlauf-CPU des Himmels messen (Chromium, CDP) @perf', async ({ page, bro
     contentType: 'application/json',
   });
   console.warn('SKY-CPU', JSON.stringify(result));
-  // Schranke gegen Rückschritte: Schnee < 8 % Hauptthread (gemessen 3,4 %), ohne Schnee < 2 % (0 %).
+  // Schranke gegen Rückschritte: Schnee < 8 % Hauptthread (gemessen allein 5,8–6,1 % inkl. Nebel/Funkeln;
+  // parallel zu anderen Tests bis ~7,4 %), ohne Schnee < 2 % (0 %).
   expect(snow.cpuPercent).toBeLessThan(8);
   expect(still.cpuPercent).toBeLessThan(2);
 });
