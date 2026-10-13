@@ -308,6 +308,12 @@ Ein Subagent hat den Diff seit Beginn von v2 ohne meine Begründungen geprüft (
 - **Nebenbei gefunden:** Mitten in den Phasenübergängen konnte der Himmel heller werden als jede der beiden Phasen (Text-Kontrast knapp unter 4,5) → Mischung der sichtbaren Farbe, Test in 5-%-Schritten für alle Übergänge.
 - **Geprüft:** 955 Unit-Tests (u. a. 664 Kontrastprüfungen), 142 E2E, visuelle Referenzbilder neu erzeugt und angesehen (Heute, Schule, Einführung in Nacht und Tag).
 
+## v2 · Sonne, Mond, mehr Schnee (13.10.2026, Filips Wunsch) ✓
+- Sonne und Mond stehen am echten Stand über München und gehen hinter dem Grat der fernen Kette auf und unter (DECISIONS #78). Der Mond zeigt seine echte Phase und ist auch tagsüber blass zu sehen. Im Simulationsmodus gibt es typische Stände.
+- Schnee: etwa 2,5× so viele Flocken, vor allem kleine Punkte.
+- **Gefunden & behoben:** Die Sonne wirkte tagsüber grau wie ein Mond (sie lag unter der Abdunklung) → veil in Himmel und Berge verlegt, Sonne warm-golden.
+- **Geprüft:** 962 Unit-Tests (neu: Vollmond gegenüber/Neumond neben der Sonne, Auf-/Untergang im Osten/Westen, Bildschirm-Abbildung), 142 E2E, Screenshots für Aufgang, Vormittag, Mittag, Abend, Mondsichel nach Sonnenuntergang, Vollmondnacht, Schnee. CPU 4,8 %.
+
 ## v2 · Phase 11 – Abschluss-Audit ✓
 - **CI** (Typecheck, Lint, Format, 873 Unit-Tests, E2E Chromium + WebKit gegen den echten `/winter/`-Build) grün, deployt.
 - **Live geprüft** (13.10.2026): Seite, Manifest (`start_url /winter/#/heute`, Scope `/winter/`, standalone, Hochformat, 4 Icons), Service Worker aktiv und kontrollierend, `bfv.json`, Icons und Startbildschirme erreichbar. **Update-Hinweis** im Browser mit alter Version im Cache ausgelöst → „Aktualisieren“ lädt die neue Version. Einführung erscheint bei frischem Profil, BFV-Karte mit echten Daten, keine Konsolenfehler.

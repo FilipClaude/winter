@@ -67,6 +67,30 @@ export function sunTimes(
   return { rise: new Date(fromJulian(noon - w)), set: new Date(fromJulian(noon + w)) };
 }
 
+/** Mondkoordinaten (vereinfachte Reihe nach Meeus, Genauigkeit ~1° – für den Hintergrund genug). */
+function moonCoords(d: number) {
+  const L = (218.316 + 13.176396 * d) * RAD; // mittlere ekliptikale Länge
+  const M = (134.963 + 13.064993 * d) * RAD; // mittlere Anomalie
+  const F = (93.272 + 13.22935 * d) * RAD; // mittlerer Abstand vom aufsteigenden Knoten
+  const l = L + 6.289 * RAD * Math.sin(M); // ekliptikale Länge
+  const b = 5.128 * RAD * Math.sin(F); // ekliptikale Breite
+  const e = 23.4397 * RAD;
+  const ra = Math.atan2(Math.sin(l) * Math.cos(e) - Math.tan(b) * Math.sin(e), Math.cos(l));
+  const dec = Math.asin(Math.sin(b) * Math.cos(e) + Math.cos(b) * Math.sin(e) * Math.sin(l));
+  return { ra, dec };
+}
+
+/** Höhe (Grad) und Azimut (Grad, 0 = Süden, positiv nach Westen) des Mondes – gleiche Konvention wie die Sonne. */
+export function moonPosition(date: Date, lat: number = MUNICH.lat, lon: number = MUNICH.lon) {
+  const jd = toJulian(date.getTime());
+  const { dec, ra } = moonCoords(jd - J2000);
+  const H = siderealTime(jd, lon * RAD) - ra;
+  const phi = lat * RAD;
+  const alt = Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H));
+  const az = Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi));
+  return { altitude: alt / RAD, azimuth: az / RAD };
+}
+
 const SYNODIC = 29.530588853;
 /** Referenz-Neumond 2000-01-06 18:14 UTC. */
 const NEW_MOON_REF = Date.UTC(2000, 0, 6, 18, 14);

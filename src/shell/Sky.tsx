@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import type { Settings, SkyPhase } from '../db/schemas';
 import { skyState, type SkyState } from '../lib/sky/phase';
 import { blendPalette, readPalettes, rgbString, type RGB, type SkyPalette } from '../lib/sky/palette';
+import { celestialToScreen, ridgeHeightAt } from '../lib/sky/placement';
 import { fetchSnowLevel, type SnowLevel } from '../lib/sky/weather';
 
 /**
@@ -89,6 +90,8 @@ const ALP_HEIGHT = [0.6, 0.42, 0.26];
 const PARALLAX = [0.03, 0.06, 0.1];
 /** Höchstens so weit (px) verschiebt die Parallaxe; so viel Fläche liegt unter jeder Ebene in Reserve. */
 const PARALLAX_MAX = 80;
+/** Deckkraft der Sonnenscheibe (über dem abgedunkelten Himmel). */
+const SUN_ALPHA = 0.78;
 /** Anteil der Schneefarbe auf den Gipfeln je Ebene (fern → nah). */
 const SNOW_MIX = [1, 0.7, 0.45];
 
@@ -115,6 +118,8 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
     const bgRgb = parseRgb(bgColor);
     const starColor = readCssVar('--color-star');
     const moonColor = readCssVar('--color-moon');
+    const sunColor = readCssVar('--color-sun');
+    const sunLowColor = readCssVar('--color-sun-low');
     const frost = readCssVar('--color-frost');
     const root = document.documentElement;
 
@@ -184,18 +189,52 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
         b.globalAlpha = 1;
       }
 
-      // Mond in der echten Phase (Position stilisiert oben rechts hinter dem Kopfbereich)
-      const moonVis = Math.max(0, 1 - state.weights.day * 1.4) * Math.min(1, state.moon.illumination * 4);
-      if (moonVis > 0.02) {
-        const mx = w * 0.8;
-        const my = h * 0.13;
-        const mr = 13;
-        const halo = b.createRadialGradient(mx, my, mr * 0.6, mx, my, mr * 5);
-        halo.addColorStop(0, rgbString(parseRgb(moonColor), 0.1 * moonVis));
+      if (pal.veil > 0.001) {
+        b.fillStyle = rgbString(bgRgb, pal.veil);
+        b.fillRect(0, 0, w, h);
+      }
+    };
+
+    /** Grat der fernen Kette an Bildschirmposition x (0–1) als Anteil der Höhe von oben, inkl. Parallaxe. */
+    const farRidgeTop = (off: number) => (x01: number) => {
+      const ridgeX = (x01 + 0.05) / 1.1; // Kamm ist um 10 % breiter gezeichnet (siehe renderAlps)
+      return 1 - off / h - ridgeHeightAt(RIDGES[0] ?? [], ridgeX) * (ALP_HEIGHT[0] ?? 0.6);
+    };
+
+    /**
+     * Sonne und Mond nach echtem Stand, hinter den Bergen (vor den Alpen gezeichnet, damit der Grat sie
+     * beim Auf- und Untergang verdeckt). Der Mond ist auch tagsüber zu sehen, nur blasser.
+     */
+    const drawBodies = (off: number) => {
+      const top = farRidgeTop(off);
+      const moonVis = Math.min(1, state.moon.illumination * 4) * (0.4 + 0.5 * (1 - state.weights.day));
+      if (state.moon.altitude > -4 && moonVis > 0.02) {
+        const m = celestialToScreen(state.moon.altitude, state.moon.azimuth, w, h, top);
+        const mr = 14;
+        const halo = ctx.createRadialGradient(m.x, m.y, mr * 0.6, m.x, m.y, mr * 5);
+        halo.addColorStop(0, rgbString(parseRgb(moonColor), 0.12 * moonVis));
         halo.addColorStop(1, rgbString(parseRgb(moonColor), 0));
-        b.fillStyle = halo;
-        b.fillRect(mx - mr * 5, my - mr * 5, mr * 10, mr * 10);
-        drawMoon(b, mx, my, mr, state.moon.phase, moonColor, 0.75 * moonVis);
+        ctx.fillStyle = halo;
+        ctx.fillRect(m.x - mr * 5, m.y - mr * 5, mr * 10, mr * 10);
+        drawMoon(ctx, m.x, m.y, mr, state.moon.phase, moonColor, moonVis);
+      }
+      if (state.sun.altitude > -4) {
+        const s = celestialToScreen(state.sun.altitude, state.sun.azimuth, w, h, top);
+        const sr = 17;
+        // Nahe am Horizont wärmer (gedämpft), hoch am Himmel blass-weiß
+        const low = 1 - Math.min(1, Math.max(0, state.sun.altitude / 12));
+        const core = lerp(parseRgb(sunColor), parseRgb(sunLowColor), low);
+        const glow = ctx.createRadialGradient(s.x, s.y, sr * 0.8, s.x, s.y, sr * 9);
+        glow.addColorStop(0, rgbString(core, 0.32));
+        glow.addColorStop(0.3, rgbString(core, 0.1));
+        glow.addColorStop(1, rgbString(core, 0));
+        ctx.fillStyle = glow;
+        ctx.fillRect(s.x - sr * 9, s.y - sr * 9, sr * 18, sr * 18);
+        // Bewusst nicht voll deckend: klar als Sonne erkennbar, aber kein greller Fleck hinter Text/Karten
+        ctx.fillStyle = rgbString(core, SUN_ALPHA);
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, sr, 0, Math.PI * 2);
+        ctx.fill();
       }
     };
 
@@ -228,6 +267,10 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
         sg.addColorStop(1, rgbString(col));
         a.fillStyle = sg;
         a.fillRect(0, 0, w, ridgeH * 0.55);
+        if (pal.veil > 0.001) {
+          a.fillStyle = rgbString(bgRgb, pal.veil);
+          a.fillRect(0, 0, w, lh);
+        }
         a.globalCompositeOperation = 'source-over';
       });
     };
@@ -241,9 +284,9 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
       });
       const newFlake = (depth: 0 | 1 | 2, anywhere: boolean): Flake => {
         const spec = [
-          { r: [0.4, 0.9], v: [5, 10], a: [0.12, 0.22] },
-          { r: [0.9, 1.6], v: [11, 20], a: [0.16, 0.3] },
-          { r: [1.4, 2.2], v: [24, 38], a: [0.12, 0.2] },
+          { r: [0.5, 1.0], v: [5, 10], a: [0.16, 0.3] },
+          { r: [0.9, 1.6], v: [11, 20], a: [0.2, 0.36] },
+          { r: [1.4, 2.2], v: [24, 38], a: [0.14, 0.24] },
         ][depth] ?? { r: [1, 1], v: [10, 10], a: [0.2, 0.2] };
         const pick = ([a, b]: number[]) => (a ?? 0) + rnd() * ((b ?? 0) - (a ?? 0));
         return {
@@ -256,7 +299,8 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
           alpha: pick(spec.a),
         };
       };
-      layers = [make(0, 9), make(1, 5), make(2, 1.4)];
+      // Flocken je 100 000 px² (fern → nah). Filip wollte mehr Schnee: v. a. mehr kleine Punkte.
+      layers = [make(0, 26), make(1, 12), make(2, 2.2)];
       respawn = newFlake;
     };
     let respawn: (depth: 0 | 1 | 2, anywhere: boolean) => Flake = () => ({
@@ -286,6 +330,7 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
     const composeSky = () => {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.drawImage(back, 0, 0, w, h);
+      drawBodies(reduce ? 0 : Math.min(PARALLAX_MAX, Math.max(0, scrollY) * (PARALLAX[0] ?? 0)));
       alps.forEach((cv, i) => {
         const lh = cv.height / dpr;
         // Nach oben (wie ein ferner Hintergrund beim Scrollen) – vorher wanderten sie nach unten weg.
@@ -293,10 +338,8 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
         const tx = reduce ? 0 : tiltX * (i + 1) * 3;
         ctx.drawImage(cv, tx - 12, h - (lh - PARALLAX_MAX) - off, w + 24, lh);
       });
-      if (pal.veil > 0.001) {
-        ctx.fillStyle = rgbString(parseRgb(bgColor), pal.veil);
-        ctx.fillRect(0, 0, w, h);
-      }
+      // Die Abdunklung (veil) steckt schon in Himmel und Bergen (renderBack/renderAlps) – so liegt sie
+      // nicht über Sonne und Mond, die sonst tagsüber grau wie ein Mond wirkten.
     };
 
     /** Animierte Ebene: nur die Flocken auf einer durchsichtigen Canvas darüber. */

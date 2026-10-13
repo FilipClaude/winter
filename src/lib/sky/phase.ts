@@ -1,5 +1,5 @@
 import type { SkyPhase } from '../../db/schemas';
-import { moonPhase, sunPosition } from './astro';
+import { moonPhase, moonPosition, sunPosition } from './astro';
 
 export type SkyWeights = Record<SkyPhase, number>;
 
@@ -9,7 +9,7 @@ export interface SkyState {
   /** Mischgewichte der vier Paletten, Summe 1 – für weiche Übergänge. */
   weights: SkyWeights;
   sun: { altitude: number; azimuth: number };
-  moon: { phase: number; illumination: number; waxing: boolean };
+  moon: { phase: number; illumination: number; waxing: boolean; altitude: number; azimuth: number };
   /** Sternendichte 0–1 (nur nachts und in der späten Dämmerung). */
   stars: number;
 }
@@ -36,10 +36,29 @@ export function skyWeights(altitude: number, morning: boolean): SkyWeights {
   };
 }
 
+const SIMULATED_SUN: Record<SkyPhase, { altitude: number; azimuth: number }> = {
+  night: { altitude: -30, azimuth: 160 },
+  dawn: { altitude: -2, azimuth: -80 },
+  day: { altitude: 30, azimuth: -15 },
+  dusk: { altitude: -2, azimuth: 80 },
+};
+const SIMULATED_MOON: Record<SkyPhase, { altitude: number; azimuth: number }> = {
+  night: { altitude: 35, azimuth: 25 },
+  dawn: { altitude: 20, azimuth: 70 },
+  day: { altitude: 25, azimuth: 80 },
+  dusk: { altitude: 15, azimuth: -60 },
+};
+
 export function skyState(date: Date, simulate: SkyPhase | 'auto' = 'auto'): SkyState {
-  const sun = sunPosition(date);
+  const real = sunPosition(date);
   // Azimut < 0 = Sonne im Osten (vor dem Höchststand) → Vormittag.
-  const morning = sun.azimuth < 0;
+  const morning = real.azimuth < 0;
+  // Simulation (Entwickler-Schalter): typische Stände, damit Sonne/Mond zur simulierten Phase passen.
+  const sun = simulate === 'auto' ? real : SIMULATED_SUN[simulate];
+  const moon = {
+    ...moonPhase(date),
+    ...(simulate === 'auto' ? moonPosition(date) : SIMULATED_MOON[simulate]),
+  };
   const weights: SkyWeights =
     simulate === 'auto'
       ? skyWeights(sun.altitude, morning)
@@ -49,7 +68,7 @@ export function skyState(date: Date, simulate: SkyPhase | 'auto' = 'auto'): SkyS
     phase,
     weights,
     sun,
-    moon: moonPhase(date),
+    moon,
     stars: clamp01(weights.night + 0.35 * (weights.dawn + weights.dusk)),
   };
 }

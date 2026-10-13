@@ -55,8 +55,10 @@ Regeln:
 
 - **Winterhimmel** (`src/shell/Sky.tsx`) hinter der UI, nach der **echten Tageszeit in München** (Sonnenstand offline berechnet, `src/lib/sky/astro.ts`):
   - Phasen **Nacht → Morgen (Blaue Stunde) → Tag → Abend**, weich gemischt über die Sonnenhöhe (Tag ab +6°, Dämmerung −10…+2°, Nacht unter −16°).
-  - Nacht: Sterne und Mond in der **echten Phase** (Position stilisiert oben rechts). Tag: gedämpftes Stahlblau, nie grell. Abend: kaltes Violett-Blau mit **einem** sehr gedämpften warmen Streifen am Horizont.
-  - Horizontlicht dort, wo die Sonne steht (Azimut). Unten eine dunkle **Alpensilhouette** in 3 Ebenen mit leichter Parallaxe beim Scrollen bzw. Neigen (nur nach Erlaubnis).
+  - Nacht: Sterne. Tag: gedämpftes Stahlblau, nie grell. Abend: kaltes Violett-Blau mit **einem** sehr gedämpften warmen Streifen am Horizont.
+  - **Sonne und Mond am echten Stand** (München): Osten links, Süden Mitte, Westen rechts; Höhe 0° liegt auf dem Grat der fernen Kette – sie gehen hinter den Alpen auf und unter, ab ~10° stehen sie in der oberen Hälfte (höchstens bis 18 % von oben, unter dem Kopfbereich). Sonne warm-golden (`--color-sun`, am Horizont `--color-sun-low`), nicht voll deckend; Mond kühl-weiß in echter Phase, tagsüber blass. Beide liegen **nicht** unter der Abdunklung (veil), die steckt in Himmel und Bergen.
+  - Horizontlicht dort, wo die Sonne steht (Azimut). **Alpen** in 3 Ebenen bis 60 % der Höhe mit Schneekuppen (`--sky-*-snow`), nachts mondhell, tagsüber Silhouette; Parallaxe nach oben beim Scrollen bzw. Neigen (nur nach Erlaubnis).
+  - Schnee in 3 Tiefen, vor allem viele kleine Punkte (~40 Flocken je 100 000 px²).
   - **Schnee in 3 Tiefen** (fern: klein/langsam, mittel, nah: weich/schnell) auf eigener Canvas. Modi: aus / dezent / echtes Wetter (Open-Meteo, 30 min Cache, offline „leicht“).
 - Alle Himmelsfarben sind Tokens (`--sky-<phase>-<stop>`), dazu je Phase **veil** (Abdunklung) und **glass** (Kartendeckkraft). `tokens.test.ts` prüft **jede** Text-/Hintergrund-Kombination in **jeder** Phase auf WCAG AA (582 Prüfungen). Lesbarkeit hat Vorrang: deshalb bleibt auch der Tag eher dunkel.
 - Karten sind **Glas**: `color-mix(--color-surface, --glass-alpha)` + `--glass-blur`. `--glass-alpha` setzt der Himmel je nach Phase; `html[data-sky]` trägt die vorherrschende Phase.

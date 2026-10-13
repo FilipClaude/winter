@@ -92,6 +92,9 @@
 
   --color-star: #dfeaf6;
   --color-moon: #dfe9f3;
+  /* Sonne: warm-golden (vom kühlen Mond klar zu unterscheiden), am Horizont wärmer */
+  --color-sun: #f6e2b0;
+  --color-sun-low: #eeb47e;
   /* wird vom Himmel je nach Phase gesetzt (gemischt), Standard = Nacht */
   --glass-alpha: 0.72;
   --glass-blur: blur(14px) saturate(120%);
