@@ -301,3 +301,41 @@ Ein Subagent hat den Diff seit Beginn von v2 ohne meine Begründungen geprüft (
 **Geprüft:** 873 Unit-Tests, 142 E2E gegen den `/winter/`-Build.
 
 **CI-Fund danach (die Schranke hat gegriffen, nichts ging live):** In WebKit mit „Bewegung reduzieren“ kam der Fokus nach der Einführung nicht zurück. Ursache war nicht die Einführung, sondern die globale Regel für reduzierte Bewegung (0,01-ms-Übergänge auf *allem*). Sie hielt `visibility: hidden` fest. Das hätte auch Filips iPhone getroffen, falls die Einstellung aktiv ist (DECISIONS #76). Lokal mit `CI=1` nachgestellt, behoben und in beiden Konfigurationen grün getestet.
+
+## v2 · Phase 11 – Abschluss-Audit ✓
+- **CI** (Typecheck, Lint, Format, 873 Unit-Tests, E2E Chromium + WebKit gegen den echten `/winter/`-Build) grün, deployt.
+- **Live geprüft** (13.10.2026): Seite, Manifest (`start_url /winter/#/heute`, Scope `/winter/`, standalone, Hochformat, 4 Icons), Service Worker aktiv und kontrollierend, `bfv.json`, Icons und Startbildschirme erreichbar. **Update-Hinweis** im Browser mit alter Version im Cache ausgelöst → „Aktualisieren“ lädt die neue Version. Einführung erscheint bei frischem Profil, BFV-Karte mit echten Daten, keine Konsolenfehler.
+- **Offline** (eigenes E2E-Projekt mit echtem Service Worker): grün.
+- **Start mit v1-Daten** (E2E auf einer IndexedDB im v1-Layout, jede ID jeder Tabelle verglichen) und **frischer Start** (jeder E2E-Test beginnt leer): grün.
+- **Lighthouse** mobil: Performance **91**, Barrierefreiheit **100**, Best Practices **100**, SEO 63 (gewollt `noindex`, DECISIONS #18). Erst 75 – Fund und Behebung siehe DECISIONS #71.
+- **axe** (WCAG 2.1 AA) für alle Screens und Sheets: keine schweren Verstöße.
+- **Himmel-CPU** (Chromium, 10 s Leerlauf): 3,4 % mit Schnee, 0,1 % ohne.
+- `ARCHITECTURE.md` (Schema v2, Shell, BFV-Pipeline, Tests) und `README.md` aktualisiert.
+
+---
+
+## Ehrliche Zusammenfassung v2
+
+### Was neu ist und funktioniert (getestet)
+Winterhimmel nach echter Tageszeit mit Glas-Design · Sicherheitsnetz (Schema-Migration ohne Datenverlust, automatische Sicherungen, Fehlergrenzen, Rettungsexport) · Abi-Rechner mit belegten Regeln · Noten, Klausur-Themen, Lernplan mit Wiederholungen, Stundenplan A/B, Ferien Bayern bis 2030 · FernUni-Punkte und Prüfungsberechtigung · anpassbares Dashboard mit Briefing und Zielen · Zusammenhänge mit Signifikanztest, Wochenbericht als Markdown, Trends, Jahres-Heatmap · BFV-Spielplan und Tabelle automatisch, Spiel nach Abpfiff mit einem Tap eintragen · Einführung, neues Icon, Startbildschirme.
+
+Vier unabhängige Reviews mit zusammen 54 Funden; alle behoben oder begründet abgelehnt (DECISIONS). Drei Mal hat die CI etwas aufgehalten, das sonst live gegangen wäre.
+
+### Unsicher (bitte im Kopf behalten)
+- **Abi-Regeln:** Rundung der Halbjahresleistung und die Umrechnungstabelle (Anlage 13) sind nicht amtlich belegt; Sonderfälle (Fächerkonstellationen § 54, Optionsregel) werden nur gemeldet, nicht geprüft. Verbindlich ist die Oberstufenkoordination. Details: `ABI_RULES` in der App, Obsidian „Abi-Regeln Bayern“.
+- **BFV:** keine offizielle API. Jede Änderung an bfv.de kann den Abgleich brechen (dann wird die Action rot, die App behält den letzten Stand). Ergebnisse liest Winter bewusst nicht (verschleiert). Einzelstatistiken für Junioren sind nicht öffentlich.
+- **Ferien:** hinterlegt bis Schuljahr 2029/30.
+
+### Nicht getestet
+- **Auf dem echten iPhone:** Einführung, neue Startbildschirme, Glas-Unschärfe über Schnee (GPU/Akku), Safe-Areas, „Bewegung reduzieren“ in Safari (in WebKit nachgestellt und dabei einen echten Fehler gefunden), Update-Hinweis im Standalone-Modus.
+- Visuelle Regression läuft nur lokal (Windows), nicht in der CI (DECISIONS #68).
+- Große Datenmengen über mehrere Jahre (Rückblick/Trends laden alles).
+
+### Ideen für v3
+1. Benachrichtigungen für Fristen und „Spiel eintragen“ (Web Push für Homescreen-Apps, braucht einen kleinen Push-Dienst).
+2. Automatisches Backup in iCloud Drive per Kurzbefehl-Automation.
+3. Health-Import per Automation morgens, ohne Tippen.
+4. Lernplan mit Stundenplan verzahnen (freie Stunden, Hausaufgaben-Zeit).
+5. BFV: Spielerstatistik, falls Filip eine öffentliche Spieler-ID bekommt (`playerId` in `bfv.config.json` ist vorbereitet).
+6. Abi-Rechner: Fächerkonstellationen nach § 54 automatisch prüfen, sobald die Regeln mit der Schule geklärt sind.
+7. Visuelle Regression zusätzlich in der CI mit Linux-Referenzbildern (in einem Container erzeugen und einmal ansehen).
