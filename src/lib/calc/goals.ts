@@ -53,7 +53,8 @@ export function goalProgress(
       case 'trainingSessions':
         return inRange.filter((x) => x.type !== 'recovery').length;
       case 'avgProtein':
-        return s.proteinAvg;
+        // v3: Ernährung entfällt, Ziele dazu sind archiviert (DECISIONS #81)
+        return null;
       case 'avgSleepH':
         return s.sleepAvgMin === null ? null : s.sleepAvgMin / 60;
       case 'avgSteps':

@@ -1,7 +1,7 @@
 import { addDays, dateRange, diffDays, startOfWeek, type ISODate } from '../date';
 import type { DayPoint } from './review';
 
-export type TrendMetric = 'studyMin' | 'load' | 'sleepMin' | 'proteinG' | 'mood' | 'energy' | 'steps';
+export type TrendMetric = 'studyMin' | 'load' | 'sleepMin' | 'mood' | 'energy' | 'steps';
 
 export const TREND_LABEL: Record<
   TrendMetric,
@@ -10,7 +10,6 @@ export const TREND_LABEL: Record<
   studyMin: { label: 'Lernzeit', unit: 'h', scale: (v) => v / 60, digits: 1 },
   load: { label: 'Trainingslast', unit: 'Load', scale: (v) => v, digits: 0 },
   sleepMin: { label: 'Schlaf', unit: 'h', scale: (v) => v / 60, digits: 1 },
-  proteinG: { label: 'Protein', unit: 'g', scale: (v) => v, digits: 0 },
   mood: { label: 'Stimmung', unit: '', scale: (v) => v, digits: 1 },
   energy: { label: 'Energie', unit: '', scale: (v) => v, digits: 1 },
   steps: { label: 'Schritte', unit: '', scale: (v) => v, digits: 0 },

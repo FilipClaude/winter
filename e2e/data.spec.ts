@@ -79,9 +79,8 @@ test('Health: kaputte Daten → klare Meldung, kein Absturz', async ({ page }) =
 
 test('Backup exportieren → alles löschen → importieren → alles wieder da', async ({ page }) => {
   await page.goto('./#/heute');
-  await page.getByRole('button', { name: 'Ein Glas Wasser' }).click();
-  await page.getByRole('button', { name: 'Ein Glas Wasser' }).click();
   await page.getByRole('button', { name: 'Stimmung 5' }).click();
+  await page.getByRole('button', { name: 'Energie 2' }).click();
   await expect(page.getByTestId('backup-reminder')).toBeVisible();
 
   await page.goto('./#/einstellungen');
@@ -104,7 +103,7 @@ test('Backup exportieren → alles löschen → importieren → alles wieder da'
   await wipe.getByLabel('Zur Bestätigung LÖSCHEN eingeben').fill('LÖSCHEN');
   await wipe.getByRole('button', { name: 'Endgültig löschen' }).click();
   await page.goto('./#/heute');
-  await expect(page.getByTestId('water-value')).toContainText('0');
+  await expect(page.getByRole('button', { name: 'Stimmung 5' })).toHaveAttribute('aria-pressed', 'false');
 
   // Import
   await page.goto('./#/einstellungen');
@@ -116,7 +115,7 @@ test('Backup exportieren → alles löschen → importieren → alles wieder da'
   await shot(page, '07-import-vorschau');
   await preview.getByRole('button', { name: 'Ersetzen und importieren' }).click();
   await page.goto('./#/heute');
-  await expect(page.getByTestId('water-value')).toContainText('2');
+  await expect(page.getByRole('button', { name: 'Energie 2' })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByRole('button', { name: 'Stimmung 5' })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByTestId('backup-reminder')).toHaveCount(0);
 });
@@ -154,7 +153,7 @@ test('Demo-Daten an → alle Screens mit Daten → aus = vollständig weg @scree
 
   await page.goto('./#/heute');
   await expect(page.getByTestId('demo-notice')).toBeVisible();
-  await expect(page.getByTestId('deadline-alerts')).toContainText('EA 2');
+  await expect(page.getByTestId('briefing')).toContainText('Mathe-Klausur in 4 Tagen');
   await shot(page, '07-demo-heute');
   await shot(page, '07-demo-heute-voll', true);
 

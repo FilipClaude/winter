@@ -1,8 +1,16 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../db/db';
 import { saveTodo, startTimer, stopTimer, toggleTodo } from '../../db/repo';
-import { eaPassed, moduleEligibility } from './fernuni';
+import {
+  easterSunday,
+  isSchoolDay,
+  nextBreak,
+  publicHolidaysBY,
+  schoolFreeReason,
+  weekType,
+} from './calendar-by';
 import { pomodoroState } from './school';
+import { buildStudyPlan } from './studyplan';
 
 beforeEach(async () => {
   await db.delete();
@@ -54,44 +62,6 @@ describe('Aufgaben mit Wiederholung', () => {
     expect(next[0]).toMatchObject({ title: 'Vokabeln', done: false, repeat: 'weekly', priority: 'hoch' });
   });
 });
-
-describe('FernUni: Prüfungsberechtigung', () => {
-  it('EA bestanden ab Schwelle (Rand genau 50 %)', () => {
-    expect(eaPassed({ points: 50, maxPoints: 100 }, 50)).toBe(true);
-    expect(eaPassed({ points: 49, maxPoints: 100 }, 50)).toBe(false);
-    expect(eaPassed({ maxPoints: 100 }, 50)).toBeNull();
-  });
-
-  it('„mindestens eine EA mit 50 %“: offen → bestanden; fehlende Anzahl statt Fehlalarm', () => {
-    const rule = { rule: { minPassed: 1, passPercent: 50 } };
-    const ea = (points?: number) => ({
-      kind: 'einsendearbeit' as const,
-      maxPoints: 100,
-      ...(points !== undefined ? { points } : {}),
-    });
-    expect(moduleEligibility(rule, [ea(), ea()])).toMatchObject({ eligible: false, open: 2, missing: 1 });
-    expect(moduleEligibility(rule, [ea(30), ea(62)])).toMatchObject({
-      eligible: true,
-      passed: 1,
-      missing: 0,
-    });
-    // Kein „nicht mehr erreichbar“: weitere EAs können noch kommen (Review-Fund)
-    expect(moduleEligibility({ rule: { minPassed: 2, passPercent: 50 } }, [ea(30), ea(62)])).toMatchObject({
-      eligible: false,
-      missing: 1,
-    });
-    expect(moduleEligibility({}, [ea(80)]).eligible).toBeNull();
-  });
-});
-import {
-  easterSunday,
-  isSchoolDay,
-  nextBreak,
-  publicHolidaysBY,
-  schoolFreeReason,
-  weekType,
-} from './calendar-by';
-import { buildStudyPlan } from './studyplan';
 
 describe('Kalender Bayern', () => {
   it('Ostersonntag (bekannte Termine)', () => {

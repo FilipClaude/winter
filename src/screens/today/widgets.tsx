@@ -3,8 +3,8 @@ import { ArrowDown, ArrowUp, BookOpenCheck, GraduationCap, GripVertical, Plus, S
 import { Reorder, useDragControls } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { db } from '../../db/db';
-import { deleteGoal, getSettings, saveGoal, saveSettings, toggleStudyBlock, ValidationError } from '../../db/repo';
-import { GOAL_METRICS, type DashboardWidget, type Goal, type GoalMetric } from '../../db/schemas';
+import { deleteGoal, getSettings, RETIRED_GOAL_METRICS, saveGoal, saveSettings, toggleStudyBlock, ValidationError } from '../../db/repo';
+import { GOAL_METRICS_ACTIVE, type DashboardWidget, type Goal, type GoalMetric } from '../../db/schemas';
 import { useBfv } from '../../hooks/useBfv';
 import { useNow } from '../../hooks/useNow';
 import { useSettings } from '../../hooks/useSettings';
@@ -25,15 +25,14 @@ import { useOverlay } from '../../ui/overlay-context';
 import { Button, Card, IconButton, ProgressBar } from '../../ui/primitives';
 import { EXAM_KIND_LABEL } from '../school/school-utils';
 import { HAS_SMALL, WIDGET_LABEL } from './widget-meta';
+import { withoutUni } from '../../lib/calc/subjects';
 
 // ---------- Tagesbriefing ----------
 
 export function BriefingWidget({ today }: { today: ISODate }) {
   const settings = useSettings();
   const lines = useLiveQuery(async () => {
-    const [deadlines, modules, exams, subjects, sessions, blocks, habits, checks] = await Promise.all([
-      db.deadlines.where('date').belowOrEqual(addDays(today, 14)).toArray(),
-      db.modules.toArray(),
+    const [exams, subjects, sessions, blocks, habits, checks] = await Promise.all([
       db.exams.where('date').between(today, addDays(today, 7), true, true).toArray(),
       db.subjects.toArray(),
       db.sessions.where('date').equals(today).toArray(),
@@ -41,14 +40,12 @@ export function BriefingWidget({ today }: { today: ISODate }) {
       db.habits.toArray(),
       db.habitChecks.where('date').equals(today).toArray(),
     ]);
-    const mName = new Map(modules.map((m) => [m.id, m.name]));
     const sName = new Map(subjects.map((s) => [s.id, s.name]));
     const open = blocks.filter((b) => !b.done);
     const planned = (settings.weekPlan[String(isoWeekday(today))] ?? []).map((t) => SESSION_LABEL[t]);
     const active = habits.filter((h) => !h.archived);
     return buildBriefing({
       today,
-      deadlines: deadlines.filter((d) => !d.done).map((d) => ({ title: d.title, module: mName.get(d.moduleId) ?? 'Modul', date: d.date })),
       exams: exams
         .filter((e) => e.points === undefined)
         .map((e) => ({ subject: sName.get(e.subjectId) ?? 'Fach', kind: EXAM_KIND_LABEL[e.kind], date: e.date, progress: e.progress })),
@@ -205,10 +202,9 @@ export function GoalsWidget({ today }: { today: ISODate }) {
     const monthFrom = goalRange('month', today).from;
     const weekFrom = goalRange('week', today).from;
     const from = monthFrom < weekFrom ? monthFrom : weekFrom;
-    const [goals, sessions, meals, days, sleep, health, study, exams, habits, checks, subjects, grades, results, earnings] = await Promise.all([
+    const [goals, sessions, days, sleep, health, study, exams, habits, checks, subjects, grades, results, earnings] = await Promise.all([
       db.goals.toArray(),
       db.sessions.where('date').between(from, today, true, true).toArray(),
-      db.meals.where('date').between(from, today, true, true).toArray(),
       db.days.where('date').between(from, today, true, true).toArray(),
       db.sleep.where('date').between(from, today, true, true).toArray(),
       db.health.where('date').between(from, today, true, true).toArray(),
@@ -231,9 +227,9 @@ export function GoalsWidget({ today }: { today: ISODate }) {
             examPoints: abi.examPoints,
           }).grade
         : null;
-    const review = { sessions, meals, days, sleep, health, study, exams, habits, checks, earnings };
+    const review = { sessions, days, sleep, health, study: withoutUni(study, subjects), exams, habits, checks, earnings };
     return goals
-      .filter((g) => !g.archived)
+      .filter((g) => !g.archived && !RETIRED_GOAL_METRICS.includes(g.metric))
       .map((g) => ({ goal: g, p: goalProgress(g, review, today, abiGrade) }));
   }, [today, settings.abi]);
   if (!data) return null;
@@ -278,7 +274,7 @@ function GoalSheet({ goal, close }: { goal: Goal | undefined; close: () => void 
   const meta = GOAL_LABEL[metric];
   return (
     <div className="form">
-      <SelectField label="Kennzahl" value={metric} onValue={(v) => setMetric(v as GoalMetric)} options={GOAL_METRICS.map((m) => ({ value: m, label: GOAL_LABEL[m].label }))} />
+      <SelectField label="Kennzahl" value={metric} onValue={(v) => setMetric(v as GoalMetric)} options={GOAL_METRICS_ACTIVE.map((m) => ({ value: m, label: GOAL_LABEL[m].label }))} />
       <Segmented<Goal['period']>
         label="Zeitraum"
         value={period}
@@ -338,7 +334,7 @@ export function DashboardEditor() {
   };
   return (
     <div className="form" data-testid="dashboard-editor">
-      <p className="small muted">Ziehen zum Sortieren (oder Pfeile), Größe und Sichtbarkeit je Widget. Kritische Fristen erscheinen immer ganz oben.</p>
+      <p className="small muted">Ziehen zum Sortieren (oder Pfeile), Größe und Sichtbarkeit je Widget.</p>
       <Reorder.Group axis="y" values={list} onReorder={(next) => update(next, false)} className="dash-edit">
         {list.map((w, i) => (
           <EditorRow

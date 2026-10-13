@@ -9,7 +9,6 @@ import { db } from './db';
 import {
   DEFAULT_SETTINGS,
   zDay,
-  zDeadline,
   zExam,
   zExerciseTemplate,
   zGoal,
@@ -18,9 +17,6 @@ import {
   zHabitCheck,
   zHealthDay,
   zLesson,
-  zMeal,
-  zMealTemplate,
-  zModule,
   zSemesterResult,
   zSession,
   zSettings,
@@ -31,7 +27,6 @@ import {
   zTimer,
   zTodo,
   type Day,
-  type Deadline,
   type Exam,
   type Goal,
   type Grade,
@@ -41,9 +36,6 @@ import {
   type Semester,
   type StudyBlock,
   type HealthDay,
-  type Meal,
-  type MealTemplate,
-  type Module,
   type Session,
   type Settings,
   type Subject,
@@ -204,46 +196,6 @@ export async function updateDay(
     await db.days.put(next);
     return next;
   });
-}
-
-export async function addWater(date: ISODate, delta: number): Promise<number> {
-  return db.transaction('rw', db.days, async () => {
-    const cur = await getDay(date);
-    const water = Math.min(60, Math.max(0, cur.water + delta));
-    await updateDay(date, { water });
-    return water;
-  });
-}
-
-// ---------- Mahlzeiten ----------
-
-export async function addMeal(input: WithOptionalMeta<Meal>): Promise<Meal> {
-  const meal = validate(zMeal, stamp(input));
-  await db.meals.put(meal);
-  return meal;
-}
-
-export async function addMealFromTemplate(templateId: string, date: ISODate): Promise<Meal> {
-  const t = await db.mealTemplates.get(templateId);
-  if (!t) throw new ValidationError('Vorlage nicht gefunden');
-  return addMeal({ date, name: t.name, kcal: t.kcal, proteinG: t.proteinG, templateId: t.id });
-}
-
-export async function deleteMeal(id: string): Promise<void> {
-  await db.meals.delete(id);
-}
-
-export async function saveMealTemplate(
-  input: WithOptionalMeta<Omit<MealTemplate, 'order'>> & { order?: number },
-) {
-  const order = input.order ?? (await db.mealTemplates.count());
-  const t = validate(zMealTemplate, stamp({ ...input, order }));
-  await db.mealTemplates.put(t);
-  return t;
-}
-
-export async function deleteMealTemplate(id: string): Promise<void> {
-  await db.mealTemplates.delete(id);
 }
 
 // ---------- Training ----------
@@ -515,34 +467,6 @@ export async function saveExamWithGrade(input: WithOptionalMeta<Exam>): Promise<
     await syncExamGrade(saved);
     return saved;
   });
-}
-
-export async function saveModule(input: WithOptionalMeta<Module>): Promise<Module> {
-  const m = validate(zModule, stamp(input));
-  await db.modules.put(m);
-  return m;
-}
-
-export async function deleteModule(id: string): Promise<void> {
-  await db.transaction('rw', db.modules, db.deadlines, async () => {
-    await db.deadlines.where('moduleId').equals(id).delete();
-    await db.modules.delete(id);
-  });
-}
-
-export async function saveDeadline(input: WithOptionalMeta<Deadline>): Promise<Deadline> {
-  const d = validate(zDeadline, stamp(input));
-  await db.deadlines.put(d);
-  return d;
-}
-
-export async function toggleDeadline(id: string): Promise<void> {
-  const d = await db.deadlines.get(id);
-  if (d) await db.deadlines.put({ ...d, done: !d.done, updatedAt: nowISO() });
-}
-
-export async function deleteDeadline(id: string): Promise<void> {
-  await db.deadlines.delete(id);
 }
 
 // ---------- v2: Noten, Halbjahre, Lernplan, Stundenplan, Ziele ----------

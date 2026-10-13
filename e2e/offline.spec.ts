@@ -47,10 +47,11 @@ test('PWA ist installierbar und läuft ohne Netz weiter', async ({ page, context
 
   // Erfassen funktioniert offline und überlebt einen Neustart ohne Netz
   await page.goto('./#/heute');
-  await page.getByRole('button', { name: 'Ein Glas Wasser' }).click();
-  await expect(page.getByTestId('water-value')).toContainText('1');
+  const mood = page.getByRole('button', { name: 'Stimmung 4' });
+  await mood.click();
+  await expect(mood).toHaveAttribute('aria-pressed', 'true');
   await page.reload();
-  await expect(page.getByTestId('water-value')).toContainText('1');
+  await expect(mood).toHaveAttribute('aria-pressed', 'true');
 
   // Schriften kommen ebenfalls aus dem Cache
   const fontsOk = await page.evaluate(async () => {

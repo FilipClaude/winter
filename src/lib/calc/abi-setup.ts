@@ -1,11 +1,11 @@
 import type { Settings, Subject } from '../../db/schemas';
 import type { AbiSubject, Role } from './abi';
+import { isUniSubject } from './subjects';
 
 const norm = (s: string) => s.trim().toLowerCase();
 const isGerman = (s: Pick<Subject, 'name' | 'short'>) => norm(s.name) === 'deutsch' || norm(s.short) === 'd';
 const isMath = (s: Pick<Subject, 'name' | 'short'>) =>
   ['mathe', 'mathematik'].includes(norm(s.name)) || norm(s.short) === 'm';
-const isOutside = (s: Pick<Subject, 'name'>) => norm(s.name) === 'fernuni';
 
 /**
  * Fächer mit Pflichteinbringung „3“ laut GSO Anlage 10 (Fremdsprachen, Religion/Ethik, Geschichte,
@@ -38,7 +38,7 @@ const THREE_OF_FOUR = [
  * „3 von 4“; FernUni gar nicht; alles andere (z. B. WR, Geographie, Wahlfächer) frei wählbar.
  */
 export function defaultRole(s: Subject, examSubjects: string[]): Role {
-  if (isOutside(s)) return 'none';
+  if (isUniSubject(s)) return 'none';
   if (isGerman(s) || isMath(s) || s.major || examSubjects.includes(s.id)) return 'all';
   if (THREE_OF_FOUR.includes(norm(s.name))) return 'three';
   return 'free';

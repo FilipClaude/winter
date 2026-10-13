@@ -1,17 +1,16 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { LucideIcon } from 'lucide-react';
-import { AlarmClock, BookOpenCheck, Droplet, Dumbbell, GraduationCap, HeartPulse, ListTodo, Moon, NotebookPen, Smile, Timer, Utensils } from 'lucide-react';
+import { BookOpenCheck, Dumbbell, GraduationCap, HeartPulse, ListTodo, Moon, NotebookPen, Smile, Timer } from 'lucide-react';
 import { db } from '../../db/db';
-import { addWater, emptyDay, updateDay } from '../../db/repo';
+import { emptyDay, updateDay } from '../../db/repo';
 import { useSettings } from '../../hooks/useSettings';
 import { todayISO } from '../../lib/date';
 import { Scale } from '../../ui/controls';
 import { useOverlay, type OverlayApi } from '../../ui/overlay-context';
 import { Button } from '../../ui/primitives';
-import { MealSheet } from '../body/MealSheet';
 import { SleepSheet } from '../body/SleepSheet';
 import { openHealthSheet } from '../health/openHealth';
-import { DeadlineSheet, ExamSheet, StudySheet, TodoSheet } from '../school/SchoolSheets';
+import { ExamSheet, StudySheet, TodoSheet } from '../school/SchoolSheets';
 import { JournalSheet } from '../today/JournalSheet';
 import { openSessionSheet } from '../training/openSession';
 
@@ -23,23 +22,11 @@ interface Entry {
 }
 
 const ENTRIES: Entry[] = [
-  {
-    id: 'wasser',
-    label: '+1 Glas Wasser',
-    icon: Droplet,
-    run: async (api) => {
-      const n = await addWater(todayISO(), 1);
-      api.closeSheet();
-      api.toast(`Wasser: ${n} ${n === 1 ? 'Glas' : 'Gläser'}`, { action: { label: 'Rückgängig', run: () => void addWater(todayISO(), -1) } });
-    },
-  },
-  { id: 'mahlzeit', label: 'Mahlzeit', icon: Utensils, run: (api) => api.openSheet({ title: 'Mahlzeit', render: (close) => <MealSheet date={todayISO()} close={close} /> }) },
   { id: 'training', label: 'Training', icon: Dumbbell, run: (api) => openSessionSheet(api.openSheet, { date: todayISO() }) },
   { id: 'schlaf', label: 'Schlaf', icon: Moon, run: (api) => api.openSheet({ title: 'Schlaf', render: (close) => <SleepSheet date={todayISO()} close={close} /> }) },
   { id: 'lernen', label: 'Lernzeit', icon: Timer, run: (api) => api.openSheet({ title: 'Lernzeit', render: (close) => <StudySheet close={close} /> }) },
   { id: 'aufgabe', label: 'Aufgabe', icon: ListTodo, run: (api) => api.openSheet({ title: 'Aufgabe', render: (close) => <TodoSheet close={close} /> }) },
   { id: 'klausur', label: 'Klausur', icon: GraduationCap, run: (api) => api.openSheet({ title: 'Klausur', render: (close) => <ExamSheet close={close} /> }) },
-  { id: 'frist', label: 'FernUni-Frist', icon: AlarmClock, run: (api) => api.openSheet({ title: 'FernUni-Frist', render: (close) => <DeadlineSheet close={close} /> }) },
   { id: 'stimmung', label: 'Stimmung', icon: Smile, run: (api) => api.openSheet({ title: 'Stimmung & Energie', render: (close) => <MoodSheet close={close} /> }) },
   {
     id: 'notiz',

@@ -7,7 +7,6 @@ import { weeklyFileName, weeklyMarkdown, weeklyReport } from './weekly';
 const meta = { createdAt: '2026-10-01T00:00:00.000Z', updatedAt: '2026-10-01T00:00:00.000Z' };
 const empty = (): ReviewData => ({
   sessions: [],
-  meals: [],
   days: [],
   sleep: [],
   health: [],

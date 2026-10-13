@@ -5,7 +5,6 @@ import type {
   Habit,
   HabitCheck,
   HealthDay,
-  Meal,
   Session,
   Sleep,
   StudySession,
@@ -19,7 +18,6 @@ import { sessionLoad } from './training';
 
 export interface ReviewData {
   sessions: Session[];
-  meals: Meal[];
   days: Day[];
   sleep: Sleep[];
   health: HealthDay[];
@@ -36,7 +34,6 @@ export interface DayPoint {
   studyMin: number;
   load: number;
   sleepMin: number | null;
-  proteinG: number | null;
   mood: number | null;
   energy: number | null;
   steps: number | null;
@@ -50,20 +47,17 @@ export function dailySeries(data: ReviewData, from: ISODate, to: ISODate): DayPo
     return m;
   };
   const sessions = byDate(data.sessions);
-  const meals = byDate(data.meals);
   const study = byDate(data.study);
   const days = new Map(data.days.map((d) => [d.date, d]));
   const sleep = new Map(data.sleep.map((s) => [s.date, s]));
   const health = new Map(data.health.map((h) => [h.date, h]));
   return dateRange(from, to).map((date) => {
     const day = days.get(date);
-    const dayMeals = meals.get(date) ?? [];
     return {
       date,
       studyMin: (study.get(date) ?? []).reduce((a, s) => a + s.minutes, 0),
       load: (sessions.get(date) ?? []).reduce((a, s) => a + sessionLoad(s.durationMin, s.rpe), 0),
       sleepMin: effectiveSleep(sleep.get(date), health.get(date))?.minutes ?? null,
-      proteinG: dayMeals.length > 0 ? dayMeals.reduce((a, m) => a + m.proteinG, 0) : null,
       mood: day?.mood ?? null,
       energy: day?.energy ?? null,
       steps: health.get(date)?.steps ?? null,
@@ -81,7 +75,6 @@ export interface PeriodSummary {
   load: number;
   sessions: number;
   sleepAvgMin: number | null;
-  proteinAvg: number | null;
   habitRate: number | null;
   moodAvg: number | null;
   energyAvg: number | null;
@@ -95,7 +88,6 @@ export function periodSummary(data: ReviewData, from: ISODate, to: ISODate): Per
     load: series.reduce((a, d) => a + d.load, 0),
     sessions: data.sessions.filter((s) => s.date >= from && s.date <= to).length,
     sleepAvgMin: avg(series.map((d) => d.sleepMin)),
-    proteinAvg: avg(series.map((d) => d.proteinG)),
     habitRate: habitRate(
       data.habits.filter((h) => !h.archived),
       data.checks,

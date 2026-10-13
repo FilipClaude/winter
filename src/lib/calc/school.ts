@@ -23,16 +23,65 @@ export function pointsToDecimalGrade(points: number): number {
   return Math.round(Math.min(6, Math.max(0.7, (17 - points) / 3)) * 10) / 10;
 }
 
-export type DeadlineLevel = 'ueberfaellig' | 'kritisch' | 'nah' | 'bald' | 'spaeter';
+/** Themenstand einer Klausur: aus der Checkliste (Stufe ≥ 2 = „sitzt“), sonst null. */
+export function topicStatus(
+  topicList: { level: number }[] | undefined,
+): { done: number; total: number } | null {
+  if (!topicList || topicList.length === 0) return null;
+  return { done: topicList.filter((t) => t.level >= 2).length, total: topicList.length };
+}
 
-/** Warnstufen für Fristen: ≤ 2 Tage kritisch, ≤ 7 nah, ≤ 14 bald. */
-export function deadlineLevel(due: ISODate, today: ISODate): DeadlineLevel {
-  const d = diffDays(today, due);
-  if (d < 0) return 'ueberfaellig';
-  if (d <= 2) return 'kritisch';
-  if (d <= 7) return 'nah';
-  if (d <= 14) return 'bald';
-  return 'spaeter';
+export interface SchoolAlert {
+  id: string;
+  /** warn = heute/morgen bzw. überfällig, sonst ruhiger Hinweis. */
+  tone: 'warn' | 'accent';
+  text: string;
+  examId?: string;
+}
+
+/**
+ * Schul-Hinweise für „Heute“ (v3, ersetzt die FernUni-Fristen): Klausuren in den nächsten 3 Tagen mit
+ * offenen Themen (bzw. ohne Checkliste unter 60 % Lernstand) und überfällige Aufgaben.
+ */
+export function schoolAlerts(input: {
+  today: ISODate;
+  exams: {
+    id: string;
+    subject: string;
+    kind: string;
+    date: ISODate;
+    progress: number;
+    topicList?: { level: number }[] | undefined;
+  }[];
+  overdueTodos: number;
+}): SchoolAlert[] {
+  const out: SchoolAlert[] = [];
+  const exams = input.exams
+    .map((e) => ({ ...e, days: diffDays(input.today, e.date) }))
+    .filter((e) => e.days >= 0 && e.days <= 3)
+    .sort((a, b) => a.days - b.days || a.subject.localeCompare(b.subject));
+  for (const e of exams) {
+    const t = topicStatus(e.topicList);
+    const open = t ? t.total - t.done : null;
+    if (open === 0 || (open === null && e.progress >= 60)) continue;
+    const when = e.days === 0 ? 'heute' : e.days === 1 ? 'morgen' : `in ${e.days} Tagen`;
+    out.push({
+      id: `exam-${e.id}`,
+      examId: e.id,
+      tone: e.days <= 1 ? 'warn' : 'accent',
+      text:
+        t && open !== null
+          ? `${e.subject}-${e.kind} ${when} – ${open} von ${t.total} ${t.total === 1 ? 'Thema' : 'Themen'} noch offen.`
+          : `${e.subject}-${e.kind} ${when} – Lernstand erst ${e.progress} %.`,
+    });
+  }
+  if (input.overdueTodos > 0)
+    out.push({
+      id: 'todos',
+      tone: 'warn',
+      text: `${input.overdueTodos} ${input.overdueTodos === 1 ? 'Aufgabe ist' : 'Aufgaben sind'} überfällig.`,
+    });
+  return out;
 }
 
 export function countdownLabel(due: ISODate, today: ISODate): string {

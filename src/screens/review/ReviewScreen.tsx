@@ -31,6 +31,7 @@ import { Segmented, TextField } from '../../ui/controls';
 import { StatTile } from '../../ui/kit';
 import { useOverlay } from '../../ui/overlay-context';
 import { Button, Card, EmptyState, IconButton, ScreenHeader, SectionTitle, Stat } from '../../ui/primitives';
+import { withoutUni } from '../../lib/calc/subjects';
 
 type Period = 'woche' | 'monat' | 'frei';
 
@@ -59,9 +60,8 @@ export default function ReviewScreen() {
   const [offset, setOffset] = useState(0);
   const [custom, setCustom] = useState({ from: addDays(today, -29), to: today });
   const data = useLiveQuery(async () => {
-    const [sessions, meals, days, sleep, health, study, exams, habits, checks, goals, earnings] = await Promise.all([
+    const [sessions, days, sleep, health, allStudy, exams, habits, checks, goals, earnings, subjects] = await Promise.all([
       db.sessions.toArray(),
-      db.meals.toArray(),
       db.days.toArray(),
       db.sleep.toArray(),
       db.health.toArray(),
@@ -71,8 +71,10 @@ export default function ReviewScreen() {
       db.habitChecks.toArray(),
       db.goals.toArray(),
       db.earnings.toArray(),
+      db.subjects.toArray(),
     ]);
-    return { review: { sessions, meals, days, sleep, health, study, exams, habits, checks, earnings } satisfies ReviewData, goals };
+    const study = withoutUni(allStudy, subjects);
+    return { review: { sessions, days, sleep, health, study, exams, habits, checks, earnings } satisfies ReviewData, goals };
   }, []);
 
   const r =
@@ -146,7 +148,6 @@ function deltaKpis(s: PeriodSummary, p: PeriodSummary) {
     study: d(s.studyMin / 60, p.studyMin / 60),
     load: d(s.load, p.load),
     sleep: d(s.sleepAvgMin === null ? null : s.sleepAvgMin / 60, p.sleepAvgMin === null ? null : p.sleepAvgMin / 60),
-    protein: d(s.proteinAvg, p.proteinAvg),
     habits: d(s.habitRate === null ? null : s.habitRate * 100, p.habitRate === null ? null : p.habitRate * 100),
     mood: d(s.moodAvg, p.moodAvg),
   };
@@ -177,7 +178,7 @@ function PeriodView({
   const series = dailySeries(data, from, to);
   const long = diffDays(from, to) > 31;
   const label = (d: ISODate) => (labelMode === 'weekday' && !long ? formatWeekdayShort(d) : formatDayMonth(d).slice(0, long ? 5 : 2));
-  const hasAny = series.some((d) => d.studyMin > 0 || d.load > 0 || d.sleepMin !== null || d.mood !== null || d.proteinG !== null);
+  const hasAny = series.some((d) => d.studyMin > 0 || d.load > 0 || d.sleepMin !== null || d.mood !== null);
 
   return (
     <>
@@ -186,7 +187,6 @@ function PeriodView({
           <StatTile label="Lernzeit" value={formatHM(s.studyMin)} unit="h" delta={dk.study} deltaLabel={signed(dk.study, 1, 'h')} />
           <StatTile label={`Load · ${s.sessions} Einh.`} value={s.load.toLocaleString('de-DE')} delta={dk.load} deltaLabel={signed(dk.load, 0)} />
           <StatTile label="Ø Schlaf" value={s.sleepAvgMin === null ? '–' : formatHM(s.sleepAvgMin)} unit="h" delta={dk.sleep} deltaLabel={signed(dk.sleep, 1, 'h')} />
-          <StatTile label="Ø Protein" value={s.proteinAvg === null ? '–' : Math.round(s.proteinAvg)} unit="g" delta={dk.protein} deltaLabel={signed(dk.protein, 0, 'g')} />
           <StatTile label="Habit-Quote" value={s.habitRate === null ? '–' : Math.round(s.habitRate * 100)} unit="%" delta={dk.habits} deltaLabel={signed(dk.habits, 0, '%')} />
           <StatTile label="Ø Stimmung" value={formatDecimal(s.moodAvg, 1)} delta={dk.mood} deltaLabel={signed(dk.mood, 1)} />
         </div>
@@ -323,7 +323,7 @@ function WeekReportCard({ data, goals, weekStart, today }: { data: ReviewData; g
 
 // ---------- Trends ----------
 
-const TREND_METRICS: TrendMetric[] = ['studyMin', 'load', 'sleepMin', 'mood', 'steps', 'proteinG'];
+const TREND_METRICS: TrendMetric[] = ['studyMin', 'load', 'sleepMin', 'mood', 'steps'];
 
 function Trends({ data, today }: { data: ReviewData; today: ISODate }) {
   const [metric, setMetric] = useState<TrendMetric>('studyMin');

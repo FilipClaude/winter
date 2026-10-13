@@ -8,7 +8,6 @@ import type { ReviewData } from './review';
 
 const base: BriefingInput = {
   today: '2026-10-13',
-  deadlines: [],
   exams: [],
   training: { planned: [], done: 0 },
   studyBlocks: { open: 0, minutes: 0, subjects: [] },
@@ -31,15 +30,16 @@ describe('Tagesbriefing', () => {
     ]);
   });
 
-  it('überfällige Frist steht vorne, höchstens zwei Sätze', () => {
+  it('Klausur steht vorne, höchstens zwei Sätze', () => {
     const b = buildBriefing({
       ...base,
-      deadlines: [{ title: 'EA 2', module: 'BWL', date: '2026-10-11' }],
       exams: [{ subject: 'Mathe', kind: 'Klausur', date: '2026-10-14', progress: 20 }],
       training: { planned: ['Gym'], done: 0 },
+      studyBlocks: { open: 1, minutes: 30, subjects: ['Mathe'] },
+      schoolFree: 'Allerheiligen',
     });
-    expect(b[0]).toBe('EA 2 (BWL) ist seit 2 Tagen überfällig.');
-    expect(b[1]).toBe('Mathe-Klausur morgen, Lernstand 20 %.');
+    expect(b[0]).toBe('Mathe-Klausur morgen, Lernstand 20 %.');
+    expect(b[1]).toBe('Heute Gym, danach 1 Lerneinheit Mathe (30 min).');
     expect(b).toHaveLength(2);
   });
 
@@ -66,7 +66,6 @@ describe('Tagesbriefing', () => {
 
 const empty: ReviewData = {
   sessions: [],
-  meals: [],
   days: [],
   sleep: [],
   health: [],
@@ -151,20 +150,19 @@ describe('Dashboard-Anordnung', () => {
       { id: 'gibtsnicht' as never, size: 'l' as const, hidden: false },
     ];
     const n = normalizeDashboard(stored);
-    expect(n[0]).toEqual({ id: 'habits', size: 's', hidden: false });
+    // ohne Briefing kommt „Nächste Klausur“ ganz nach vorne, danach das eigene Layout
+    expect(n[0]?.id).toBe('nextExam');
+    expect(n[1]).toEqual({ id: 'habits', size: 's', hidden: false });
     expect(n.filter((w) => w.id === 'habits')).toHaveLength(1);
     expect(n).toHaveLength(DEFAULT_DASHBOARD.length);
   });
 
-  it('kritische Fristen: Hinweise ganz oben, auch wenn ausgeblendet oder weit unten', () => {
+  it('ausgeblendete Widgets erscheinen nicht', () => {
     const list = normalizeDashboard(
       DEFAULT_DASHBOARD.map((w) => (w.id === 'alerts' ? { ...w, hidden: true } : w)),
     );
-    const moved = moveWidget(list, 'alerts', 10);
-    expect(orderForDisplay(moved, false).some((w) => w.id === 'alerts')).toBe(false);
-    const shown = orderForDisplay(moved, true);
-    expect(shown[0]?.id).toBe('alerts');
-    expect(shown.filter((w) => w.id === 'alerts')).toHaveLength(1);
+    expect(orderForDisplay(list).some((w) => w.id === 'alerts')).toBe(false);
+    expect(orderForDisplay(list)).toHaveLength(DEFAULT_DASHBOARD.length - 1);
   });
 
   it('Verschieben per Pfeil bleibt in den Grenzen', () => {

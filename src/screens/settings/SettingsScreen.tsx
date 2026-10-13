@@ -33,11 +33,13 @@ import {
   previewBackup,
   previewSnapshot,
   restoreBackup,
+  RETIRED_TABLES,
   saveSafetySnapshot,
   wipeAll,
   type BackupPreview,
   type SnapshotMeta,
 } from '../../lib/backup';
+import { formatEuroShort, parseEuroToCents } from '../../lib/calc/earnings';
 import { formatDecimal } from '../../lib/calc/insights';
 import { diffDays, formatDE, startOfWeek, toISODate, toTimeHM } from '../../lib/date';
 import { insertDemo, removeDemo } from '../../lib/demo';
@@ -48,6 +50,7 @@ import { useOverlay } from '../../ui/overlay-context';
 import { Badge, Banner, Button, Card, IconButton, ScreenHeader, SectionTitle } from '../../ui/primitives';
 import { showOnboarding } from '../../shell/onboarding-control';
 import { openHealthSheet } from '../health/openHealth';
+import { isUniSubject, schoolSubjects } from '../../lib/calc/subjects';
 
 export default function SettingsScreen() {
   const settings = useSettings();
@@ -162,42 +165,50 @@ function GoalsCard({ settings }: { settings: Settings }) {
   return (
     <Card label="Tagesziele" icon={Target} ariaLabel="Tagesziele" action={<Button variant="ghost" size="s" onClick={() => openSheet({ title: 'Tagesziele', render: (close) => <GoalsSheet settings={settings} close={close} /> })}>Ändern</Button>}>
       <p className="small muted">
-        {g.proteinG} g Protein · {g.kcal.toLocaleString('de-DE')} kcal · {g.waterGlasses} Gläser à {settings.glassMl} ml · {g.studyMin} min Lernen · {formatDecimal(g.sleepH, 1)} h Schlaf · {g.steps.toLocaleString('de-DE')} Schritte
+        {g.studyMin} min Lernen · {formatDecimal(g.sleepH, 1)} h Schlaf · {g.steps.toLocaleString('de-DE')} Schritte · Verdienst{' '}
+        {settings.earnings.weeklyGoalCents > 0 ? `${formatEuroShort(settings.earnings.weeklyGoalCents)} pro Woche` : 'ohne Wochenziel'}
       </p>
     </Card>
   );
 }
 
+const RING_KEYS = ['habits', 'study', 'sleep', 'training', 'earnings'] as const;
+const RING_LABEL: Record<(typeof RING_KEYS)[number], string> = { habits: 'Habits', study: 'Lernzeit', sleep: 'Schlaf', training: 'Training', earnings: 'Verdienst' };
+const RING_HINT: Partial<Record<(typeof RING_KEYS)[number], string>> = {
+  training: 'Erfüllt, sobald eine Einheit eingetragen ist. Ruhetage laut Wochenplan zählen nicht.',
+  earnings: 'Wochenziel anteilig bis heute (Mittwoch = 3/7). Nur mit Wochenziel.',
+};
+/** Cent → Eingabetext „42,5“ (ohne Euro-Zeichen). */
+const formatCentsInput = (cents: number) => (cents / 100).toLocaleString('de-DE', { maximumFractionDigits: 2, useGrouping: false });
+
 function GoalsSheet({ settings, close }: { settings: Settings; close: () => void }) {
   const { toast } = useOverlay();
   const [g, setG] = useState(settings.goals);
-  const [glassMl, setGlassMl] = useState<number | ''>(settings.glassMl);
   const [ring, setRing] = useState(settings.ring);
+  const [earn, setEarn] = useState(settings.earnings.weeklyGoalCents > 0 ? formatCentsInput(settings.earnings.weeklyGoalCents) : '');
+  const earnCents = earn.trim() === '' ? 0 : parseEuroToCents(earn);
   const num = (k: keyof typeof g) => (v: number | '') => setG({ ...g, [k]: v === '' ? 0 : v });
   return (
     <div className="form">
       <div className="form-row">
-        <NumberField label="Protein (g)" value={g.proteinG} onValue={num('proteinG')} min={0} max={500} />
-        <NumberField label="Kalorien (kcal)" value={g.kcal} onValue={num('kcal')} min={0} max={8000} />
-      </div>
-      <div className="form-row">
-        <NumberField label="Wasser (Gläser)" value={g.waterGlasses} onValue={num('waterGlasses')} min={0} max={40} />
-        <NumberField label="Glasgröße (ml)" value={glassMl} onValue={setGlassMl} min={50} max={1000} />
-      </div>
-      <div className="form-row">
         <NumberField label="Lernen (min)" value={g.studyMin} onValue={num('studyMin')} min={0} max={1440} />
         <NumberField label="Schlaf (h)" value={g.sleepH} onValue={num('sleepH')} min={0} max={14} decimal />
       </div>
-      <NumberField label="Schritte" value={g.steps} onValue={num('steps')} min={0} max={100000} />
+      <div className="form-row">
+        <NumberField label="Schritte" value={g.steps} onValue={num('steps')} min={0} max={100000} />
+        <TextField label="Verdienst pro Woche (€)" value={earn} onValue={setEarn} inputMode="decimal" placeholder="0 = aus" data-testid="earnings-goal" />
+      </div>
+      {earnCents === null && <p className="field__error">Betrag in Euro, z. B. 50 oder 42,50.</p>}
       <SectionTitle>Im Tagesring</SectionTitle>
-      {(['habits', 'protein', 'water', 'study', 'sleep'] as const).map((k) => (
-        <ToggleRow key={k} label={{ habits: 'Habits', protein: 'Protein', water: 'Wasser', study: 'Lernzeit', sleep: 'Schlaf' }[k]} checked={ring[k]} onChange={(v) => setRing({ ...ring, [k]: v })} />
+      {RING_KEYS.map((k) => (
+        <ToggleRow key={k} label={RING_LABEL[k]} hint={RING_HINT[k]} checked={ring[k]} onChange={(v) => setRing({ ...ring, [k]: v })} />
       ))}
       <Button
         variant="primary"
         block
+        disabled={earnCents === null}
         onClick={() =>
-          void saveSettings({ goals: { ...g, steps: Math.round(g.steps), proteinG: Math.round(g.proteinG), kcal: Math.round(g.kcal), waterGlasses: Math.round(g.waterGlasses), studyMin: Math.round(g.studyMin) }, glassMl: Math.round(Number(glassMl || 250)), ring })
+          void saveSettings({ goals: { ...g, steps: Math.round(g.steps), studyMin: Math.round(g.studyMin) }, ring, earnings: { weeklyGoalCents: earnCents ?? 0 } })
             .then(() => {
               toast('Ziele gespeichert');
               close();
@@ -216,7 +227,7 @@ function GoalsSheet({ settings, close }: { settings: Settings; close: () => void
 function SubjectsCard() {
   const { openSheet } = useOverlay();
   const subjects = useLiveQuery(() => db.subjects.orderBy('order').toArray(), []);
-  const active = subjects?.filter((s) => !s.archived) ?? [];
+  const active = schoolSubjects(subjects ?? []);
   return (
     <Card label="Fächer" icon={GraduationCap} ariaLabel="Fächer" action={<Button variant="ghost" size="s" onClick={() => openSheet({ title: 'Fächer', render: () => <SubjectsSheet /> })}>Bearbeiten</Button>}>
       <div className="chips">
@@ -232,7 +243,8 @@ function SubjectsCard() {
 }
 
 function SubjectsSheet() {
-  const subjects = useLiveQuery(() => db.subjects.orderBy('order').toArray(), []) ?? [];
+  // Ausgeblendete Uni-Fächer (v3) erscheinen auch hier nicht – archivierte Schulfächer schon (zum Reaktivieren).
+  const subjects = useLiveQuery(async () => (await db.subjects.orderBy('order').toArray()).filter((s) => !isUniSubject(s)), []) ?? [];
   const [name, setName] = useState('');
   const move = async (i: number, dir: -1 | 1) => {
     const a = subjects[i];
@@ -409,6 +421,8 @@ function BackupCard() {
 function ImportPreview({ preview, close, snapshot = false }: { preview: BackupPreview; close: () => void; snapshot?: boolean }) {
   const { toast } = useOverlay();
   const [busy, setBusy] = useState(false);
+  // Bereiche, die die Oberfläche seit v3 nicht mehr zeigt, werden mit importiert, aber nur als Summe genannt.
+  const retired = preview.counts.filter((c) => RETIRED_TABLES.includes(c.table)).reduce((a, c) => a + c.count, 0);
   return (
     <div className="form" data-testid="import-preview">
       <p className="big big--m num">
@@ -421,13 +435,19 @@ function ImportPreview({ preview, close, snapshot = false }: { preview: BackupPr
       </p>
       <div className="list">
         {preview.counts
-          .filter((c) => c.count > 0)
+          .filter((c) => c.count > 0 && !RETIRED_TABLES.includes(c.table))
           .map((c) => (
             <div key={c.table} className="row row--between small" style={{ minHeight: 32 }}>
               <span className="muted">{c.label}</span>
               <span className="mono">{c.count}</span>
             </div>
           ))}
+        {retired > 0 && (
+          <div className="row row--between small" style={{ minHeight: 32 }} data-testid="import-retired">
+            <span className="muted">Ältere, ausgeblendete Daten</span>
+            <span className="mono">{retired}</span>
+          </div>
+        )}
       </div>
       <Banner icon={Database} tone="warn">
         Ersetzt alle aktuellen Daten auf diesem Gerät. Der jetzige Stand wird vorher als „vor Import“ gesichert.
@@ -517,19 +537,16 @@ function SnapshotsCard() {
 // ---------- Markdown ----------
 
 async function loadMarkdownData(): Promise<MarkdownData> {
-  const [days, sessions, todos, deadlines, modules, subjects, study, meals, sleep, health] = await Promise.all([
+  const [days, sessions, todos, subjects, study, sleep, health] = await Promise.all([
     db.days.toArray(),
     db.sessions.toArray(),
     db.todos.toArray(),
-    db.deadlines.toArray(),
-    db.modules.toArray(),
     db.subjects.toArray(),
     db.studySessions.toArray(),
-    db.meals.toArray(),
     db.sleep.toArray(),
     db.health.toArray(),
   ]);
-  return { days, sessions, todos, deadlines, modules, subjects, study, meals, sleep, health };
+  return { days, sessions, todos, subjects, study, sleep, health };
 }
 
 function MarkdownCard() {

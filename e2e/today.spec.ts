@@ -28,39 +28,13 @@ test('Navigation über die Tab-Leiste', async ({ page }) => {
   await expect(page.getByTestId('ring-card')).toBeVisible();
 });
 
-test('Schnellerfassung: Wasser in zwei Taps', async ({ page }) => {
+test('Schnellerfassung ohne Wasser, Mahlzeit und Frist (v3)', async ({ page }) => {
   await page.getByTestId('fab').click();
   await expect(page.getByRole('dialog', { name: 'Was willst du eintragen?' })).toBeVisible();
   await shot(page, '03-schnellerfassung');
-  await page.getByTestId('qa-wasser').click();
-  await expect(page.getByRole('dialog')).toBeHidden();
-  await expect(page.getByTestId('water-value')).toContainText('1');
-});
-
-test('Schnellerfassung: Mahlzeit-Vorlage in drei Taps, Protein zählt', async ({ page }) => {
-  await page.getByTestId('fab').click();
-  await page.getByTestId('qa-mahlzeit').click();
-  await page.getByTestId('meal-templates').getByRole('button', { name: /Skyr/ }).click();
-  await expect(page.getByRole('dialog')).toBeHidden();
-  await expect(page.getByTestId('protein-value')).toContainText('38');
-});
-
-test('Eigene Mahlzeit mit Werten', async ({ page }) => {
-  await page.getByRole('button', { name: 'Mahlzeit eintragen' }).click();
-  await page.getByLabel('Name').fill('Mensa');
-  await page.getByLabel('Kalorien (kcal)').fill('750');
-  await page.getByLabel('Protein (g)').fill('42,5');
-  await page.getByRole('dialog').getByRole('button', { name: 'Eintragen', exact: true }).click();
-  await expect(page.getByTestId('protein-value')).toContainText('43');
-});
-
-test('Wasser per Plus und zurück', async ({ page }) => {
-  const plus = page.getByRole('button', { name: 'Ein Glas Wasser' });
-  await plus.click();
-  await plus.click();
-  await expect(page.getByTestId('water-value')).toContainText('2');
-  await page.getByRole('button', { name: 'Ein Glas zurück' }).click();
-  await expect(page.getByTestId('water-value')).toContainText('1');
+  for (const id of ['qa-wasser', 'qa-mahlzeit', 'qa-frist'])
+    await expect(page.getByTestId(id)).toHaveCount(0);
+  await expect(page.getByTestId('qa-training')).toBeVisible();
 });
 
 test('Stimmung mit einem Tap, bleibt nach Neuladen', async ({ page }) => {
@@ -82,13 +56,15 @@ test('Tagesnotiz speichern', async ({ page }) => {
 });
 
 test('Zum Vortag und zurück (Buttons und Wischen)', async ({ page }) => {
-  await page.getByRole('button', { name: 'Ein Glas Wasser' }).click();
+  const mood = page.getByRole('button', { name: 'Stimmung 4' });
+  await mood.click();
+  await expect(mood).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Vortag' }).click();
   await expect(page).toHaveURL(/#\/heute\/\d{4}-\d{2}-\d{2}/);
-  await expect(page.getByTestId('water-value')).toContainText('0');
+  await expect(mood).toHaveAttribute('aria-pressed', 'false');
   await expect(page.getByRole('button', { name: 'Zu heute' })).toBeVisible();
   await page.getByRole('button', { name: 'Zu heute' }).click();
-  await expect(page.getByTestId('water-value')).toContainText('1');
+  await expect(mood).toHaveAttribute('aria-pressed', 'true');
 
   // Wischen nach links → Folgetag
   const box = await page.getByTestId('ring-card').boundingBox();

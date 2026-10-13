@@ -1,8 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from './db';
 import {
-  addMealFromTemplate,
-  addWater,
   getDay,
   getSettings,
   getTimer,
@@ -27,10 +25,12 @@ describe('Erststart', () => {
   it('legt Standardfächer, Übungen und eine Mahlzeitvorlage an', async () => {
     const subjects = await db.subjects.orderBy('order').toArray();
     expect(subjects.map((s) => s.name)).toContain('PuG');
-    expect(subjects.at(-1)?.name).toBe('FernUni');
+    // v3: kein Fach „FernUni“ mehr für neue Installationen
+    expect(subjects.at(-1)?.name).toBe('WR');
+    expect(subjects.some((s) => s.name === 'FernUni')).toBe(false);
     expect(subjects.find((s) => s.name === 'PuG')?.major).toBe(true);
     expect(await db.exerciseTemplates.count()).toBeGreaterThan(5);
-    expect(await db.mealTemplates.count()).toBe(1);
+    expect(await db.mealTemplates.count()).toBe(0);
   });
 
   it('Einstellungen haben Standardwerte und lassen sich speichern', async () => {
@@ -42,26 +42,10 @@ describe('Erststart', () => {
 });
 
 describe('Tageswerte', () => {
-  it('Wasser zählt hoch und nie unter null', async () => {
-    await addWater('2026-10-11', 1);
-    await addWater('2026-10-11', 1);
-    expect((await getDay('2026-10-11')).water).toBe(2);
-    await addWater('2026-10-11', -5);
-    expect((await getDay('2026-10-11')).water).toBe(0);
-  });
-
   it('Stimmung wird validiert', async () => {
     await updateDay('2026-10-11', { mood: 4 });
     expect((await getDay('2026-10-11')).mood).toBe(4);
     await expect(updateDay('2026-10-11', { mood: 9 })).rejects.toThrow(ValidationError);
-  });
-
-  it('Mahlzeit aus Vorlage mit einem Aufruf', async () => {
-    const t = await db.mealTemplates.toCollection().first();
-    if (!t) throw new Error('Vorlage fehlt');
-    const meal = await addMealFromTemplate(t.id, '2026-10-11');
-    expect(meal.proteinG).toBe(38);
-    expect(meal.templateId).toBe(t.id);
   });
 });
 

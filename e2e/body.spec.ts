@@ -6,28 +6,15 @@ test.beforeEach(async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Körper', level: 1 })).toBeVisible();
 });
 
-test('Ernährung: Mahlzeit, Liste, Löschen @screens', async ({ page }) => {
+test('Körper zeigt nur Schlaf und Health (v3: keine Ernährung)', async ({ page }) => {
+  const tabs = page.getByRole('group', { name: 'Bereich' });
+  await expect(tabs.getByRole('button')).toHaveText(['Schlaf', 'Health']);
+  await expect(page.getByText('Ernährung')).toHaveCount(0);
   await shot(page, '04-koerper-leer', true);
-  await page.getByRole('button', { name: 'Mahlzeit eintragen' }).click();
-  await page.getByTestId('meal-templates').getByRole('button', { name: /Skyr/ }).click();
-  await expect(page.getByTestId('meal-list')).toContainText('Skyr + Haferflocken');
-  await shot(page, '04-koerper-ernaehrung', true);
-  await page.getByRole('button', { name: 'Skyr + Haferflocken löschen' }).click();
-  await expect(page.getByTestId('meal-list')).toHaveCount(0);
-});
-
-test('Neue Mahlzeiten-Vorlage', async ({ page }) => {
-  await page.getByRole('button', { name: 'Vorlage', exact: true }).click();
-  const dialog = page.getByRole('dialog');
-  await dialog.getByLabel('Name').fill('Hähnchen Reis');
-  await dialog.getByLabel('Kalorien (kcal)').fill('650');
-  await dialog.getByLabel('Protein (g)').fill('45');
-  await dialog.getByRole('button', { name: 'Speichern' }).click();
-  await expect(page.getByText('Hähnchen Reis')).toBeVisible();
 });
 
 test('Schlaf über Mitternacht @screens', async ({ page }) => {
-  await page.getByRole('button', { name: 'Schlaf' }).click();
+  await page.getByRole('button', { name: 'Schlaf', exact: true }).click();
   await page.getByRole('button', { name: 'Eintragen' }).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByLabel('Bettzeit').fill('23:30');

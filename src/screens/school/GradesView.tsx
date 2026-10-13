@@ -16,6 +16,7 @@ import { NumberField, Segmented, SelectField, TextField } from '../../ui/control
 import { ScreenSkeleton } from '../../ui/kit';
 import { useOverlay } from '../../ui/overlay-context';
 import { Button, Card, EmptyState, IconButton } from '../../ui/primitives';
+import { schoolSubjects } from '../../lib/calc/subjects';
 
 export function GradesView() {
   const today = useToday();
@@ -24,7 +25,7 @@ export function GradesView() {
   const [semester, setSemester] = useState<Semester>(semesterForDate(today));
   const data = useLiveQuery(async () => {
     const [subjects, grades] = await Promise.all([db.subjects.orderBy('order').toArray(), db.grades.toArray()]);
-    return { subjects: subjects.filter((s) => !s.archived && s.name !== 'FernUni'), grades };
+    return { subjects: schoolSubjects(subjects), grades };
   }, []);
   if (!data) return <ScreenSkeleton cards={2} />;
   const weights = { big: settings.abi.bigWeight, small: settings.abi.smallWeight };

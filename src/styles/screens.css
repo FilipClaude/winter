@@ -103,31 +103,6 @@
   margin-top: var(--space-3);
 }
 
-/* ---------- Wasser ---------- */
-.glasses {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 3px;
-}
-
-.glasses i {
-  height: 10px;
-  border-radius: 2px;
-  border: 1px solid var(--color-line-strong);
-  transition:
-    background var(--dur) var(--ease-out),
-    border-color var(--dur);
-}
-
-.glasses i.on {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-}
-
-.glasses__undo {
-  margin: var(--space-2) 0 calc(-1 * var(--space-2)) calc(-1 * var(--space-3));
-}
-
 .journal-preview {
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -136,70 +111,112 @@
   white-space: pre-line;
 }
 
-/* ---------- Fristen ---------- */
-.deadline {
+/* ---------- Nächste Klausur (v3) ---------- */
+.next-exam__main,
+.next-exam__also {
   display: flex;
-  align-items: center;
+  width: 100%;
+  text-align: left;
+  border-radius: var(--radius-m);
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.next-exam__main {
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+}
+
+.next-exam__main:active,
+.next-exam__also:active {
+  background: var(--color-surface-2);
+}
+
+.next-exam__head {
+  display: flex;
+  align-items: flex-end;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-1) var(--space-3) var(--space-4);
-  border-radius: var(--radius-l);
-  border: 1px solid var(--color-accent-32);
-  background: var(--color-surface);
 }
 
-.deadline__icon {
-  flex: none;
-  color: var(--color-accent);
-}
-
-.deadline__level {
-  font-size: var(--text-2xs);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-caps);
-  font-weight: var(--weight-semibold);
-  color: var(--color-accent);
-}
-
-.deadline__title {
+.next-exam__subject {
+  display: block;
+  font-size: var(--type-subtitle-size);
   font-weight: var(--weight-medium);
-  margin: 2px 0;
+  line-height: var(--leading-snug);
 }
 
-.deadline__when {
+.next-exam--hero .next-exam__subject {
+  font-size: var(--text-2xl);
+  letter-spacing: var(--tracking-display);
+  font-weight: var(--weight-regular);
+}
+
+.next-exam__meta {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-text-2);
+  margin-top: 2px;
+}
+
+.next-exam__count {
+  flex: none;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+  color: var(--color-accent);
+}
+
+.next-exam--hero .next-exam__count {
+  font-size: var(--text-xl);
+}
+
+.next-exam__count.warn {
+  color: var(--color-warn);
+}
+
+.next-exam__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
   font-size: var(--text-xs);
   color: var(--color-text-2);
 }
 
-.deadline--nah {
-  border-color: var(--color-warn-28);
+.next-exam__also {
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch);
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: var(--hairline);
+  border-radius: 0;
+  font-size: var(--text-xs);
 }
 
-.deadline--nah .deadline__icon,
-.deadline--nah .deadline__level {
-  color: var(--color-warn);
+.next-exam__empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
 }
 
-.deadline--kritisch,
-.deadline--ueberfaellig {
-  border-color: var(--color-warn);
-  background: linear-gradient(var(--color-warn-12), var(--color-warn-12)), var(--color-surface);
+/* ---------- Klausurenplan ---------- */
+.past-exams > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--touch);
+  cursor: pointer;
+  list-style: none;
+  font-size: var(--text-sm);
+  color: var(--color-text-2);
 }
 
-.deadline--kritisch .deadline__icon,
-.deadline--kritisch .deadline__level,
-.deadline--ueberfaellig .deadline__icon,
-.deadline--ueberfaellig .deadline__level {
-  color: var(--color-warn);
+.past-exams > summary::-webkit-details-marker {
+  display: none;
 }
 
-.deadline--ueberfaellig .deadline__icon {
-  animation: pulse 1.8s var(--ease-in-out) infinite;
-}
-
-@keyframes pulse {
-  50% {
-    opacity: 0.35;
-  }
+.past-exams[open] > summary svg {
+  transform: rotate(180deg);
 }
 
 /* ---------- Schnellerfassung ---------- */

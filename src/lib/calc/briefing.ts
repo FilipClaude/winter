@@ -3,11 +3,10 @@ import { diffDays } from '../date';
 
 /**
  * Tagesbriefing: ein bis zwei Sätze, regelbasiert (keine KI, kein Netz). Reihenfolge nach Dringlichkeit:
- * Fristen → Klausuren → heutiger Ablauf (Spiel/Training, Lerneinheiten) → schulfrei/Ferien → Ruhe.
+ * Klausuren → heutiger Ablauf (Spiel/Training, Lerneinheiten) → schulfrei/Ferien → Ruhe.
  */
 export interface BriefingInput {
   today: ISODate;
-  deadlines: { title: string; module: string; date: ISODate }[];
   exams: { subject: string; kind: string; date: ISODate; progress: number }[];
   /** Geplantes bzw. erledigtes Training heute (Bezeichnungen). */
   training: { planned: string[]; done: number };
@@ -28,30 +27,16 @@ function list(items: string[]): string {
 export function buildBriefing(i: BriefingInput): string[] {
   const out: string[] = [];
 
-  // 1) Fristen: überfällig oder ≤ 2 Tage
-  const urgent = i.deadlines
-    .map((d) => ({ ...d, days: diffDays(i.today, d.date) }))
-    .filter((d) => d.days <= 2)
-    .sort((a, b) => a.days - b.days);
-  const firstUrgent = urgent[0];
-  if (firstUrgent) {
-    out.push(
-      firstUrgent.days < 0
-        ? `${firstUrgent.title} (${firstUrgent.module}) ist seit ${-firstUrgent.days} ${firstUrgent.days === -1 ? 'Tag' : 'Tagen'} überfällig.`
-        : `${firstUrgent.title} (${firstUrgent.module}) ist ${when(firstUrgent.days)} fällig.`,
-    );
-  }
-
-  // 2) Nächste Klausur innerhalb von 7 Tagen
+  // 1) Nächste Klausur innerhalb von 7 Tagen
   const exam = i.exams
     .map((e) => ({ ...e, days: diffDays(i.today, e.date) }))
     .filter((e) => e.days >= 0 && e.days <= 7)
     .sort((a, b) => a.days - b.days)[0];
-  if (exam && out.length < 2) {
+  if (exam) {
     out.push(`${exam.subject}-${exam.kind} ${when(exam.days)}, Lernstand ${exam.progress} %.`);
   }
 
-  // 3) Heutiger Ablauf
+  // 2) Heutiger Ablauf
   if (out.length < 2) {
     const parts: string[] = [];
     if (i.match)
@@ -69,13 +54,13 @@ export function buildBriefing(i: BriefingInput): string[] {
       out.push(`Heute ${parts.length === 2 ? `${parts[0]}, danach ${parts[1]}` : parts[0]}.`);
   }
 
-  // 4) Schulfrei / nächste Ferien
+  // 3) Schulfrei / nächste Ferien
   if (out.length < 2 && i.schoolFree && i.schoolFree !== 'Wochenende')
     out.push(`Schulfrei: ${i.schoolFree}.`);
   else if (out.length < 2 && i.nextBreak && i.nextBreak.inDays > 0 && i.nextBreak.inDays <= 7)
     out.push(`${i.nextBreak.name} ${when(i.nextBreak.inDays)}.`);
 
-  // 5) Ruhiger Tag
+  // 4) Ruhiger Tag
   if (out.length === 0) {
     out.push(
       i.habitsOpen > 0

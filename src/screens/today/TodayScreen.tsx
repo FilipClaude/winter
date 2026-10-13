@@ -27,7 +27,8 @@ import { useOverlay } from '../../ui/overlay-context';
 import { Badge, Banner, Button, Card, EmptyState, IconButton, ProgressBar, ScreenHeader } from '../../ui/primitives';
 import { NumberTicker, Ring } from '../../ui/visual';
 import { openHealthSheet } from '../health/openHealth';
-import { DeadlineAlerts } from '../school/DeadlineAlerts';
+import { NextExamCard } from '../school/NextExamCard';
+import { SchoolAlerts } from '../school/SchoolAlerts';
 import { PendingMatchBanners } from '../training/BfvCard';
 import { openSessionSheet } from '../training/openSession';
 import { SESSION_ICON } from '../training/session-icons';
@@ -38,7 +39,6 @@ import { ScreenSkeleton } from '../../ui/kit';
 import type { ReactNode } from 'react';
 import type { DashboardWidgetId } from '../../db/schemas';
 import { normalizeDashboard, orderForDisplay } from '../../lib/calc/dashboard-layout';
-import { useCriticalCount } from './widget-meta';
 import { AbiWidget, BriefingWidget, DashboardEditor, GoalsWidget, NextMatchWidget, StudyTodayWidget } from './widgets';
 
 export function TodayScreen({ date: dateParam }: { date?: string | undefined }) {
@@ -112,17 +112,17 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
   const settings = useSettings();
   const { openSheet } = useOverlay();
   const lastImport = useKV<string>('lastHealthImport');
-  const critical = useCriticalCount(today);
   if (!data) return <ScreenSkeleton cards={5} />;
 
+  const plan = settings.weekPlan[String(isoWeekday(date))] ?? [];
   const ring = dayRing(
     {
       habitsDone: data.habits.filter((h) => data.checked.has(h.id)).length,
       habitsPlanned: data.habits.length,
-      proteinG: data.proteinG,
-      waterGlasses: data.day.water,
       studyMin: data.studyMin,
       sleepMin: data.sleep?.minutes ?? null,
+      training: { planned: plan.length > 0, done: data.sessions.length > 0 },
+      earnings: { weekCents: data.weekEarningsCents, goalCents: settings.earnings.weeklyGoalCents, weekday: isoWeekday(date) },
     },
     settings.goals,
     settings.ring,
@@ -215,7 +215,7 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
       ? {
           l: (
             <div className="stack stack--s">
-              <DeadlineAlerts today={today} />
+              <SchoolAlerts today={today} />
               <PendingMatchBanners />
               <BackupReminder today={today} />
               <DemoNotice />
@@ -237,10 +237,10 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
           ),
         }
       : null,
-    nextExam: null,
+    nextExam: { l: <NextExamCard today={date < today ? today : date} /> },
     earnings: null,
     studyToday: { l: <StudyTodayWidget date={date} /> },
-    training: { l: <TrainingCard date={date} sessions={data.sessions} plan={settings.weekPlan[String(isoWeekday(date))] ?? []} /> },
+    training: { l: <TrainingCard date={date} sessions={data.sessions} plan={plan} /> },
     nextMatch: { l: <NextMatchWidget today={today} /> },
     steps: { l: steps, s: steps },
     sleep: { l: sleep, s: sleep },
@@ -305,8 +305,7 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
     },
   };
 
-  // Kritische Fristen (überfällig oder ≤ 2 Tage) stehen immer ganz oben – egal, wie das Dashboard sortiert ist.
-  const layout = orderForDisplay(normalizeDashboard(settings.dashboard), critical > 0);
+  const layout = orderForDisplay(normalizeDashboard(settings.dashboard));
   return (
     <>
       <div className="dash" data-testid="dashboard">

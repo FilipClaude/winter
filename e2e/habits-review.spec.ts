@@ -62,11 +62,9 @@ test('Rückblick leer, Woche/Monat umschalten, ehrlicher Datenhinweis @screens',
 test('Rückblick zeigt Kennzahlen nach Einträgen', async ({ page }) => {
   await page.goto('./#/heute');
   await page.getByRole('button', { name: 'Stimmung 4' }).click();
-  await page.getByRole('button', { name: 'Mahlzeit eintragen' }).click();
-  await page.getByTestId('meal-templates').getByRole('button', { name: /Skyr/ }).click();
   await page.goto('./#/rueckblick');
   const stats = page.getByTestId('review-stats');
-  await expect(stats).toContainText('38'); // Ø Protein
+  await expect(stats).not.toContainText('Protein');
   await expect(stats).toContainText('4,0'); // Ø Stimmung
   await expect(page.getByRole('group', { name: /Stimmung \(Linie\)/ })).toBeVisible();
 });

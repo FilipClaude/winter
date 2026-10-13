@@ -80,7 +80,6 @@ export function weeklyReport(
       s.sleepAvgMin === null ? null : s.sleepAvgMin / 60,
       p.sleepAvgMin === null ? null : p.sleepAvgMin / 60,
     ),
-    kpi('protein', 'Ø Protein', 'g', s.proteinAvg, p.proteinAvg, true, 0),
     kpi('steps', 'Ø Schritte', '', s.stepsAvg, p.stepsAvg, true, 0),
     kpi(
       'habits',
@@ -139,7 +138,13 @@ export function weeklyReport(
 
   const goalRows = goals
     // Abi-Ziel nur mit bekanntem Schnitt – sonst stünde es immer auf „–“ (Review-Fund)
-    .filter((g) => !g.archived && g.period === 'week' && (g.metric !== 'abiAverage' || abiAverage !== null))
+    .filter(
+      (g) =>
+        !g.archived &&
+        g.metric !== 'avgProtein' &&
+        g.period === 'week' &&
+        (g.metric !== 'abiAverage' || abiAverage !== null),
+    )
     .map((g) => {
       const pr = goalProgress(g, data, weekEnd > today ? today : weekEnd, abiAverage);
       const meta = GOAL_LABEL[g.metric];
@@ -154,13 +159,7 @@ export function weeklyReport(
     });
 
   const empty = series.every(
-    (d) =>
-      d.studyMin === 0 &&
-      d.load === 0 &&
-      d.sleepMin === null &&
-      d.mood === null &&
-      d.proteinG === null &&
-      d.steps === null,
+    (d) => d.studyMin === 0 && d.load === 0 && d.sleepMin === null && d.mood === null && d.steps === null,
   );
   return {
     weekStart,

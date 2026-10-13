@@ -47,7 +47,7 @@ for (const { from, version, schema: SCHEMA, fixture: FIXTURE } of CASES)
     // Leere Seite derselben Herkunft öffnen, ohne dass die App die Datenbank anlegt.
     await page.goto('./robots.txt');
     const total = await page.evaluate(
-      async ({ fixture, schema }) => {
+      async ({ fixture, schema, version }) => {
         const backup = JSON.parse(fixture) as {
           tables: Record<string, unknown[]>;
           kv: Record<string, unknown>;
@@ -201,15 +201,14 @@ test('Fehlergrenze: Absturz eines Bereichs blockiert weder die App noch das Back
 
 test('Tägliche Sicherung entsteht automatisch und lässt sich wiederherstellen', async ({ page }) => {
   test.setTimeout(60_000);
-  // Beim Start entsteht die Tages-Sicherung (Stand: 0 Gläser).
+  // Beim Start entsteht die Tages-Sicherung (Stand: keine Stimmung).
   await page.goto('./#/einstellungen');
   const card = page.getByTestId('snapshots-card');
   await expect(card.getByRole('button', { name: 'Ansehen' }).first()).toBeVisible(SLOW_WRITE);
   // Danach erfasst – am selben Tag entsteht keine zweite Sicherung.
   await page.goto('./#/heute');
-  await page.getByRole('button', { name: 'Ein Glas Wasser' }).click();
-  await page.getByRole('button', { name: 'Ein Glas Wasser' }).click();
-  await expect(page.getByTestId('water-value')).toContainText('2');
+  await page.getByRole('button', { name: 'Stimmung 4' }).click();
+  await expect(page.getByRole('button', { name: 'Stimmung 4' })).toHaveAttribute('aria-pressed', 'true');
   await page.reload();
   await page.waitForTimeout(2000);
   await page.goto('./#/einstellungen');
@@ -218,7 +217,7 @@ test('Tägliche Sicherung entsteht automatisch und lässt sich wiederherstellen'
   await dialog.getByRole('button', { name: 'Ersetzen und wiederherstellen' }).click();
   await expect(page.getByText(/wiederhergestellt/)).toBeVisible(SLOW_WRITE);
   await page.goto('./#/heute');
-  await expect(page.getByTestId('water-value')).toHaveText('0Gläser');
+  await expect(page.getByRole('button', { name: 'Stimmung 4' })).toHaveAttribute('aria-pressed', 'false');
   // Der Stand vor dem Wiederherstellen ist ebenfalls gesichert
   await page.goto('./#/einstellungen');
   await expect(card).toContainText('Vor einem Import');

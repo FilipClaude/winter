@@ -39,12 +39,17 @@ export function normalizeDashboard(list: StoredDashboardWidget[]): DashboardWidg
     seen.add(id);
     out.push({ ...w, id });
   }
+  // Anker nur unter den gespeicherten Widgets – nicht unter gerade angehängten (sonst landete
+  // „Nächste Klausur“ ohne Briefing hinter dem neu angehängten Briefing ganz unten).
+  const stored = new Set(seen);
   for (const d of DEFAULT_DASHBOARD) {
     if (seen.has(d.id)) continue;
     const after = PLACE_AFTER[d.id];
     if (after) {
       // Anker in Prioritätsreihenfolge (Verdienst lieber hinter „Nächstes Spiel“ als hinter „Training“)
-      const anchor = after.map((id) => out.findIndex((w) => w.id === id)).find((i) => i >= 0) ?? -1;
+      const anchor =
+        after.map((id) => (stored.has(id) ? out.findIndex((w) => w.id === id) : -1)).find((i) => i >= 0) ??
+        -1;
       if (anchor >= 0) out.splice(anchor + 1, 0, { ...d });
       else if (d.id === 'nextExam') out.unshift({ ...d });
       else out.push({ ...d });
@@ -53,11 +58,9 @@ export function normalizeDashboard(list: StoredDashboardWidget[]): DashboardWidg
   return out;
 }
 
-/** Sichtbare Widgets in Anzeigereihenfolge; bei kritischen Hinweisen stehen sie ganz oben. */
-export function orderForDisplay(list: DashboardWidget[], critical: boolean): DashboardWidget[] {
-  const visible = list.filter((w) => !w.hidden);
-  if (!critical) return visible;
-  return [{ id: 'alerts', size: 'l', hidden: false }, ...visible.filter((w) => w.id !== 'alerts')];
+/** Sichtbare Widgets in Anzeigereihenfolge. */
+export function orderForDisplay(list: DashboardWidget[]): DashboardWidget[] {
+  return list.filter((w) => !w.hidden);
 }
 
 /** Verschiebt ein Widget um `delta` Plätze (für Pfeiltasten/VoiceOver als Alternative zu Drag & Drop). */

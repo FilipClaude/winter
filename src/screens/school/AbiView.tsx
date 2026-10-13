@@ -22,6 +22,7 @@ import { NumberField, Segmented } from '../../ui/controls';
 import { ScreenSkeleton } from '../../ui/kit';
 import { useOverlay } from '../../ui/overlay-context';
 import { Badge, Banner, Button, Card, EmptyState, SectionTitle } from '../../ui/primitives';
+import { isUniSubject } from '../../lib/calc/subjects';
 
 const CERTAINTY_TONE: Record<Certainty, 'accent' | 'warn' | 'muted'> = {
   sicher: 'accent',
@@ -192,7 +193,7 @@ function ExamSubjectsSheet({ settings, subjects, close }: { settings: Settings; 
       </p>
       <div className="chips" role="group" aria-label="Abiturfächer">
         {subjects
-          .filter((s) => !s.archived && s.name !== 'FernUni')
+          .filter((s) => !s.archived && !isUniSubject(s))
           .map((s) => (
             <button key={s.id} type="button" className="chip" aria-pressed={sel.includes(s.id)} onClick={() => toggle(s.id)}>
               {s.name}

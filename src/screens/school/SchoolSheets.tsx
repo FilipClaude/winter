@@ -5,32 +5,30 @@ import { db } from '../../db/db';
 import {
   addStudyManual,
   cancelTimer,
-  deleteDeadline,
   deleteExam,
   deleteTodo,
   replaceExamPlan,
-  saveDeadline,
-  saveModule,
   saveTodo,
   startTimer,
   stopTimer,
   saveExamWithGrade,
   ValidationError,
 } from '../../db/repo';
-import { DEADLINE_KINDS, EXAM_KINDS, SEMESTERS, type Deadline, type Exam, type ExamTopic, type Semester, type Todo } from '../../db/schemas';
+import { EXAM_KINDS, SEMESTERS, type Exam, type ExamTopic, type Semester, type Todo } from '../../db/schemas';
 import { useSettings } from '../../hooks/useSettings';
 import { useNow, useToday } from '../../hooks/useNow';
 import { buildStudyPlan } from '../../lib/calc/studyplan';
 import { uid } from '../../lib/id';
+import { schoolSubjects } from '../../lib/calc/subjects';
 import { pointsToGrade } from '../../lib/calc/school';
 import { formatHM, todayISO, type ISODate } from '../../lib/date';
 import { NumberField, Segmented, SelectField, TextArea, TextField } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
 import { Button, IconButton, SectionTitle } from '../../ui/primitives';
-import { DEADLINE_KIND_LABEL, EXAM_KIND_LABEL, formatClock, useTimer } from './school-utils';
+import { EXAM_KIND_LABEL, formatClock, useTimer } from './school-utils';
 
 function useSubjects() {
-  return useLiveQuery(async () => (await db.subjects.orderBy('order').toArray()).filter((s) => !s.archived), []) ?? [];
+  return useLiveQuery(async () => schoolSubjects(await db.subjects.orderBy('order').toArray()), []) ?? [];
 }
 
 function useError() {
@@ -382,83 +380,3 @@ export function ExamSheet({ close, exam }: { close: () => void; exam?: Exam }) {
   );
 }
 
-// ---------- FernUni-Fristen ----------
-
-export function DeadlineSheet({ close, deadline, moduleId: presetModule }: { close: () => void; deadline?: Deadline; moduleId?: string }) {
-  const { toast } = useOverlay();
-  const modules = useLiveQuery(async () => (await db.modules.toArray()).filter((m) => !m.archived), []) ?? [];
-  const [moduleId, setModuleId] = useState(deadline?.moduleId ?? presetModule ?? '');
-  const [newModule, setNewModule] = useState('');
-  const [newNumber, setNewNumber] = useState('');
-  const [kind, setKind] = useState<Deadline['kind']>(deadline?.kind ?? 'einsendearbeit');
-  const [title, setTitle] = useState(deadline?.title ?? '');
-  const [date, setDate] = useState(deadline?.date ?? '');
-  const [time, setTime] = useState(deadline?.time ?? '');
-  const [points, setPoints] = useState<number | ''>(deadline?.points ?? '');
-  const [maxPoints, setMaxPoints] = useState<number | ''>(deadline?.maxPoints ?? 100);
-  const { error, handle } = useError();
-  const chosen = moduleId || modules[0]?.id || '';
-  const creating = modules.length === 0 || chosen === '__neu';
-
-  async function submit() {
-    let mId = chosen;
-    if (creating) {
-      const m = await saveModule({ name: newModule, number: newNumber, archived: false });
-      mId = m.id;
-    }
-    await saveDeadline({
-      ...(deadline ? { id: deadline.id, createdAt: deadline.createdAt } : {}),
-      moduleId: mId,
-      kind,
-      title: title.trim() || DEADLINE_KIND_LABEL[kind],
-      date,
-      // Mit eingetragenen Punkten ist die Einsendearbeit abgegeben und bewertet.
-      done: points !== '' ? true : (deadline?.done ?? false),
-      ...(time ? { time } : {}),
-      ...(kind === 'einsendearbeit' && points !== '' ? { points } : {}),
-      ...(kind === 'einsendearbeit' && maxPoints !== '' ? { maxPoints } : {}),
-    });
-    toast('Frist gespeichert – Warnung 14, 7 und 2 Tage vorher');
-    close();
-  }
-
-  return (
-    <div className="form">
-      {modules.length > 0 && (
-        <SelectField
-          label="Modul"
-          value={chosen}
-          onValue={setModuleId}
-          options={[...modules.map((m) => ({ value: m.id, label: m.number ? `${m.number} ${m.name}` : m.name })), { value: '__neu', label: '+ Neues Modul' }]}
-        />
-      )}
-      {creating && (
-        <div className="form-row">
-          <TextField label="Neues Modul" value={newModule} onValue={setNewModule} maxLength={80} placeholder="z. B. Grundlagen der BWL" />
-          <TextField label="Nummer" value={newNumber} onValue={setNewNumber} maxLength={20} placeholder="31001" />
-        </div>
-      )}
-      <SelectField label="Art" value={kind} onValue={(v) => setKind(v as Deadline['kind'])} options={DEADLINE_KINDS.map((k) => ({ value: k, label: DEADLINE_KIND_LABEL[k] }))} />
-      <TextField label="Bezeichnung" value={title} onValue={setTitle} maxLength={120} placeholder="z. B. EA 2" />
-      <div className="form-row">
-        <TextField label="Fällig am" type="date" value={date} onValue={setDate} />
-        <TextField label="Uhrzeit (optional)" type="time" value={time} onValue={setTime} />
-      </div>
-      {kind === 'einsendearbeit' && (
-        <div className="form-row">
-          <NumberField label="Erreichte Punkte" value={points} onValue={setPoints} min={0} max={1000} decimal hint="nach der Korrektur" />
-          <NumberField label="Maximal" value={maxPoints} onValue={setMaxPoints} min={1} max={1000} />
-        </div>
-      )}
-      {error && <p className="field__error">{error}</p>}
-      <Button variant="primary" block disabled={!date || (creating && !newModule.trim())} onClick={() => void submit().catch(handle)}>
-        Speichern
-      </Button>
-      {deadline && (
-        <Button variant="warn" block icon={Trash2} onClick={() => void deleteDeadline(deadline.id).then(close)}>
-          Löschen
-        </Button>
-      )}
-    </div>
-  );
-}

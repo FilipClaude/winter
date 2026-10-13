@@ -1,15 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { db, DATA_TABLES } from '../db/db';
-import { addWater, saveSession, saveTodo, upsertHealthDay } from '../db/repo';
+import { saveSession, saveTodo, updateDay, upsertHealthDay } from '../db/repo';
 import {
   zDay,
-  zDeadline,
   zExam,
   zHabit,
   zHabitCheck,
   zHealthDay,
-  zMeal,
-  zModule,
   zSession,
   zSleep,
   zStudySession,
@@ -109,7 +106,7 @@ describe('Health-JSON (Kurzbefehl)', () => {
 
 describe('Backup', () => {
   it('Export → alles löschen → Import → identisch', async () => {
-    await addWater('2026-10-11', 3);
+    await updateDay('2026-10-11', { mood: 4 });
     await saveSession({
       date: '2026-10-11',
       type: 'gym',
@@ -124,7 +121,7 @@ describe('Backup', () => {
 
     await wipeAll();
     expect(await db.sessions.count()).toBe(0);
-    expect(await db.subjects.count()).toBe(12); // Standardfächer wieder da
+    expect(await db.subjects.count()).toBe(11); // Standardfächer wieder da
 
     const p = previewBackup(text);
     expect(p.ok).toBe(true);
@@ -169,18 +166,20 @@ describe('Demo-Daten', () => {
     const check = <T>(rows: T[], schema: { safeParse: (x: unknown) => { success: boolean } }) =>
       rows.forEach((r) => expect(schema.safeParse(r).success, JSON.stringify(r)).toBe(true));
     check(d.sessions, zSession);
-    check(d.meals, zMeal);
     check(d.days, zDay);
     check(d.sleep, zSleep);
     check(d.health, zHealthDay);
     check(d.studySessions, zStudySession);
     check(d.todos, zTodo);
     check(d.exams, zExam);
-    check(d.modules, zModule);
-    check(d.deadlines, zDeadline);
     check(d.habits, zHabit);
     check(d.habitChecks, zHabitCheck);
     expect(d.days).toHaveLength(28);
+    // v3: keine Ernährung, kein Wasser, keine Uni-Lernzeit in Demo-Daten
+    expect(Object.keys(d)).not.toContain('meals');
+    expect(Object.keys(d)).not.toContain('deadlines');
+    expect(d.days.every((x) => x.water === 0)).toBe(true);
+    expect(d.studySessions.some((x) => x.subjectId === 's2')).toBe(false);
     expect(d.sessions.length).toBeGreaterThan(18);
     expect(d.sessions.some((s) => s.match)).toBe(true);
     const all = Object.values(d).flat() as { demo?: number }[];
@@ -197,7 +196,7 @@ describe('Demo-Daten', () => {
 
   it('einfügen und vollständig löschen, echte Daten bleiben', async () => {
     await saveTodo({ date: '2026-10-11', title: 'Echte Aufgabe', done: false });
-    await addWater('2026-10-11', 2);
+    await updateDay('2026-10-11', { energy: 3 });
     const n = await insertDemo();
     expect(n).toBeGreaterThan(100);
     expect(await insertDemo()).toBe(0); // nicht doppelt
@@ -205,7 +204,7 @@ describe('Demo-Daten', () => {
     expect(removed).toBe(n);
     expect((await db.todos.toArray()).map((t) => t.title)).toEqual(['Echte Aufgabe']);
     expect(await db.sessions.count()).toBe(0);
-    expect(await db.subjects.count()).toBe(12);
+    expect(await db.subjects.count()).toBe(11);
   });
 });
 
@@ -214,11 +213,8 @@ describe('Markdown-Export (Obsidian)', () => {
     days: [],
     sessions: [],
     todos: [],
-    deadlines: [],
-    modules: [],
     subjects: [],
     study: [],
-    meals: [],
     sleep: [],
     health: [],
   });

@@ -9,7 +9,6 @@ const meta = { createdAt: '2026-10-01T00:00:00.000Z', updatedAt: '2026-10-01T00:
 function empty(): ReviewData {
   return {
     sessions: [],
-    meals: [],
     days: [],
     sleep: [],
     health: [],
@@ -49,7 +48,7 @@ describe('Rückblick', () => {
   it('fehlende Werte bleiben null statt 0', () => {
     const s = dailySeries(empty(), T, T)[0];
     expect(s?.sleepMin).toBeNull();
-    expect(s?.proteinG).toBeNull();
+    expect(s?.mood).toBeNull();
     expect(s?.studyMin).toBe(0);
     const p = periodSummary(empty(), addDays(T, -6), T);
     expect(p.sleepAvgMin).toBeNull();

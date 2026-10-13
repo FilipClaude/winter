@@ -19,6 +19,7 @@ import { FrostCheck, NumberField, Segmented, SelectField, TextField } from '../.
 import { ScreenSkeleton } from '../../ui/kit';
 import { useOverlay } from '../../ui/overlay-context';
 import { Badge, Button, Card, EmptyState, IconButton } from '../../ui/primitives';
+import { schoolSubjects } from '../../lib/calc/subjects';
 
 const WD = ['Mo', 'Di', 'Mi', 'Do', 'Fr'] as const;
 
@@ -228,7 +229,7 @@ function LessonSheet({
   close: () => void;
 }) {
   const { toast } = useOverlay();
-  const active = subjects.filter((s) => !s.archived && s.name !== 'FernUni');
+  const active = schoolSubjects(subjects);
   const [f, setF] = useState({
     weekday: lesson?.weekday ?? weekday,
     period: (lesson?.period ?? 1) as number | '',

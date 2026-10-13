@@ -1,15 +1,13 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { AlarmClock, BookOpen, GraduationCap, ListTodo, Plus, Square, Timer, Trash2 } from 'lucide-react';
+import { AlarmClock, ChevronDown, GraduationCap, ListTodo, Plus, Square, Timer } from 'lucide-react';
 import { useState } from 'react';
 import { db } from '../../db/db';
-import { cancelTimer, deleteModule, saveModule, stopTimer, toggleDeadline, toggleTodo, ValidationError } from '../../db/repo';
-import type { Module } from '../../db/schemas';
+import { cancelTimer, stopTimer, toggleTodo } from '../../db/repo';
 import { useNow, useToday } from '../../hooks/useNow';
-import { moduleEligibility } from '../../lib/calc/fernuni';
+import { formatExamDay, upcomingExams } from '../../lib/calc/exams';
 import { formatDecimal } from '../../lib/calc/insights';
 import {
   countdownLabel,
-  deadlineLevel,
   pointsAverage,
   pointsToDecimalGrade,
   pointsToGrade,
@@ -17,18 +15,20 @@ import {
   studyBySubject,
   studyMinutesInRange,
 } from '../../lib/calc/school';
-import { addDays, dateRange, diffDays, formatDE, formatHM, formatMinutes, formatShort, formatWeekdayShort, startOfWeek } from '../../lib/date';
+import { addDays, dateRange, diffDays, formatDE, formatHM, formatMinutes, formatShort, startOfWeek } from '../../lib/date';
 import { BarChart } from '../../ui/charts';
-import { FrostCheck, NumberField, TextArea, TextField } from '../../ui/controls';
+import { FrostCheck } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
 import { Badge, Banner, Button, Card, EmptyState, IconButton, ProgressBar, ScreenHeader, SectionTitle, Stat } from '../../ui/primitives';
-import { DEADLINE_KIND_LABEL, EXAM_KIND_LABEL, formatClock, useTimer } from './school-utils';
+import { EXAM_KIND_LABEL, formatClock, useTimer } from './school-utils';
 import { AbiView } from './AbiView';
 import { GradesView } from './GradesView';
 import { PlanView } from './PlanView';
-import { DeadlineSheet, ExamSheet, StudySheet, TodoSheet } from './SchoolSheets';
+import { NextExamCard } from './NextExamCard';
+import { ExamSheet, StudySheet, TodoSheet } from './SchoolSheets';
+import { isUniSubject, withoutUni } from '../../lib/calc/subjects';
 
-type Tab = 'aufgaben' | 'klausuren' | 'noten' | 'abi' | 'plan' | 'fernuni' | 'lernzeit';
+type Tab = 'aufgaben' | 'klausuren' | 'noten' | 'abi' | 'plan' | 'lernzeit';
 
 const TABS: { value: Tab; label: string }[] = [
   { value: 'aufgaben', label: 'Aufgaben' },
@@ -36,16 +36,17 @@ const TABS: { value: Tab; label: string }[] = [
   { value: 'noten', label: 'Noten' },
   { value: 'abi', label: 'Abi' },
   { value: 'plan', label: 'Plan' },
-  { value: 'fernuni', label: 'FernUni' },
   { value: 'lernzeit', label: 'Lernzeit' },
 ];
 
 export default function SchoolScreen({ tab: initial }: { tab?: string | undefined }) {
+  const today = useToday();
   const [tab, setTab] = useState<Tab>(TABS.find((t) => t.value === initial)?.value ?? 'aufgaben');
   return (
     <div className="screen">
-      <ScreenHeader eyebrow="Q12 · Frühstudium" />
+      <ScreenHeader eyebrow="Q12" />
       <h1 className="screen-title">Schule</h1>
+      <NextExamCard today={today} hero />
       <TimerCard />
       <div className="chips chips--scroll school-tabs" role="group" aria-label="Bereich">
         {TABS.map((t) => (
@@ -59,14 +60,17 @@ export default function SchoolScreen({ tab: initial }: { tab?: string | undefine
       {tab === 'noten' && <GradesView />}
       {tab === 'abi' && <AbiView />}
       {tab === 'plan' && <PlanView />}
-      {tab === 'fernuni' && <FernUni />}
       {tab === 'lernzeit' && <StudyStats />}
     </div>
   );
 }
 
 function useSubjectNames() {
-  return useLiveQuery(async () => new Map((await db.subjects.toArray()).map((s) => [s.id, s.name])), []) ?? new Map<string, string>();
+  // Uni-Fächer (v3 ausgeblendet) bekommen keinen Namen – z. B. ein noch laufender alter Timer zeigt dann „Fach“.
+  return (
+    useLiveQuery(async () => new Map((await db.subjects.toArray()).filter((s) => !isUniSubject(s)).map((s) => [s.id, s.name])), []) ??
+    new Map<string, string>()
+  );
 }
 
 // ---------- Timer ----------
@@ -77,7 +81,8 @@ function TimerCard() {
   const now = useNow(1000);
   const today = useToday();
   const { openSheet, toast } = useOverlay();
-  const todayMin = useLiveQuery(() => db.studySessions.where('date').equals(today).toArray(), [today])?.reduce((a, s) => a + s.minutes, 0) ?? 0;
+  const todayMin =
+    useLiveQuery(async () => withoutUni(await db.studySessions.where('date').equals(today).toArray(), await db.subjects.toArray()), [today])?.reduce((a, s) => a + s.minutes, 0) ?? 0;
 
   if (timer) {
     const name = names.get(timer.subjectId) ?? 'Fach';
@@ -221,11 +226,12 @@ function Todos() {
 function Exams() {
   const today = useToday();
   const { openSheet } = useOverlay();
-  const data = useLiveQuery(async () => ({ exams: await db.exams.toArray(), subjects: await db.subjects.orderBy('order').toArray() }), []);
+  const data = useLiveQuery(async () => ({ exams: await db.exams.toArray(), subjects: await db.subjects.orderBy('order').toArray(), grades: await db.grades.toArray() }), []);
   if (!data) return null;
   const names = new Map(data.subjects.map((s) => [s.id, s.name]));
-  const upcoming = data.exams.filter((e) => e.date >= today && e.points === undefined).sort((a, b) => a.date.localeCompare(b.date));
-  const past = data.exams.filter((e) => !(e.date >= today && e.points === undefined)).sort((a, b) => b.date.localeCompare(a.date));
+  const upcoming = upcomingExams(data.exams, today);
+  const past = data.exams.filter((e) => !upcoming.includes(e)).sort((a, b) => b.date.localeCompare(a.date));
+  const gradeOf = new Map(data.grades.filter((g) => g.examId).map((g) => [g.examId, g.points]));
   const graded = data.exams.filter((e) => e.points !== undefined);
   const overall = pointsAverage(graded.map((e) => e.points ?? 0));
   const bySubject = data.subjects
@@ -235,11 +241,13 @@ function Exams() {
   return (
     <>
       <SectionTitle action={<Button variant="ghost" size="s" icon={Plus} onClick={() => openSheet({ title: 'Klausur', render: (close) => <ExamSheet close={close} /> })}>Klausur</Button>}>
-        Anstehend
+        Klausurenplan
       </SectionTitle>
       <Card ariaLabel="Anstehende Klausuren" testId="exam-list">
         {upcoming.length === 0 ? (
-          <EmptyState icon={GraduationCap} title="Keine Klausuren geplant" />
+          <EmptyState icon={GraduationCap} title="Keine Klausuren geplant">
+            Klausuren, Kurzarbeiten, Exen und Referate mit Datum und Themen eintragen.
+          </EmptyState>
         ) : (
           <div className="list">
             {upcoming.map((e) => {
@@ -251,7 +259,7 @@ function Exams() {
                       {names.get(e.subjectId) ?? 'Fach'} <span className="faint small">· {EXAM_KIND_LABEL[e.kind]}</span>
                     </span>
                     <span className="list-item__meta truncate" style={{ display: 'block', margin: '2px 0 6px' }}>
-                      {formatWeekdayShort(e.date)}, {formatDE(e.date)} {e.topics && `· ${e.topics}`}
+                      {formatExamDay(e.date)} {e.topics && `· ${e.topics}`}
                     </span>
                     <ProgressBar value={e.progress / 100} label="Lernstand" warn={days <= 3 && e.progress < 60} />
                   </span>
@@ -266,6 +274,40 @@ function Exams() {
           </div>
         )}
       </Card>
+
+      {past.length > 0 && (
+        <details className="past-exams" data-testid="past-exams">
+          <summary>
+            <span>Vergangen · {past.length}</span>
+            <ChevronDown size={18} strokeWidth={1.5} aria-hidden />
+          </summary>
+          <Card ariaLabel="Vergangene Klausuren">
+            <div className="list">
+              {past.map((e) => (
+                <button key={e.id} type="button" className="list-item" onClick={() => openSheet({ title: 'Klausur', render: (close) => <ExamSheet close={close} exam={e} /> })}>
+                  <span className="grow">
+                    {names.get(e.subjectId) ?? 'Fach'} <span className="faint small">· {EXAM_KIND_LABEL[e.kind]}</span>
+                    <br />
+                    <span className="list-item__meta">{formatDE(e.date)}</span>
+                  </span>
+                  {(e.points ?? gradeOf.get(e.id)) !== undefined ? (
+                    <span style={{ textAlign: 'right' }}>
+                      <span className="num">
+                        {e.points ?? gradeOf.get(e.id)}
+                        <span className="unit">P</span>
+                      </span>
+                      <br />
+                      <span className="xsmall faint">Note {pointsToGrade(e.points ?? gradeOf.get(e.id) ?? 0)}</span>
+                    </span>
+                  ) : (
+                    <Badge tone="muted">Punkte offen</Badge>
+                  )}
+                </button>
+              ))}
+            </div>
+          </Card>
+        </details>
+      )}
 
       <SectionTitle>Notenschnitt</SectionTitle>
       <Card ariaLabel="Notenschnitt" testId="grades-card">
@@ -302,224 +344,7 @@ function Exams() {
         )}
       </Card>
 
-      {past.length > 0 && (
-        <>
-          <SectionTitle>Vergangen</SectionTitle>
-          <Card ariaLabel="Vergangene Klausuren">
-            <div className="list">
-              {past.map((e) => (
-                <button key={e.id} type="button" className="list-item" onClick={() => openSheet({ title: 'Klausur', render: (close) => <ExamSheet close={close} exam={e} /> })}>
-                  <span className="grow">
-                    {names.get(e.subjectId) ?? 'Fach'} <span className="faint small">· {EXAM_KIND_LABEL[e.kind]}</span>
-                    <br />
-                    <span className="list-item__meta">{formatDE(e.date)}</span>
-                  </span>
-                  {e.points !== undefined ? (
-                    <span className="num">
-                      {e.points}
-                      <span className="unit">P</span>
-                    </span>
-                  ) : (
-                    <Badge tone="muted">Punkte offen</Badge>
-                  )}
-                </button>
-              ))}
-            </div>
-          </Card>
-        </>
-      )}
     </>
-  );
-}
-
-// ---------- FernUni ----------
-
-function FernUni() {
-  const today = useToday();
-  const { openSheet } = useOverlay();
-  const data = useLiveQuery(async () => ({ modules: await db.modules.toArray(), deadlines: await db.deadlines.orderBy('date').toArray() }), []);
-  if (!data) return null;
-  const open = data.deadlines.filter((d) => !d.done);
-  const done = data.deadlines.filter((d) => d.done).reverse().slice(0, 6);
-  const mod = new Map(data.modules.map((m) => [m.id, m]));
-
-  return (
-    <>
-      <SectionTitle action={<Button variant="ghost" size="s" icon={Plus} onClick={() => openSheet({ title: 'FernUni-Frist', render: (close) => <DeadlineSheet close={close} /> })}>Frist</Button>}>
-        Offene Fristen
-      </SectionTitle>
-      <Card ariaLabel="Offene Fristen" testId="deadline-list">
-        {open.length === 0 ? (
-          <EmptyState icon={AlarmClock} title="Keine offenen Fristen">
-            Einsendearbeiten und Prüfungen eintragen – Warnung 14, 7 und 2 Tage vorher.
-          </EmptyState>
-        ) : (
-          <div className="list">
-            {open.map((d) => {
-              const level = deadlineLevel(d.date, today);
-              const tone = level === 'ueberfaellig' || level === 'kritisch' || level === 'nah' ? 'warn' : level === 'bald' ? 'accent' : 'muted';
-              return (
-                <div key={d.id} className="list-item">
-                  <FrostCheck checked={false} label={`${d.title} erledigt`} onChange={() => void toggleDeadline(d.id)} />
-                  <button type="button" className="grow" style={{ textAlign: 'left', minHeight: 44, minWidth: 0 }} onClick={() => openSheet({ title: 'FernUni-Frist', render: (close) => <DeadlineSheet close={close} deadline={d} /> })}>
-                    <span className="list-item__title truncate" style={{ display: 'block' }}>
-                      {d.title}
-                    </span>
-                    <span className="list-item__meta">
-                      {mod.get(d.moduleId)?.name ?? 'Modul'} · {DEADLINE_KIND_LABEL[d.kind]} · {formatDE(d.date)}
-                      {d.time ? ` ${d.time}` : ''}
-                    </span>
-                  </button>
-                  <Badge tone={tone}>{countdownLabel(d.date, today)}</Badge>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </Card>
-
-      <SectionTitle action={<Button variant="ghost" size="s" icon={Plus} onClick={() => openSheet({ title: 'Modul', render: (close) => <ModuleSheet close={close} /> })}>Modul</Button>}>
-        Module
-      </SectionTitle>
-      <Card ariaLabel="Module">
-        {data.modules.length === 0 ? (
-          <p className="small faint">Noch keine Module. Ein Modul entsteht auch beim Anlegen der ersten Frist.</p>
-        ) : (
-          <div className="list">
-            {data.modules.map((m) => {
-              const count = open.filter((d) => d.moduleId === m.id).length;
-              const el = moduleEligibility(m, data.deadlines.filter((d) => d.moduleId === m.id));
-              return (
-                <button key={m.id} type="button" className="list-item" data-testid="module-row" onClick={() => openSheet({ title: 'Modul', render: (close) => <ModuleSheet close={close} module={m} /> })}>
-                  <span className="list-item__icon">
-                    <BookOpen size={16} strokeWidth={1.5} aria-hidden />
-                  </span>
-                  <span className="grow" style={{ minWidth: 0 }}>
-                    {m.name}
-                    <br />
-                    <span className="list-item__meta">
-                      {m.number ? `Nr. ${m.number} · ` : ''}
-                      {count} offen
-                      {el.eligible !== null && ` · EA ${el.passed}/${el.required} bestanden`}
-                    </span>
-                    {m.note && (
-                      <span className="list-item__meta truncate" style={{ display: 'block' }}>
-                        {m.note}
-                      </span>
-                    )}
-                    {el.eligible !== null && (
-                      <span style={{ display: 'block', marginTop: 'var(--space-1)' }}>
-                        {el.eligible ? (
-                          <Badge>prüfungsberechtigt</Badge>
-                        ) : (
-                          <Badge tone="muted">noch nicht berechtigt · {el.missing} EA fehlt{el.missing === 1 ? '' : 'en'}</Badge>
-                        )}
-                      </span>
-                    )}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </Card>
-
-      {done.length > 0 && (
-        <>
-          <SectionTitle>Erledigt</SectionTitle>
-          <Card ariaLabel="Erledigte Fristen">
-            <div className="list">
-              {done.map((d) => (
-                <div key={d.id} className="list-item">
-                  <FrostCheck checked label={`${d.title} wieder öffnen`} onChange={() => void toggleDeadline(d.id)} />
-                  <span className="grow muted">
-                    {d.title}
-                    <span className="faint xsmall">
-                      {' '}
-                      · {formatDE(d.date)}
-                      {d.points !== undefined && d.maxPoints !== undefined && ` · ${d.points}/${d.maxPoints} P`}
-                    </span>
-                  </span>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </>
-      )}
-    </>
-  );
-}
-
-function ModuleSheet({ close, module }: { close: () => void; module?: Module }) {
-  const { toast } = useOverlay();
-  const [name, setName] = useState(module?.name ?? '');
-  const [number, setNumber] = useState(module?.number ?? '');
-  const [hasRule, setHasRule] = useState(module?.rule !== undefined);
-  const [minPassed, setMinPassed] = useState<number | ''>(module?.rule?.minPassed ?? 1);
-  const [passPercent, setPassPercent] = useState<number | ''>(module?.rule?.passPercent ?? 50);
-  const [note, setNote] = useState(module?.note ?? '');
-  return (
-    <div className="form">
-      <TextField label="Name" value={name} onValue={setName} maxLength={80} placeholder="z. B. Grundlagen der BWL" />
-      <TextField label="Modulnummer" value={number} onValue={setNumber} maxLength={20} placeholder="31001" />
-      <label className="toggle-row">
-        <span className="grow">
-          <span className="list-item__title">Prüfungsberechtigung über Einsendearbeiten</span>
-          <span className="list-item__meta" style={{ display: 'block' }}>
-            Regel steht im Modulhandbuch bzw. in Moodle – sie ist je Modul verschieden.
-          </span>
-        </span>
-        <input type="checkbox" role="switch" className="switch" checked={hasRule} onChange={(e) => setHasRule(e.target.checked)} />
-      </label>
-      {hasRule && (
-        <div className="form-row">
-          <NumberField label="Mindestens bestandene EA" value={minPassed} onValue={setMinPassed} min={0} max={20} />
-          <NumberField label="Bestanden ab (%)" value={passPercent} onValue={setPassPercent} min={0} max={100} />
-        </div>
-      )}
-      <TextArea
-        label="Notiz (z. B. Belegung, Wiederholerkennzeichen)"
-        value={note}
-        onValue={setNote}
-        rows={3}
-        maxLength={4000}
-        placeholder="z. B. Bei der Rückmeldung Wiederholerkennzeichen setzen"
-      />
-      <Button
-        variant="primary"
-        block
-        disabled={!name.trim()}
-        onClick={() =>
-          void saveModule({
-            ...(module ? { id: module.id, createdAt: module.createdAt } : {}),
-            name,
-            number,
-            archived: module?.archived ?? false,
-            ...(hasRule ? { rule: { minPassed: Number(minPassed || 0), passPercent: Number(passPercent === '' ? 50 : passPercent) } } : {}),
-            ...(note.trim() ? { note: note.trim() } : {}),
-          })
-            .then(() => {
-              toast('Modul gespeichert');
-              close();
-            })
-            .catch((e: unknown) => toast(e instanceof ValidationError ? e.message : 'Speichern fehlgeschlagen', { tone: 'warn' }))
-        }
-      >
-        Speichern
-      </Button>
-      {module && (
-        <Button
-          variant="warn"
-          block
-          icon={Trash2}
-          onClick={() => {
-            if (window.confirm(`Modul „${module.name}“ samt Fristen löschen?`)) void deleteModule(module.id).then(close);
-          }}
-        >
-          Modul und Fristen löschen
-        </Button>
-      )}
-    </div>
   );
 }
 
@@ -529,10 +354,10 @@ function StudyStats() {
   const today = useToday();
   const monday = startOfWeek(today);
   const from = addDays(today, -27);
-  const data = useLiveQuery(async () => ({
-    sessions: await db.studySessions.where('date').between(from, today, true, true).toArray(),
-    subjects: await db.subjects.orderBy('order').toArray(),
-  }), [from, today]);
+  const data = useLiveQuery(async () => {
+    const subjects = await db.subjects.orderBy('order').toArray();
+    return { sessions: withoutUni(await db.studySessions.where('date').between(from, today, true, true).toArray(), subjects), subjects };
+  }, [from, today]);
   if (!data) return null;
   const week = data.sessions.filter((s) => s.date >= monday);
   const weekMin = studyMinutesInRange(data.sessions, monday, today);

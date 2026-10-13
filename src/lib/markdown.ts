@@ -1,16 +1,6 @@
-import type {
-  Day,
-  Deadline,
-  Meal,
-  Module,
-  Session,
-  Sleep,
-  StudySession,
-  Subject,
-  Todo,
-  HealthDay,
-} from '../db/schemas';
+import type { Day, Session, Sleep, StudySession, Subject, Todo, HealthDay } from '../db/schemas';
 import { effectiveSleep } from './calc/sleep';
+import { withoutUni } from './calc/subjects';
 import { SESSION_LABEL, sessionLoad } from './calc/training';
 import {
   addDays,
@@ -32,11 +22,8 @@ export interface MarkdownData {
   days: Day[];
   sessions: Session[];
   todos: Todo[];
-  deadlines: Deadline[];
-  modules: Module[];
   subjects: Subject[];
   study: StudySession[];
-  meals: Meal[];
   sleep: Sleep[];
   health: HealthDay[];
 }
@@ -75,7 +62,6 @@ function sessionLines(s: Session): string[] {
 
 function taskLines(data: MarkdownData, from: ISODate, to: ISODate): string[] {
   const subj = new Map(data.subjects.map((s) => [s.id, s.name]));
-  const mod = new Map(data.modules.map((m) => [m.id, m.name]));
   const inRange = (d: string | undefined) => d !== undefined && d >= from && d <= to;
   const lines: string[] = [];
   const todos = data.todos.filter(
@@ -86,12 +72,6 @@ function taskLines(data: MarkdownData, from: ISODate, to: ISODate): string[] {
       .filter(Boolean)
       .join(', ');
     lines.push(`- [${t.done ? 'x' : ' '}] ${t.title}${meta ? ` (${meta})` : ''}`);
-  }
-  for (const d of data.deadlines.filter((x) => inRange(x.date))) {
-    const name = mod.get(d.moduleId);
-    lines.push(
-      `- [${d.done ? 'x' : ' '}] FernUni${name ? ` ${name}` : ''}: ${d.title}${from !== to ? ` (fällig ${formatDE(d.date)})` : ''}`,
-    );
   }
   return lines.length > 0 ? lines : ['- [ ] '];
 }
@@ -111,8 +91,6 @@ function noteLines(day: Day | undefined): string[] {
 }
 
 function bodyLine(data: MarkdownData, date: ISODate): string | null {
-  const day = data.days.find((d) => d.date === date);
-  const meals = data.meals.filter((m) => m.date === date);
   const sleep = effectiveSleep(
     data.sleep.find((s) => s.date === date),
     data.health.find((h) => h.date === date),
@@ -120,9 +98,6 @@ function bodyLine(data: MarkdownData, date: ISODate): string | null {
   const steps = data.health.find((h) => h.date === date)?.steps;
   const parts = [
     sleep && `Schlaf ${formatHM(sleep.minutes)} h`,
-    meals.length > 0 && `Protein ${Math.round(meals.reduce((a, m) => a + m.proteinG, 0))} g`,
-    meals.length > 0 && `${meals.reduce((a, m) => a + m.kcal, 0)} kcal`,
-    day && day.water > 0 && `Wasser ${day.water} Gläser`,
     steps !== undefined && `${steps.toLocaleString('de-DE')} Schritte`,
   ].filter(Boolean);
   return parts.length > 0 ? parts.join(' · ') : null;
@@ -131,7 +106,7 @@ function bodyLine(data: MarkdownData, date: ISODate): string | null {
 function studyLine(data: MarkdownData, from: ISODate, to: ISODate): string | null {
   const subj = new Map(data.subjects.map((s) => [s.id, s.name]));
   const by = new Map<string, number>();
-  for (const s of data.study.filter((x) => x.date >= from && x.date <= to))
+  for (const s of withoutUni(data.study, data.subjects).filter((x) => x.date >= from && x.date <= to))
     by.set(s.subjectId, (by.get(s.subjectId) ?? 0) + s.minutes);
   if (by.size === 0) return null;
   return [...by.entries()]

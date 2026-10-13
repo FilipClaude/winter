@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { berlinDate, enableDemo, shot } from './helpers';
+import { enableDemo, shot } from './helpers';
 
 test('Dashboard mit Demo-Daten: Briefing, Widgets, Abi-Schnitt @screens', async ({ page }) => {
   test.setTimeout(90_000);
@@ -18,9 +18,8 @@ test('Dashboard anpassen: ausblenden, verschieben, klein – bleibt nach Neulade
   const editor = page.getByTestId('dashboard-editor');
   await editor.getByRole('switch', { name: 'Tagesnotiz anzeigen' }).click();
   await expect(editor.getByRole('switch', { name: 'Tagesnotiz anzeigen' })).not.toBeChecked();
-  // Habits zwei Plätze nach oben
-  await editor.getByRole('button', { name: 'Habits nach oben' }).click();
-  await editor.getByRole('button', { name: 'Habits nach oben' }).click();
+  // Habits vier Plätze nach oben (vor Training, Spiel und Verdienst)
+  for (let i = 0; i < 4; i++) await editor.getByRole('button', { name: 'Habits nach oben' }).click();
   // Tagesring ist standardmäßig groß → auf klein
   await expect(editor.getByRole('button', { name: 'Tagesring: klein' })).toHaveAttribute(
     'aria-pressed',
@@ -38,23 +37,6 @@ test('Dashboard anpassen: ausblenden, verschieben, klein – bleibt nach Neulade
     .locator('[data-widget]')
     .evaluateAll((els) => els.map((e) => e.getAttribute('data-widget')));
   expect(order.indexOf('habits')).toBeLessThan(order.indexOf('training'));
-});
-
-test('Kritische Frist (morgen fällig) steht ganz oben, Briefing nennt sie', async ({ page }) => {
-  await page.goto('./#/schule');
-  await page.getByRole('group', { name: 'Bereich' }).getByRole('button', { name: 'FernUni' }).click();
-  await page.getByRole('button', { name: 'Frist', exact: true }).click();
-  const d = page.getByRole('dialog', { name: 'FernUni-Frist' });
-  await d.getByLabel('Neues Modul').fill('BWL');
-  await d.getByLabel('Bezeichnung').fill('EA 3');
-  await d.getByLabel('Fällig am').fill(berlinDate(1));
-  await d.getByRole('button', { name: 'Speichern' }).click();
-  await expect(d).toBeHidden();
-
-  await page.goto('./#/heute');
-  const first = page.getByTestId('dashboard').locator('[data-widget]').first();
-  await expect(first).toHaveAttribute('data-widget', 'alerts');
-  await expect(page.getByTestId('briefing')).toContainText('EA 3 (BWL) ist morgen fällig.');
 });
 
 test('Wochenziel „3× Gym“ zeigt Fortschritt', async ({ page }) => {

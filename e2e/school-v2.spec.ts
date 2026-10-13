@@ -111,36 +111,6 @@ test('Stundenplan mit A/B-Wochen und Ferien-Hinweis', async ({ page }) => {
   await expect(page.getByTestId('breaks')).toContainText('Quelle');
 });
 
-test('FernUni: Regel „1 EA mit 50 %“ → nach Korrektur prüfungsberechtigt, Notiz sichtbar @screens', async ({
-  page,
-}) => {
-  await openSchoolTab(page, 'FernUni');
-  await page.getByRole('button', { name: 'Frist', exact: true }).click();
-  const d = page.getByRole('dialog', { name: 'FernUni-Frist' });
-  await d.getByLabel('Neues Modul').fill('Grundlagen der BWL');
-  await d.getByLabel('Nummer').fill('31001');
-  await d.getByLabel('Bezeichnung').fill('EA 1');
-  await d.getByLabel('Fällig am').fill(berlinDate(5));
-  await d.getByRole('button', { name: 'Speichern' }).click();
-  await expect(d).toBeHidden();
-
-  await page.getByTestId('module-row').click();
-  const m = page.getByRole('dialog', { name: 'Modul' });
-  await m.getByRole('switch').check();
-  await m.getByLabel(/Notiz/).fill('Wiederholerkennzeichen setzen');
-  await m.getByRole('button', { name: 'Speichern' }).click();
-  await expect(page.getByTestId('module-row')).toContainText('noch nicht berechtigt');
-  await expect(page.getByTestId('module-row')).toContainText('Wiederholerkennzeichen');
-
-  await page.getByTestId('deadline-list').getByRole('button', { name: /EA 1/ }).click();
-  const e = page.getByRole('dialog', { name: 'FernUni-Frist' });
-  await e.getByLabel('Erreichte Punkte').fill('62');
-  await e.getByRole('button', { name: 'Speichern' }).click();
-  await expect(page.getByTestId('module-row')).toContainText('prüfungsberechtigt');
-  await expect(page.getByTestId('module-row')).toContainText('EA 1/1 bestanden');
-  await shot(page, '12-fernuni', true);
-});
-
 test('Pomodoro-Timer zeigt Fokusphase; wiederkehrende Aufgabe erzeugt Folgeaufgabe', async ({ page }) => {
   await page.goto('./#/schule');
   await page.getByRole('button', { name: 'Lernen starten' }).click();

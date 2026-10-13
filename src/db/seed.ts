@@ -1,6 +1,6 @@
 import type { Transaction } from 'dexie';
 import { uid } from '../lib/id';
-import type { ExerciseTemplate, MealTemplate, Subject } from './schemas';
+import type { ExerciseTemplate, Subject } from './schemas';
 
 export const DEFAULT_SUBJECTS: { name: string; short: string; major?: boolean }[] = [
   { name: 'Deutsch', short: 'D' },
@@ -14,7 +14,6 @@ export const DEFAULT_SUBJECTS: { name: string; short: string; major?: boolean }[
   { name: 'Bio', short: 'B' },
   { name: 'Ethik', short: 'Eth' },
   { name: 'WR', short: 'WR' },
-  { name: 'FernUni', short: 'FU' },
 ];
 
 export const DEFAULT_EXERCISES = [
@@ -49,18 +48,7 @@ export function buildDefaults(now = new Date().toISOString()) {
     lastSets: [],
     order: i,
   }));
-  const mealTemplates: MealTemplate[] = [
-    {
-      id: uid(),
-      createdAt: now,
-      updatedAt: now,
-      name: 'Skyr + Haferflocken',
-      kcal: 420,
-      proteinG: 38,
-      order: 0,
-    },
-  ];
-  return { subjects, exerciseTemplates, mealTemplates };
+  return { subjects, exerciseTemplates };
 }
 
 /** Wird von Dexie genau einmal beim Anlegen der Datenbank aufgerufen. */
@@ -68,5 +56,4 @@ export function seedDefaults(tx: Transaction): void {
   const d = buildDefaults();
   void tx.table('subjects').bulkAdd(d.subjects);
   void tx.table('exerciseTemplates').bulkAdd(d.exerciseTemplates);
-  void tx.table('mealTemplates').bulkAdd(d.mealTemplates);
 }

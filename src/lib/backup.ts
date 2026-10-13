@@ -67,7 +67,7 @@ export const TABLE_LABEL: Record<DataTable, string> = {
   studySessions: 'Lerneinheiten',
   todos: 'Aufgaben',
   exams: 'Klausuren',
-  modules: 'FernUni-Module',
+  modules: 'Module',
   deadlines: 'Fristen',
   habits: 'Habits',
   habitChecks: 'Habit-Häkchen',
@@ -79,6 +79,12 @@ export const TABLE_LABEL: Record<DataTable, string> = {
   earnings: 'Verdienst',
   mockExams: 'Probe-Klausuren',
 };
+
+/**
+ * Tabellen, die die Oberfläche seit v3 nicht mehr zeigt (Ernährung, FernUni). Sie bleiben vollständig in
+ * Datenbank, Backup, Rettungs-Export und Snapshots; die Import-Vorschau nennt sie nur als Summe.
+ */
+export const RETIRED_TABLES: readonly DataTable[] = ['meals', 'mealTemplates', 'modules', 'deadlines'];
 
 /** kv-Schlüssel, die ins Backup gehören (Zeitstempel des Backups selbst nicht). */
 const KV_KEYS = BACKUP_KV_KEYS;
@@ -251,7 +257,6 @@ export async function wipeAll({ withSnapshots = false }: { withSnapshots?: boole
     else if (index !== undefined) await db.kv.put({ key: INDEX_KEY, value: index });
     await db.subjects.bulkAdd(d.subjects);
     await db.exerciseTemplates.bulkAdd(d.exerciseTemplates);
-    await db.mealTemplates.bulkAdd(d.mealTemplates);
   });
 }
 

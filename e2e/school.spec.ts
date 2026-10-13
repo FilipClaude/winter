@@ -1,19 +1,5 @@
-import { expect, test, type Page } from './fixtures';
+import { expect, test } from './fixtures';
 import { berlinDate, shot } from './helpers';
-
-async function addDeadline(page: Page, title: string, inDays: number, module?: string) {
-  await page.getByTestId('fab').click();
-  await page.getByTestId('qa-frist').click();
-  const dialog = page.getByRole('dialog', { name: 'FernUni-Frist' });
-  if (module) {
-    await dialog.getByLabel('Neues Modul').fill(module);
-    await dialog.getByLabel('Nummer').fill('31001');
-  }
-  await dialog.getByLabel('Bezeichnung').fill(title);
-  await dialog.getByLabel('Fällig am').fill(berlinDate(inDays));
-  await dialog.getByRole('button', { name: 'Speichern' }).click();
-  await expect(dialog).toBeHidden();
-}
 
 test('Lern-Timer übersteht Neuladen und speichert Lernzeit', async ({ page }) => {
   await page.goto('./#/schule');
@@ -47,37 +33,31 @@ test('Lernzeit nachtragen erscheint pro Fach @screens', async ({ page }) => {
   await shot(page, '05-lernzeit', true);
 });
 
-test('FernUni-Fristen: Warnstufen 14/7/2 Tage auf Heute, abhaken @screens', async ({ page }) => {
-  await page.goto('./#/heute');
-  await addDeadline(page, 'EA 1', 1, 'Grundlagen der BWL');
-  await addDeadline(page, 'EA 2', 6);
-  await addDeadline(page, 'EA 3', 12);
-  await addDeadline(page, 'Klausur Modul', 30);
-
-  const alerts = page.getByTestId('deadline-alerts');
-  await expect(alerts.locator('.deadline')).toHaveCount(3); // 30 Tage noch nicht
-  await expect(alerts.locator('.deadline--kritisch')).toContainText('EA 1');
-  await expect(alerts.locator('.deadline--kritisch')).toContainText('morgen');
-  await expect(alerts.locator('.deadline--nah')).toContainText('EA 2');
-  await expect(alerts.locator('.deadline--bald')).toContainText('EA 3');
-  await shot(page, '05-heute-fristen');
-
-  await alerts.getByRole('checkbox', { name: 'EA 1 erledigt' }).click();
-  await expect(alerts.locator('.deadline')).toHaveCount(2);
-
+test('Schul-Hinweise auf Heute: Klausur morgen mit offenen Themen, überfällige Aufgabe', async ({ page }) => {
   await page.goto('./#/schule');
-  await page.getByRole('button', { name: 'FernUni' }).click();
-  await expect(page.getByTestId('deadline-list')).toContainText('Klausur Modul');
-  await expect(page.getByTestId('deadline-list')).toContainText('in 30 Tagen');
-  await shot(page, '05-fernuni', true);
-});
+  await page.getByRole('button', { name: 'Klausuren' }).click();
+  await page.getByRole('button', { name: 'Klausur', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Klausur' });
+  await dialog.getByLabel('Fach').selectOption({ label: 'Bio' });
+  await dialog.getByLabel('Datum').fill(berlinDate(1));
+  await dialog.getByRole('button', { name: 'Speichern' }).click();
+  await expect(dialog).toBeHidden();
+  await page.getByRole('button', { name: 'Aufgaben' }).click();
+  await page.getByRole('button', { name: 'Aufgabe', exact: true }).click();
+  const todo = page.getByRole('dialog', { name: 'Aufgabe' });
+  await todo.getByLabel('Aufgabe').fill('Bio Arbeitsblatt');
+  await todo.getByLabel('Fällig').fill(berlinDate(-2));
+  await todo.getByRole('button', { name: 'Speichern' }).click();
+  await expect(todo).toBeHidden();
 
-test('Überfällige Frist bleibt sichtbar', async ({ page }) => {
   await page.goto('./#/heute');
-  await addDeadline(page, 'EA verpasst', -2, 'Mikroökonomik');
-  await expect(page.getByTestId('deadline-alerts').locator('.deadline--ueberfaellig')).toContainText(
-    'seit 2 Tagen überfällig',
-  );
+  const alerts = page.getByTestId('school-alerts');
+  await expect(alerts).toContainText('Bio-Klausur morgen – Lernstand erst 0 %.');
+  await expect(alerts).toContainText('1 Aufgabe ist überfällig.');
+  await expect(page.getByTestId('briefing')).toContainText('Bio-Klausur morgen');
+  await shot(page, '05-heute-hinweise');
+  await alerts.getByRole('button', { name: 'Öffnen' }).last().click();
+  await expect(page.getByTestId('todo-list')).toContainText('Bio Arbeitsblatt');
 });
 
 test('Klausur mit Countdown und Notenschnitt @screens', async ({ page }) => {
@@ -111,8 +91,10 @@ test('Klausur mit Countdown und Notenschnitt @screens', async ({ page }) => {
   await shot(page, '05-klausuren', true);
 
   await page.goto('./#/heute');
-  await expect(page.getByRole('button', { name: 'Nächster Termin' })).toContainText('Mathe');
-  await expect(page.getByRole('button', { name: 'Nächster Termin' })).toContainText('5');
+  const next = page.getByTestId('next-exam');
+  await expect(next).toContainText('Mathe');
+  await expect(next).toContainText('in 5 Tagen');
+  await expect(next).toContainText('noch nicht gelernt');
 });
 
 test('Aufgabe anlegen und abhaken', async ({ page }) => {

@@ -2,14 +2,11 @@ import { DATA_TABLES, db, type DataTable } from '../db/db';
 import type {
   Grade,
   Day,
-  Deadline,
   Exam,
   GymExercise,
   Habit,
   HabitCheck,
   HealthDay,
-  Meal,
-  Module,
   Session,
   Sleep,
   StudySession,
@@ -42,15 +39,12 @@ export function rng(seed: number) {
 
 export interface DemoSet {
   sessions: Session[];
-  meals: Meal[];
   days: Day[];
   sleep: Sleep[];
   health: HealthDay[];
   studySessions: StudySession[];
   todos: Todo[];
   exams: Exam[];
-  modules: Module[];
-  deadlines: Deadline[];
   habits: Habit[];
   habitChecks: HabitCheck[];
   grades: Grade[];
@@ -77,7 +71,6 @@ export function generateDemo(
   const subjectId = (name: string) => subjects.find((s) => s.name === name)?.id ?? subjects[0]?.id ?? 'fach';
   const set: DemoSet = {
     sessions: [],
-    meals: [],
     days: [],
     sleep: [],
     health: [],
@@ -85,8 +78,6 @@ export function generateDemo(
     todos: [],
     exams: [],
     grades: [],
-    modules: [],
-    deadlines: [],
     habits: [],
     habitChecks: [],
   };
@@ -154,7 +145,8 @@ export function generateDemo(
       ...meta(),
       id: date,
       date,
-      water: isToday ? 3 : r.int(6, 12),
+      // Wasser zählt seit v3 nicht mehr (Feld bleibt Pflicht für ältere Backups)
+      water: 0,
       ...(isToday && r.chance(0.5) ? {} : { mood, energy }),
       note:
         !isToday && r.chance(0.35)
@@ -168,39 +160,19 @@ export function generateDemo(
           : '',
       good:
         !isToday && r.chance(0.3)
-          ? r.pick(['Abschluss im Training sauber', 'Hausaufgaben direkt nach der Schule', 'Genug Protein'])
+          ? r.pick([
+              'Abschluss im Training sauber',
+              'Hausaufgaben direkt nach der Schule',
+              'Vokabeln am Stück gelernt',
+            ])
           : '',
       better:
-        !isToday && r.chance(0.25)
-          ? r.pick(['Früher schlafen', 'Mehr trinken', 'Handy weg beim Lernen'])
-          : '',
+        !isToday && r.chance(0.25) ? r.pick(['Früher schlafen', 'Mehr dehnen', 'Handy weg beim Lernen']) : '',
       tomorrow:
         !isToday && r.chance(0.3)
-          ? r.pick(['EA-Gliederung', 'Vokabeltest Englisch', 'Regeneration ernst nehmen'])
+          ? r.pick(['Referat-Gliederung', 'Vokabeltest Englisch', 'Regeneration ernst nehmen'])
           : '',
     });
-
-    // Mahlzeiten
-    const meals: [string, number, number][] = [['Skyr + Haferflocken', 420, 38]];
-    if (!isToday) {
-      meals.push([
-        r.pick(['Mensa: Nudeln', 'Mensa: Hähnchen-Reis', 'Wrap', 'Mensa: Curry']),
-        r.int(650, 900),
-        r.int(28, 45),
-      ]);
-      if (r.chance(0.7))
-        meals.push([
-          r.pick(['Proteinshake', 'Quark mit Beeren', 'Banane + Nüsse']),
-          r.int(200, 380),
-          r.int(15, 35),
-        ]);
-      meals.push([
-        r.pick(['Abendessen zu Hause', 'Pasta mit Hack', 'Lachs, Kartoffeln', 'Pizza']),
-        r.int(700, 1100),
-        r.int(30, 55),
-      ]);
-    }
-    for (const [name, kcal, proteinG] of meals) set.meals.push({ ...meta(), date, name, kcal, proteinG });
 
     // Training laut Wochenplan
     if (!isToday && r.chance(0.92)) {
@@ -269,11 +241,11 @@ export function generateDemo(
     // Lernzeit
     if (!isToday) {
       const studyDefs: [string, number][] = weekend
-        ? [['FernUni', r.int(60, 150)]]
+        ? [[r.pick(['Mathe', 'Geschichte', 'Englisch']), r.int(50, 110)]]
         : [
             [r.pick(['Mathe', 'PuG', 'Englisch', 'Deutsch', 'Geschichte', 'Bio']), r.int(25, 80)],
             ...(r.chance(0.5)
-              ? [[r.pick(['WR', 'Biophysik', 'Ethik', 'FernUni']), r.int(20, 50)] as [string, number]]
+              ? [[r.pick(['WR', 'Biophysik', 'Ethik']), r.int(20, 50)] as [string, number]]
               : []),
           ];
       let cursor = new Date(zonedToInstant(date, weekend ? '10:30' : '16:30')).getTime();
@@ -376,29 +348,6 @@ export function generateDemo(
   todo('PuG Referat Gliederung', 'PuG', 6, false);
   todo('Bio Arbeitsblatt Genetik', 'Bio', -2, true);
   todo('Sportsachen waschen', null, null, false);
-
-  // FernUni
-  const mod: Module = {
-    ...meta(),
-    name: 'Einführung in die Wirtschaftswissenschaft',
-    number: '31001',
-    archived: false,
-  };
-  set.modules.push(mod);
-  const dl = (title: string, kind: Deadline['kind'], offset: number, done: boolean) =>
-    set.deadlines.push({
-      ...meta(),
-      moduleId: mod.id,
-      kind,
-      title,
-      date: addDays(today, offset),
-      done,
-      ...(kind === 'einsendearbeit' ? { time: '23:59' } : {}),
-    });
-  dl('EA 1', 'einsendearbeit', -12, true);
-  dl('EA 2', 'einsendearbeit', 5, false);
-  dl('EA 3', 'einsendearbeit', 19, false);
-  dl('Modulklausur', 'pruefung', 48, false);
 
   return set;
 }

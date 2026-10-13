@@ -6,11 +6,12 @@ import { compareByThreshold, describeCorrelation, median, pearson } from './insi
 import { dayRing } from './ring';
 import {
   countdownLabel,
-  deadlineLevel,
   pointsAverage,
   pointsToDecimalGrade,
   pointsToGrade,
+  schoolAlerts,
   studyBefore,
+  topicStatus,
 } from './school';
 import { effectiveSleep, sleepFromWallTimes, sleepMinutes } from './sleep';
 
@@ -74,15 +75,51 @@ describe('Noten', () => {
   });
 });
 
-describe('Fristen', () => {
+describe('Schul-Termine', () => {
   const T = '2026-10-11';
-  it('Warnstufen 14 / 7 / 2 Tage', () => {
-    expect(deadlineLevel(addDays(T, 20), T)).toBe('spaeter');
-    expect(deadlineLevel(addDays(T, 14), T)).toBe('bald');
-    expect(deadlineLevel(addDays(T, 7), T)).toBe('nah');
-    expect(deadlineLevel(addDays(T, 2), T)).toBe('kritisch');
-    expect(deadlineLevel(T, T)).toBe('kritisch');
-    expect(deadlineLevel(addDays(T, -1), T)).toBe('ueberfaellig');
+  it('Schul-Hinweise: Klausur in ≤ 3 Tagen mit offenen Themen, überfällige Aufgaben', () => {
+    const topics = (levels: number[]) => levels.map((level) => ({ level }));
+    const exam = (
+      id: string,
+      days: number,
+      extra: { progress?: number; topicList?: { level: number }[] } = {},
+    ) => ({
+      id,
+      subject: 'Mathe',
+      kind: 'Klausur',
+      date: addDays(T, days),
+      progress: extra.progress ?? 0,
+      topicList: extra.topicList,
+    });
+    expect(
+      schoolAlerts({
+        today: T,
+        exams: [
+          exam('a', 1, { topicList: topics([3, 2, 0, 1]) }),
+          exam('b', 3, { progress: 40 }),
+          exam('c', 2, { topicList: topics([2, 3]) }),
+          exam('d', 4, { progress: 0 }),
+          exam('e', -1, { progress: 0 }),
+          exam('f', 0, { progress: 80 }),
+        ],
+        overdueTodos: 2,
+      }),
+    ).toEqual([
+      { id: 'exam-a', examId: 'a', tone: 'warn', text: 'Mathe-Klausur morgen – 2 von 4 Themen noch offen.' },
+      { id: 'exam-b', examId: 'b', tone: 'accent', text: 'Mathe-Klausur in 3 Tagen – Lernstand erst 40 %.' },
+      { id: 'todos', tone: 'warn', text: '2 Aufgaben sind überfällig.' },
+    ]);
+    expect(schoolAlerts({ today: T, exams: [], overdueTodos: 1 })[0]?.text).toBe('1 Aufgabe ist überfällig.');
+    expect(schoolAlerts({ today: T, exams: [], overdueTodos: 0 })).toEqual([]);
+  });
+
+  it('Themenstand: „sitzt“ ab Stufe 2', () => {
+    expect(topicStatus(undefined)).toBeNull();
+    expect(topicStatus([])).toBeNull();
+    expect(topicStatus([{ level: 0 }, { level: 1 }, { level: 2 }, { level: 3 }])).toEqual({
+      done: 2,
+      total: 4,
+    });
   });
 
   it('Countdown-Texte', () => {
@@ -157,34 +194,80 @@ describe('Habits und Streaks', () => {
   });
 });
 
-describe('Tagesring', () => {
-  it('Durchschnitt gedeckelter Teilziele', () => {
+describe('Tagesring (v3)', () => {
+  const none = {
+    training: { planned: false, done: false },
+    earnings: { weekCents: 0, goalCents: 0, weekday: 3 },
+  };
+  const goals = { studyMin: 90, sleepH: 8 };
+
+  it('Durchschnitt gedeckelter Teilziele: Habits, Lernen, Schlaf, Training, Verdienst', () => {
     const r = dayRing(
-      { habitsDone: 1, habitsPlanned: 2, proteinG: 280, waterGlasses: 5, studyMin: 0, sleepMin: 480 },
-      DEFAULT_SETTINGS.goals,
+      {
+        habitsDone: 1,
+        habitsPlanned: 2,
+        studyMin: 45,
+        sleepMin: 600,
+        training: { planned: true, done: true },
+        // Mittwoch: 3/7 von 70 € = 30 € fällig, 15 € verdient → 50 %
+        earnings: { weekCents: 1500, goalCents: 7000, weekday: 3 },
+      },
+      goals,
       DEFAULT_SETTINGS.ring,
     );
-    // Habits 0,5 · Protein 1 (gedeckelt) · Wasser 0,5 · Lernen 0 · Schlaf 1
-    expect(r.parts).toHaveLength(5);
-    expect(r.total).toBeCloseTo(0.6);
+    expect(r.parts.map((p) => p.key)).toEqual(['habits', 'study', 'sleep', 'training', 'earnings']);
+    // 0,5 · 0,5 · 1 (gedeckelt) · 1 · 0,5
+    expect(r.total).toBeCloseTo(0.7);
+    expect(r.parts.find((p) => p.key === 'earnings')?.detail).toBe('15,00 € / 30,00 €');
   });
 
-  it('ohne geplante Habits und mit deaktivierten Zielen', () => {
+  it('Ruhetag und fehlendes Wochenziel fallen heraus statt als verfehlt zu zählen', () => {
     const r = dayRing(
-      { habitsDone: 0, habitsPlanned: 0, proteinG: 70, waterGlasses: 0, studyMin: 0, sleepMin: null },
-      { ...DEFAULT_SETTINGS.goals, proteinG: 140 },
-      {
-        habits: true,
-        protein: true,
-        water: false,
-        study: false,
-        sleep: false,
-        training: false,
-        earnings: false,
-      },
+      { habitsDone: 0, habitsPlanned: 0, studyMin: 90, sleepMin: null, ...none },
+      goals,
+      DEFAULT_SETTINGS.ring,
     );
-    expect(r.parts.map((p) => p.key)).toEqual(['protein']);
+    expect(r.parts.map((p) => p.key)).toEqual(['study', 'sleep']);
     expect(r.total).toBe(0.5);
+  });
+
+  it('Training geplant, aber noch nicht eingetragen = 0; Sonntag braucht das volle Wochenziel', () => {
+    const r = dayRing(
+      {
+        habitsDone: 0,
+        habitsPlanned: 0,
+        studyMin: 0,
+        sleepMin: null,
+        training: { planned: true, done: false },
+        earnings: { weekCents: 7000, goalCents: 7000, weekday: 7 },
+      },
+      { studyMin: 0, sleepH: 0 },
+      DEFAULT_SETTINGS.ring,
+    );
+    expect(r.parts.map((p) => [p.key, p.value])).toEqual([
+      ['training', 0],
+      ['earnings', 1],
+    ]);
+  });
+
+  it('abgeschaltete Segmente zählen nicht; Protein/Wasser haben keine Wirkung mehr', () => {
+    const r = dayRing({ habitsDone: 1, habitsPlanned: 1, studyMin: 0, sleepMin: 480, ...none }, goals, {
+      habits: false,
+      protein: true,
+      water: true,
+      study: false,
+      sleep: true,
+      training: false,
+      earnings: false,
+    });
+    expect(r.parts.map((p) => p.key)).toEqual(['sleep']);
+    expect(
+      dayRing(
+        { habitsDone: 0, habitsPlanned: 0, studyMin: 0, sleepMin: null, ...none },
+        { studyMin: 0, sleepH: 0 },
+        DEFAULT_SETTINGS.ring,
+      ).total,
+    ).toBe(0);
   });
 });
 

@@ -362,3 +362,26 @@ Vier unabhängige Reviews mit zusammen 54 Funden; alle behoben oder begründet a
 5. BFV: Spielerstatistik, falls Filip eine öffentliche Spieler-ID bekommt (`playerId` in `bfv.config.json` ist vorbereitet).
 6. Abi-Rechner: Fächerkonstellationen nach § 54 automatisch prüfen, sobald die Regeln mit der Schule geklärt sind.
 7. Visuelle Regression zusätzlich in der CI mit Linux-Referenzbildern (in einem Container erzeugen und einmal ansehen).
+
+---
+
+# v3 „Winter“ – umbauen, entschlacken, schärfen
+
+## v3 · Phase 0 – Bestandsaufnahme ✓
+- Doku, Code und Vault-Notizen gelesen. Basis: Typecheck, Lint, **1050 Unit-Tests**, **144 E2E** (Chromium + WebKit) grün. v2-Referenzbilder nach `screens/v2-ref/`. Bundle vorher: JS 872 KB roh / 283 KB gzip.
+- `PLAN-v3.md`: Phasen, Budget, Risiken, Migrationsplan, Fundstellen (FernUni 237 Treffer in 23 Dateien, Ernährung 246 in 24).
+
+## v3 · Phase 1 – Sicherheitsnetz ✓
+- **v2-Fixture** `src/test/fixtures/backup-v2.json` mit dem v2-Code erzeugt (ohne Demo-Markierung): 96 Mahlzeiten, 3 Vorlagen, Wasser, FernUni-Fach mit Lernzeit, 2 Module mit Regel und Notiz, 7 Fristen mit EA-Punkten, Protein-Ziel, eigenes Dashboard mit Ernährung und Terminen.
+- **Dexie v3** rein additiv: Tabellen `earnings`, `mockExams`; optionales `sessions.split`; Einstellungen `ring.training/earnings`, `earnings.weeklyGoalCents`, `npScale`. Sicherung „vor-v3“ nach dem ersten Öffnen (30 Tage). `migrateBackup` hebt v1/v2 an.
+- **Geprüft:** echte v2-DB mit v3 geöffnet → jeder Datensatz identisch; v2-Backup importiert → Export enthält Mahlzeiten, Module, Fristen unverändert; v3-Roundtrip identisch; v1-Backups weiter importierbar; ungültige Beträge/BE abgelehnt; E2E „Start mit echten v1-Daten“ und neu „… v2-Daten“ im Browser (IndexedDB-Version 30, jede ID jeder Tabelle da).
+
+## v3 · Phase 2 – FernUni und Ernährung raus ✓
+- FernUni-Tab, Module, Fristen, Frist-Sheet, Schnellerfassung (Wasser, Mahlzeit, Frist), Briefing-Fristen, Ernährungs-Widget und -Bereich, Protein in Rückblick/Trends/Wochenbericht/Markdown, Ziele (Protein archiviert), Einstellungen (Protein, kcal, Wasser, Glasgröße) entfernt. Fach „FernUni“ überall ausgeblendet, auch in Lernzeit-Summen (DECISIONS #80, #81).
+- „Hinweise“ zeigt Schul-Hinweise (Klausur bald mit offenen Themen, überfällige Aufgaben). Tagesring v3 vorgezogen (DECISIONS #86). Totes CSS (Gläser, Fristen) und Code (`fernuni.ts`, `MealSheet`, `DeadlineAlerts`) entfernt.
+- **Neuer Test:** `e2e/v3-clean.spec.ts` – importiert die v2-Fixture und durchsucht jeden Screen, jeden Schule-Bereich und die Sheets nach `FernUni|Uni|Modul|Einsende|Protein|Wasser|kcal|Mahlzeit|Ernährung …` (mit Gegenprobe); danach sind Mahlzeiten, Module und Fristen weiterhin vollständig in der DB.
+
+## v3 · Phase 3 – Nächste Klausur ✓
+- Widget „Nächste Klausur“ auf Heute (direkt nach Briefing/Ring, per Layout-Migration auch in eigenen Layouts): Fach, Art, Datum mit Wochentag, Countdown, Themenstand, Lernzeit 14 Tage, übernächste klein darunter, ruhiger Leerzustand mit „Klausur eintragen“. Schule: Hero-Karte oben, Klausurenplan chronologisch, Vergangenes eingeklappt mit Note.
+- **Geprüft:** Unit-Tests Countdown (Mitternacht, Zeitumstellung 25.10.2026), Auswahl, Sortierung; E2E Klausur → Widget; Screenshots Heute/Schule Nacht und Tag, mit Daten und leer angesehen.
+- **Gefunden & behoben:** doppelter Countdown im Klausurenplan; „Vergangen“ stand unter dem Notenschnitt statt direkt unter dem Plan; Dashboard-Migration setzte „Nächste Klausur“ ohne gespeichertes Briefing ans Ende (Anker nur unter gespeicherten Widgets, Test).

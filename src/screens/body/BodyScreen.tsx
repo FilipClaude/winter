@@ -1,202 +1,38 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Footprints, HeartPulse, Moon, Pencil, Plus, Trash2, Utensils } from 'lucide-react';
+import { Footprints, HeartPulse, Moon } from 'lucide-react';
 import { useState } from 'react';
 import { db } from '../../db/db';
-import { deleteMeal, deleteMealTemplate, saveMealTemplate, ValidationError } from '../../db/repo';
-import type { MealTemplate } from '../../db/schemas';
 import { useKV, useSettings } from '../../hooks/useSettings';
 import { useToday } from '../../hooks/useNow';
 import { formatDecimal } from '../../lib/calc/insights';
 import { effectiveSleep } from '../../lib/calc/sleep';
 import { addDays, dateRange, formatDE, formatHM, formatShort, formatWeekdayShort, toISODate, toTimeHM } from '../../lib/date';
 import { BarChart } from '../../ui/charts';
-import { NumberField, Segmented, TextField } from '../../ui/controls';
+import { Segmented } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
-import { Badge, Button, Card, EmptyState, IconButton, ProgressBar, ScreenHeader, SectionTitle, Stat } from '../../ui/primitives';
+import { Badge, Button, Card, EmptyState, ScreenHeader, Stat } from '../../ui/primitives';
 import { openHealthSheet } from '../health/openHealth';
-import { MealSheet } from './MealSheet';
 import { SleepSheet } from './SleepSheet';
 
-type Tab = 'ernaehrung' | 'schlaf' | 'health';
+type Tab = 'schlaf' | 'health';
 
 export default function BodyScreen() {
-  const [tab, setTab] = useState<Tab>('ernaehrung');
+  const [tab, setTab] = useState<Tab>('schlaf');
   return (
     <div className="screen">
-      <ScreenHeader eyebrow="Ernährung · Schlaf · Health" />
+      <ScreenHeader eyebrow="Schlaf · Health" />
       <h1 className="screen-title">Körper</h1>
       <Segmented<Tab>
         label="Bereich"
         value={tab}
         onChange={setTab}
         options={[
-          { value: 'ernaehrung', label: 'Ernährung' },
           { value: 'schlaf', label: 'Schlaf' },
           { value: 'health', label: 'Health' },
         ]}
       />
-      {tab === 'ernaehrung' && <Nutrition />}
       {tab === 'schlaf' && <SleepPanel />}
       {tab === 'health' && <HealthPanel />}
-    </div>
-  );
-}
-
-// ---------- Ernährung ----------
-
-function Nutrition() {
-  const today = useToday();
-  const settings = useSettings();
-  const { openSheet, toast } = useOverlay();
-  const from = addDays(today, -6);
-  const data = useLiveQuery(async () => {
-    const [meals, templates] = await Promise.all([db.meals.where('date').between(from, today, true, true).toArray(), db.mealTemplates.orderBy('order').toArray()]);
-    return { meals, templates };
-  }, [from, today]);
-  if (!data) return null;
-  const todays = data.meals.filter((m) => m.date === today).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-  const protein = todays.reduce((a, m) => a + m.proteinG, 0);
-  const kcal = todays.reduce((a, m) => a + m.kcal, 0);
-  const g = settings.goals;
-  const days = dateRange(from, today);
-  const proteinByDay = days.map((d) => data.meals.filter((m) => m.date === d).reduce((a, m) => a + m.proteinG, 0));
-  const daysWithMeals = days.filter((d) => data.meals.some((m) => m.date === d)).length;
-  const avgProtein = daysWithMeals > 0 ? proteinByDay.reduce((a, b) => a + b, 0) / daysWithMeals : null;
-
-  return (
-    <>
-      <Card label="Heute" icon={Utensils} ariaLabel="Ernährung heute" action={<IconButton icon={Plus} label="Mahlzeit eintragen" variant="accent" onClick={() => openSheet({ title: 'Mahlzeit', render: (close) => <MealSheet date={today} close={close} /> })} />}>
-        <div className="grid-2">
-          <div>
-            <div className="big num">
-              {Math.round(protein)}
-              <span className="unit">g</span>
-            </div>
-            <div className="xsmall faint" style={{ margin: '4px 0 8px' }}>
-              Protein · Ziel {g.proteinG} g
-            </div>
-            <ProgressBar value={g.proteinG ? protein / g.proteinG : 0} label="Protein" />
-          </div>
-          <div>
-            <div className="big num">{kcal.toLocaleString('de-DE')}</div>
-            <div className="xsmall faint" style={{ margin: '4px 0 8px' }}>
-              kcal · Ziel {g.kcal.toLocaleString('de-DE')}
-            </div>
-            <ProgressBar value={g.kcal ? kcal / g.kcal : 0} label="Kalorien" />
-          </div>
-        </div>
-        {todays.length > 0 && (
-          <div className="list" style={{ marginTop: 'var(--space-3)' }} data-testid="meal-list">
-            {todays.map((m) => (
-              <div key={m.id} className="list-item">
-                <span className="grow">
-                  <span className="list-item__title">{m.name}</span>
-                  <br />
-                  <span className="list-item__meta">
-                    {m.kcal} kcal · {formatDecimal(m.proteinG, m.proteinG % 1 ? 1 : 0)} g Protein
-                  </span>
-                </span>
-                <IconButton
-                  icon={Trash2}
-                  label={`${m.name} löschen`}
-                  onClick={() => {
-                    void deleteMeal(m.id);
-                    toast(`${m.name} gelöscht`, { tone: 'warn' });
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
-
-      <Card label="Protein · 7 Tage" ariaLabel="Protein der letzten 7 Tage">
-        <BarChart
-          label="Protein pro Tag"
-          data={days.map((d, i) => ({ label: formatWeekdayShort(d), value: proteinByDay[i] ?? 0, highlight: d === today }))}
-          goal={g.proteinG}
-          goalLabel={`Ziel ${g.proteinG} g`}
-          format={(n) => `${Math.round(n)} g`}
-        />
-        <p className="xsmall faint" style={{ marginTop: 'var(--space-2)' }}>
-          Schnitt an Tagen mit Einträgen: {avgProtein === null ? '–' : `${Math.round(avgProtein)} g`}
-        </p>
-      </Card>
-
-      <SectionTitle
-        action={
-          <Button variant="ghost" size="s" icon={Plus} onClick={() => openSheet({ title: 'Neue Vorlage', render: (close) => <TemplateSheet close={close} /> })}>
-            Vorlage
-          </Button>
-        }
-      >
-        Mahlzeiten-Vorlagen
-      </SectionTitle>
-      <Card ariaLabel="Mahlzeiten-Vorlagen">
-        {data.templates.length === 0 ? (
-          <EmptyState icon={Utensils} title="Keine Vorlagen">
-            Häufige Mahlzeiten als Vorlage speichern und mit einem Tap eintragen.
-          </EmptyState>
-        ) : (
-          <div className="list">
-            {data.templates.map((t) => (
-              <div key={t.id} className="list-item">
-                <span className="grow">
-                  <span className="list-item__title">{t.name}</span>
-                  <br />
-                  <span className="list-item__meta">
-                    {t.kcal} kcal · {t.proteinG} g Protein
-                  </span>
-                </span>
-                <IconButton icon={Pencil} label={`${t.name} bearbeiten`} onClick={() => openSheet({ title: 'Vorlage bearbeiten', render: (close) => <TemplateSheet close={close} template={t} /> })} />
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
-    </>
-  );
-}
-
-function TemplateSheet({ close, template }: { close: () => void; template?: MealTemplate }) {
-  const { toast } = useOverlay();
-  const [name, setName] = useState(template?.name ?? '');
-  const [kcal, setKcal] = useState<number | ''>(template?.kcal ?? '');
-  const [protein, setProtein] = useState<number | ''>(template?.proteinG ?? '');
-  const [error, setError] = useState<string>();
-  return (
-    <div className="form">
-      <TextField label="Name" value={name} onValue={setName} maxLength={80} placeholder="z. B. Skyr + Haferflocken" />
-      <div className="form-row">
-        <NumberField label="Kalorien (kcal)" value={kcal} onValue={setKcal} min={0} max={6000} />
-        <NumberField label="Protein (g)" value={protein} onValue={setProtein} min={0} max={500} decimal />
-      </div>
-      {error && <p className="field__error">{error}</p>}
-      <Button
-        variant="primary"
-        block
-        disabled={!name.trim()}
-        onClick={() =>
-          void saveMealTemplate({
-            ...(template ? { id: template.id, createdAt: template.createdAt, order: template.order } : {}),
-            name,
-            kcal: Math.round(Number(kcal || 0)),
-            proteinG: Number(protein || 0),
-          })
-            .then(() => {
-              toast('Vorlage gespeichert');
-              close();
-            })
-            .catch((e: unknown) => setError(e instanceof ValidationError ? e.message : 'Speichern fehlgeschlagen'))
-        }
-      >
-        Speichern
-      </Button>
-      {template && (
-        <Button variant="warn" block icon={Trash2} onClick={() => void deleteMealTemplate(template.id).then(close)}>
-          Vorlage löschen
-        </Button>
-      )}
     </div>
   );
 }
