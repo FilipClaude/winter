@@ -39,6 +39,15 @@ const STEPS: Step[] = [
 ];
 
 /**
+ * App, Tab-Leiste und Plus hinter der Einführung aus-/einblenden (auch für VoiceOver). Inline-Stil, damit
+ * das Einblenden sofort und synchron wirkt – der Fokus kann direkt danach zurückgegeben werden.
+ */
+function setAppHidden(hidden: boolean): void {
+  for (const el of document.querySelectorAll<HTMLElement>('.app, .tabbar, .fab'))
+    el.style.visibility = hidden ? 'hidden' : '';
+}
+
+/**
  * Einführung beim echten Erststart (keine Einträge, noch nicht gesehen – siehe `needsOnboarding`).
  * Vier kurze Schritte über dem Himmel, jederzeit überspringbar; am Ende optional Demo-Daten.
  */
@@ -73,13 +82,8 @@ export function Onboarding() {
 
   // Während der Einführung nur Himmel + Einführung: App und Tab-Leiste dahinter ausblenden (auch für VoiceOver).
   useEffect(() => {
-    document.documentElement.toggleAttribute('data-onboarding', open);
-    // Fokus erst zurückgeben, wenn die App wieder sichtbar ist (versteckte Elemente nehmen keinen Fokus an).
-    if (!open && returnFocus.current) {
-      returnFocus.current.focus();
-      returnFocus.current = null;
-    }
-    return () => document.documentElement.removeAttribute('data-onboarding');
+    setAppHidden(open);
+    return () => setAppHidden(false);
   }, [open]);
 
   const finish = async (demo: boolean) => {
@@ -141,7 +145,15 @@ export function Onboarding() {
   const Icon = current.icon;
 
   return (
-    <AnimatePresence>
+    <AnimatePresence
+      // Fokus zurück auf den Auslöser, sobald der Dialog weg ist. Das kann vor dem Effekt kommen, der die
+      // App wieder einblendet – versteckte Elemente nehmen keinen Fokus an, also hier selbst einblenden.
+      onExitComplete={() => {
+        setAppHidden(false);
+        returnFocus.current?.focus();
+        returnFocus.current = null;
+      }}
+    >
       {open && (
         <motion.div
           className="onboarding"

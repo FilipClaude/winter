@@ -127,13 +127,15 @@ a {
   border: 0;
 }
 
+/* „Bewegung reduzieren“: Animationen und Übergänge ganz aus. Früher 0,01 ms Dauer – weil die Eigenschaft
+   dann für *alle* Elemente und *alle* Eigenschaften galt (transition-property: all), hielt WebKit z. B.
+   `visibility: hidden` noch Frames lang fest; der Fokus nach der Einführung ging verloren (CI-Fund). */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    animation: none !important;
+    transition: none !important;
     scroll-behavior: auto !important;
   }
 }

@@ -752,11 +752,6 @@
     calc(var(--safe-bottom) + var(--space-6)) calc(var(--safe-left) + var(--space-6));
   /* Kein Glas: Hier soll der Himmel wirken. Textfarben sind direkt auf allen Himmelsphasen kontrastgeprüft. */
 }
-[data-onboarding] .app,
-[data-onboarding] .tabbar,
-[data-onboarding] .fab {
-  visibility: hidden;
-}
 .onboarding__top {
   display: flex;
   justify-content: flex-end;

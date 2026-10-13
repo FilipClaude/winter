@@ -1168,7 +1168,6 @@ button.list-item:active {
 .route-fade {
   animation: route-in var(--dur) var(--ease-out);
 }
-
 @keyframes route-in {
   from {
     opacity: 0;
