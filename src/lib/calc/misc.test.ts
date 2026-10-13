@@ -173,7 +173,15 @@ describe('Tagesring', () => {
     const r = dayRing(
       { habitsDone: 0, habitsPlanned: 0, proteinG: 70, waterGlasses: 0, studyMin: 0, sleepMin: null },
       { ...DEFAULT_SETTINGS.goals, proteinG: 140 },
-      { habits: true, protein: true, water: false, study: false, sleep: false },
+      {
+        habits: true,
+        protein: true,
+        water: false,
+        study: false,
+        sleep: false,
+        training: false,
+        earnings: false,
+      },
     );
     expect(r.parts.map((p) => p.key)).toEqual(['protein']);
     expect(r.total).toBe(0.5);

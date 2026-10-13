@@ -2,6 +2,7 @@ import Dexie, { type EntityTable } from 'dexie';
 import type {
   Day,
   Deadline,
+  Earning,
   Exam,
   ExerciseTemplate,
   Goal,
@@ -12,6 +13,7 @@ import type {
   Lesson,
   Meal,
   MealTemplate,
+  MockExam,
   Module,
   SemesterResult,
   Session,
@@ -34,7 +36,7 @@ export interface KV {
  * Migrationen: neue `this.version(n).stores({...}).upgrade(tx => …)` UNTER den bestehenden anhängen,
  * alte Versionen niemals ändern. Backup-Importe älterer Versionen laufen durch `migrateBackup()`.
  */
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 /** Schema v1 (eingefroren – nie ändern, wird auch von den Migrationstests genutzt). */
 export const V1_STORES = {
@@ -88,6 +90,12 @@ export const V2_STORES = {
   snapshots: 'id, createdAt',
 } as const;
 
+/** Änderungen v2 → v3: nur neue Tabellen (Verdienst, Probe-Klausuren). Neue Felder sind optional. */
+export const V3_STORES = {
+  earnings: 'id, date, demo',
+  mockExams: 'id, date, examId, subjectId, demo',
+} as const;
+
 export class WinterDB extends Dexie {
   sessions!: EntityTable<Session, 'id'>;
   exerciseTemplates!: EntityTable<ExerciseTemplate, 'id'>;
@@ -111,9 +119,14 @@ export class WinterDB extends Dexie {
   lessons!: EntityTable<Lesson, 'id'>;
   goals!: EntityTable<Goal, 'id'>;
   snapshots!: EntityTable<Snapshot, 'id'>;
+  earnings!: EntityTable<Earning, 'id'>;
+  mockExams!: EntityTable<MockExam, 'id'>;
 
-  /** Wurde beim Öffnen von v1 auf v2 migriert? Dann legt `ensureMigrationSnapshot` die Sicherung an. */
-  migratedFromV1 = false;
+  /**
+   * Von welcher Schemaversion wurde beim Öffnen migriert (null = keine Migration)? Dann legt
+   * `ensureMigrationSnapshot` die Sicherung „vor-v<aktuell>“ an.
+   */
+  migratedFrom: number | null = null;
 
   constructor(name = 'winter') {
     super(name);
@@ -124,7 +137,13 @@ export class WinterDB extends Dexie {
     this.version(2)
       .stores(V2_STORES)
       .upgrade(() => {
-        this.migratedFromV1 = true;
+        this.migratedFrom ??= 1;
+      });
+    // v3: wie v2 rein additiv, ohne Schreibzugriffe im Upgrade.
+    this.version(3)
+      .stores(V3_STORES)
+      .upgrade(() => {
+        this.migratedFrom ??= 2;
       });
     this.on('populate', (tx) => seedDefaults(tx));
   }
@@ -138,6 +157,8 @@ export const DATA_TABLES = [
   'studyBlocks',
   'lessons',
   'goals',
+  'earnings',
+  'mockExams',
 ] as const;
 export type DataTable = (typeof DATA_TABLES)[number];
 

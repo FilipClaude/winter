@@ -460,7 +460,7 @@ function ImportPreview({ preview, close, snapshot = false }: { preview: BackupPr
 }
 
 function snapshotLabel(s: SnapshotMeta): string {
-  if (s.reason === 'migration') return 'Vor dem Update auf v2';
+  if (s.reason === 'migration') return `Vor dem Update auf ${s.id.replace(/^vor-/, '')}`;
   if (s.reason === 'manual') return 'Vor einem Import';
   return `Täglich · ${formatDE(s.id)}`;
 }

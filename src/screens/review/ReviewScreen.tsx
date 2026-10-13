@@ -59,7 +59,7 @@ export default function ReviewScreen() {
   const [offset, setOffset] = useState(0);
   const [custom, setCustom] = useState({ from: addDays(today, -29), to: today });
   const data = useLiveQuery(async () => {
-    const [sessions, meals, days, sleep, health, study, exams, habits, checks, goals] = await Promise.all([
+    const [sessions, meals, days, sleep, health, study, exams, habits, checks, goals, earnings] = await Promise.all([
       db.sessions.toArray(),
       db.meals.toArray(),
       db.days.toArray(),
@@ -70,8 +70,9 @@ export default function ReviewScreen() {
       db.habits.toArray(),
       db.habitChecks.toArray(),
       db.goals.toArray(),
+      db.earnings.toArray(),
     ]);
-    return { review: { sessions, meals, days, sleep, health, study, exams, habits, checks } satisfies ReviewData, goals };
+    return { review: { sessions, meals, days, sleep, health, study, exams, habits, checks, earnings } satisfies ReviewData, goals };
   }, []);
 
   const r =

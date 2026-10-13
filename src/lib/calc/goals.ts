@@ -11,6 +11,7 @@ export const GOAL_LABEL: Record<GoalMetric, { label: string; unit: string; lower
   avgSteps: { label: 'Ø Schritte', unit: '' },
   habitRate: { label: 'Habit-Quote', unit: '%' },
   abiAverage: { label: 'Abi-Schnitt', unit: '', lowerIsBetter: true },
+  earnings: { label: 'Verdienst', unit: '€' },
 };
 
 export function goalRange(period: Goal['period'], today: ISODate): { from: ISODate; to: ISODate } {
@@ -61,6 +62,10 @@ export function goalProgress(
         return s.habitRate === null ? null : s.habitRate * 100;
       case 'abiAverage':
         return abiAverage;
+      case 'earnings':
+        return data.earnings
+          .filter((x) => x.date >= from && x.date <= today)
+          .reduce((a, x) => a + x.amountCents, 0);
     }
   })();
   const lower = GOAL_LABEL[goal.metric].lowerIsBetter === true;
@@ -71,7 +76,9 @@ export function goalProgress(
         ? Math.min(1, goal.target / Math.max(value, 0.01))
         : Math.min(1, value / goal.target);
   const reached = value !== null && (lower ? value <= goal.target : value >= goal.target);
-  const toShown = (v: number) => (goal.metric === 'studyMin' ? v / 60 : v);
+  // Lernzeit steht in Minuten, Verdienst in Cent in der Datenbank.
+  const toShown = (v: number) =>
+    goal.metric === 'studyMin' ? v / 60 : goal.metric === 'earnings' ? v / 100 : v;
   return {
     value,
     ratio,

@@ -6,14 +6,14 @@ import { addDays, type ISODate } from '../../lib/date';
 export const WIDGET_LABEL: Record<DashboardWidgetId, string> = {
   briefing: 'Tagesbriefing',
   ring: 'Tagesring',
-  alerts: 'Hinweise & Fristen',
-  deadlines: 'Nächste Termine',
+  nextExam: 'Nächste Klausur',
+  alerts: 'Hinweise',
   studyToday: 'Lernen heute',
   training: 'Training',
   nextMatch: 'Nächstes Spiel',
+  earnings: 'Verdienst',
   steps: 'Schritte',
   sleep: 'Schlaf',
-  nutrition: 'Ernährung',
   habits: 'Habits',
   mood: 'Stimmung & Energie',
   abi: 'Abi-Schnitt',
@@ -22,7 +22,7 @@ export const WIDGET_LABEL: Record<DashboardWidgetId, string> = {
 };
 
 /** Widgets mit kompakter Variante (Größe „klein“ = halbe Breite). */
-export const HAS_SMALL = new Set<DashboardWidgetId>(['ring', 'steps', 'sleep', 'nutrition', 'abi']);
+export const HAS_SMALL = new Set<DashboardWidgetId>(['ring', 'steps', 'sleep', 'abi', 'earnings']);
 
 /** Offene Fristen, die überfällig oder in ≤ 2 Tagen fällig sind. */
 export function useCriticalCount(today: ISODate): number {

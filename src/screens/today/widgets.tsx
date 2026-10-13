@@ -205,7 +205,7 @@ export function GoalsWidget({ today }: { today: ISODate }) {
     const monthFrom = goalRange('month', today).from;
     const weekFrom = goalRange('week', today).from;
     const from = monthFrom < weekFrom ? monthFrom : weekFrom;
-    const [goals, sessions, meals, days, sleep, health, study, exams, habits, checks, subjects, grades, results] = await Promise.all([
+    const [goals, sessions, meals, days, sleep, health, study, exams, habits, checks, subjects, grades, results, earnings] = await Promise.all([
       db.goals.toArray(),
       db.sessions.where('date').between(from, today, true, true).toArray(),
       db.meals.where('date').between(from, today, true, true).toArray(),
@@ -219,6 +219,7 @@ export function GoalsWidget({ today }: { today: ISODate }) {
       db.subjects.toArray(),
       db.grades.toArray(),
       db.semesterResults.toArray(),
+      db.earnings.where('date').between(from, today, true, true).toArray(),
     ]);
     const abi = settings.abi;
     const abiGrade =
@@ -230,7 +231,7 @@ export function GoalsWidget({ today }: { today: ISODate }) {
             examPoints: abi.examPoints,
           }).grade
         : null;
-    const review = { sessions, meals, days, sleep, health, study, exams, habits, checks };
+    const review = { sessions, meals, days, sleep, health, study, exams, habits, checks, earnings };
     return goals
       .filter((g) => !g.archived)
       .map((g) => ({ goal: g, p: goalProgress(g, review, today, abiGrade) }));

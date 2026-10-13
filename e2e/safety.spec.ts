@@ -2,8 +2,6 @@ import { expect, test } from './fixtures';
 import { readFileSync } from 'node:fs';
 import { shot, SLOW_WRITE } from './helpers';
 
-const FIXTURE = readFileSync('src/test/fixtures/backup-v1.json', 'utf8');
-
 /** v1-Schema wie von Dexie angelegt (IndexedDB-Version = Dexie-Version × 10). */
 const V1 = {
   sessions: ['id', ['date', 'type', 'demo']],
@@ -24,100 +22,118 @@ const V1 = {
   kv: ['key', []],
 } as const;
 
-test('Start mit echten v1-Daten: Migration auf v2 im Browser, alles noch da, Sicherung angelegt', async ({
-  page,
-}) => {
-  test.setTimeout(90_000);
-  // Leere Seite derselben Herkunft öffnen, ohne dass die App die Datenbank anlegt.
-  await page.goto('./robots.txt');
-  const total = await page.evaluate(
-    async ({ fixture, schema }) => {
-      const backup = JSON.parse(fixture) as {
-        tables: Record<string, unknown[]>;
-        kv: Record<string, unknown>;
-      };
-      const req = indexedDB.open('winter', 10);
-      req.onupgradeneeded = () => {
-        const idb = req.result;
-        for (const [name, [key, indexes]] of Object.entries(schema)) {
-          const store = idb.createObjectStore(name, { keyPath: key });
-          for (const spec of indexes) {
-            const unique = spec.startsWith('&');
-            const clean = spec.replace('&', '');
-            const keyPath = clean.startsWith('[') ? clean.slice(1, -1).split('+') : clean;
-            store.createIndex(clean, keyPath, { unique });
+/** v2 = v1 + neue Tabellen und der Index `sessions.bfvId`. */
+const V2 = {
+  ...V1,
+  sessions: ['id', ['date', 'type', 'demo', 'bfvId']],
+  grades: ['id', ['date', 'subjectId', 'semester', 'demo']],
+  semesterResults: ['id', ['subjectId', 'semester', 'demo']],
+  studyBlocks: ['id', ['date', 'subjectId', 'examId', 'demo']],
+  lessons: ['id', ['weekday', 'subjectId', 'demo']],
+  goals: ['id', ['period', 'demo']],
+  snapshots: ['id', ['createdAt']],
+} as const;
+
+const CASES = [
+  { from: 'v1', version: 10, schema: V1, fixture: readFileSync('src/test/fixtures/backup-v1.json', 'utf8') },
+  { from: 'v2', version: 20, schema: V2, fixture: readFileSync('src/test/fixtures/backup-v2.json', 'utf8') },
+] as const;
+
+for (const { from, version, schema: SCHEMA, fixture: FIXTURE } of CASES)
+  test(`Start mit echten ${from}-Daten: Migration auf v3 im Browser, alles noch da, Sicherung angelegt`, async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    // Leere Seite derselben Herkunft öffnen, ohne dass die App die Datenbank anlegt.
+    await page.goto('./robots.txt');
+    const total = await page.evaluate(
+      async ({ fixture, schema }) => {
+        const backup = JSON.parse(fixture) as {
+          tables: Record<string, unknown[]>;
+          kv: Record<string, unknown>;
+        };
+        const req = indexedDB.open('winter', version);
+        req.onupgradeneeded = () => {
+          const idb = req.result;
+          for (const [name, [key, indexes]] of Object.entries(schema)) {
+            const store = idb.createObjectStore(name, { keyPath: key });
+            for (const spec of indexes) {
+              const unique = spec.startsWith('&');
+              const clean = spec.replace('&', '');
+              const keyPath = clean.startsWith('[') ? clean.slice(1, -1).split('+') : clean;
+              store.createIndex(clean, keyPath, { unique });
+            }
+          }
+        };
+        const idb = await new Promise<IDBDatabase>((res, rej) => {
+          req.onsuccess = () => res(req.result);
+          req.onerror = () => rej(req.error);
+        });
+        let n = 0;
+        const tx = idb.transaction(Object.keys(schema), 'readwrite');
+        for (const [t, rows] of Object.entries(backup.tables)) {
+          for (const row of rows) {
+            tx.objectStore(t).put(row);
+            n++;
           }
         }
-      };
-      const idb = await new Promise<IDBDatabase>((res, rej) => {
-        req.onsuccess = () => res(req.result);
-        req.onerror = () => rej(req.error);
-      });
-      let n = 0;
-      const tx = idb.transaction(Object.keys(schema), 'readwrite');
-      for (const [t, rows] of Object.entries(backup.tables)) {
-        for (const row of rows) {
-          tx.objectStore(t).put(row);
-          n++;
-        }
-      }
-      for (const [key, value] of Object.entries(backup.kv)) tx.objectStore('kv').put({ key, value });
-      await new Promise((res, rej) => {
-        tx.oncomplete = res;
-        tx.onerror = () => rej(tx.error);
-      });
-      idb.close();
-      return n;
-    },
-    { fixture: FIXTURE, schema: V1 },
-  );
-  expect(total).toBeGreaterThan(300);
+        for (const [key, value] of Object.entries(backup.kv)) tx.objectStore('kv').put({ key, value });
+        await new Promise((res, rej) => {
+          tx.oncomplete = res;
+          tx.onerror = () => rej(tx.error);
+        });
+        idb.close();
+        return n;
+      },
+      { fixture: FIXTURE, schema: SCHEMA, version },
+    );
+    expect(total).toBeGreaterThan(300);
 
-  await page.goto('./#/einstellungen');
-  await expect(page.getByText('Winter · Schema v2')).toBeVisible();
-  const card = page.getByTestId('snapshots-card');
-  await expect(card).toContainText('Vor dem Update auf v2', SLOW_WRITE);
-  await expect(card).toContainText(`${total} Einträge`);
-  // Ziele aus v1 sind erhalten
-  await expect(page.getByRole('region', { name: 'Tagesziele' })).toContainText('150 g Protein');
-  // Daten sind sichtbar: Training enthält die Einheiten aus v1
-  await page.goto('./#/training');
-  await expect(page.getByTestId('session-row').first()).toBeVisible();
-  await shot(page, '11-migration-training');
+    await page.goto('./#/einstellungen');
+    await expect(page.getByText('Winter · Schema v3')).toBeVisible();
+    const card = page.getByTestId('snapshots-card');
+    await expect(card).toContainText('Vor dem Update auf v3', SLOW_WRITE);
+    await expect(card).toContainText(`${total} Einträge`);
+    // Ziele sind erhalten (Schlafziel, in v1 und v2 gesetzt)
+    await expect(page.getByRole('region', { name: 'Tagesziele' })).toContainText(/8(,0)? h Schlaf/);
+    // Daten sind sichtbar: Training enthält die Einheiten
+    await page.goto('./#/training');
+    await expect(page.getByTestId('session-row').first()).toBeVisible();
+    await shot(page, `11-migration-${from}-training`);
 
-  // Jede v1-Tabelle hat nach der Migration exakt so viele Datensätze wie vorher, und jede ID ist da.
-  const after = await page.evaluate(
-    async (stores) => {
-      const idb = await new Promise<IDBDatabase>((res, rej) => {
-        const r = indexedDB.open('winter');
-        r.onsuccess = () => res(r.result);
-        r.onerror = () => rej(r.error);
-      });
-      const out: Record<string, string[]> = {};
-      const tx = idb.transaction(stores, 'readonly');
-      await Promise.all(
-        stores.map(
-          (s) =>
-            new Promise<void>((res) => {
-              const r = tx.objectStore(s).getAllKeys();
-              r.onsuccess = () => {
-                out[s] = (r.result as IDBValidKey[]).map(String).sort();
-                res();
-              };
-            }),
-        ),
-      );
-      idb.close();
-      return { out, version: idb.version };
-    },
-    Object.keys(V1).filter((k) => k !== 'kv'),
-  );
-  expect(after.version).toBe(20);
-  const fixture = JSON.parse(FIXTURE) as { tables: Record<string, { id: string }[]> };
-  for (const [t, rows] of Object.entries(fixture.tables)) {
-    expect(after.out[t], t).toEqual(rows.map((r) => r.id).sort());
-  }
-});
+    // Jede v1-Tabelle hat nach der Migration exakt so viele Datensätze wie vorher, und jede ID ist da.
+    const after = await page.evaluate(
+      async (stores) => {
+        const idb = await new Promise<IDBDatabase>((res, rej) => {
+          const r = indexedDB.open('winter');
+          r.onsuccess = () => res(r.result);
+          r.onerror = () => rej(r.error);
+        });
+        const out: Record<string, string[]> = {};
+        const tx = idb.transaction(stores, 'readonly');
+        await Promise.all(
+          stores.map(
+            (s) =>
+              new Promise<void>((res) => {
+                const r = tx.objectStore(s).getAllKeys();
+                r.onsuccess = () => {
+                  out[s] = (r.result as IDBValidKey[]).map(String).sort();
+                  res();
+                };
+              }),
+          ),
+        );
+        idb.close();
+        return { out, version: idb.version };
+      },
+      Object.keys(SCHEMA).filter((k) => k !== 'kv' && k !== 'snapshots'),
+    );
+    expect(after.version).toBe(30);
+    const fixture = JSON.parse(FIXTURE) as { tables: Record<string, { id: string }[]> };
+    for (const [t, rows] of Object.entries(fixture.tables)) {
+      expect(after.out[t], t).toEqual(rows.map((r) => r.id).sort());
+    }
+  });
 
 test('Datenbank öffnet nicht: Rettungsseite statt weißem Bildschirm, Rohdaten lassen sich sichern', async ({
   page,

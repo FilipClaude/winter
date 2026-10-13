@@ -1,10 +1,8 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import {
-  Activity,
   ChevronLeft,
   ChevronRight,
   CircleDashed,
-  Droplet,
   Dumbbell,
   Footprints,
   HeartPulse,
@@ -17,7 +15,7 @@ import {
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { db } from '../../db/db';
-import { addWater, toggleHabit, updateDay } from '../../db/repo';
+import { toggleHabit, updateDay } from '../../db/repo';
 import { useKV, useSettings } from '../../hooks/useSettings';
 import { useToday } from '../../hooks/useNow';
 import { dayRing } from '../../lib/calc/ring';
@@ -28,9 +26,8 @@ import { FrostCheck, Scale } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
 import { Badge, Banner, Button, Card, EmptyState, IconButton, ProgressBar, ScreenHeader } from '../../ui/primitives';
 import { NumberTicker, Ring } from '../../ui/visual';
-import { MealSheet } from '../body/MealSheet';
 import { openHealthSheet } from '../health/openHealth';
-import { DeadlineAlerts, NextDateCard } from '../school/DeadlineAlerts';
+import { DeadlineAlerts } from '../school/DeadlineAlerts';
 import { PendingMatchBanners } from '../training/BfvCard';
 import { openSessionSheet } from '../training/openSession';
 import { SESSION_ICON } from '../training/session-icons';
@@ -133,7 +130,6 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
   const importedToday = lastImport !== undefined && toISODate(lastImport) === today;
   const g = settings.goals;
   const isToday = date === today;
-  const openMeal = () => openSheet({ title: 'Mahlzeit', render: (close) => <MealSheet date={date} close={close} /> });
 
   const steps = (
     <Card label="Schritte" icon={Footprints} ariaLabel="Schritte">
@@ -170,41 +166,6 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
         </>
       ) : (
         <p className="small faint card-empty">Nicht erfasst</p>
-      )}
-    </Card>
-  );
-
-  const protein = (
-    <Card label="Protein" icon={Activity} ariaLabel="Protein" action={<IconButton icon={Plus} label="Mahlzeit eintragen" variant="accent" onClick={openMeal} />}>
-      <div className="big big--m" data-testid="protein-value">
-        <NumberTicker value={data.proteinG} />
-        <span className="unit">g</span>
-      </div>
-      <div className="of" style={{ margin: '6px 0 10px' }}>
-        von {g.proteinG} g · {data.kcal.toLocaleString('de-DE')} kcal
-      </div>
-      <ProgressBar value={g.proteinG > 0 ? data.proteinG / g.proteinG : 0} label="Proteinziel" />
-    </Card>
-  );
-
-  const water = (
-    <Card label="Wasser" icon={Droplet} ariaLabel="Wasser" action={<IconButton icon={Plus} label="Ein Glas Wasser" variant="accent" onClick={() => void addWater(date, 1)} />}>
-      <div className="big big--m" data-testid="water-value">
-        <NumberTicker value={data.day.water} />
-        <span className="unit">Gläser</span>
-      </div>
-      <div className="of" style={{ margin: '6px 0 10px' }}>
-        von {g.waterGlasses} · {((data.day.water * settings.glassMl) / 1000).toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} l
-      </div>
-      <div className="glasses" aria-hidden>
-        {Array.from({ length: Math.max(g.waterGlasses, data.day.water) }, (_, i) => (
-          <i key={i} className={i < data.day.water ? 'on' : ''} />
-        ))}
-      </div>
-      {data.day.water > 0 && (
-        <button type="button" className="btn btn--ghost btn--s glasses__undo" onClick={() => void addWater(date, -1)}>
-          Ein Glas zurück
-        </button>
       )}
     </Card>
   );
@@ -276,31 +237,13 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
           ),
         }
       : null,
-    deadlines: { l: <NextDateCard today={date} /> },
+    nextExam: null,
+    earnings: null,
     studyToday: { l: <StudyTodayWidget date={date} /> },
     training: { l: <TrainingCard date={date} sessions={data.sessions} plan={settings.weekPlan[String(isoWeekday(date))] ?? []} /> },
     nextMatch: { l: <NextMatchWidget today={today} /> },
     steps: { l: steps, s: steps },
     sleep: { l: sleep, s: sleep },
-    nutrition: {
-      l: (
-        <div className="grid-2">
-          {protein}
-          {water}
-        </div>
-      ),
-      s: (
-        <Card label="Ernährung" icon={Activity} ariaLabel="Ernährung kompakt" action={<IconButton icon={Plus} label="Mahlzeit eintragen" variant="accent" onClick={openMeal} />}>
-          <div className="big big--s num" data-testid="protein-value">
-            {Math.round(data.proteinG)}
-            <span className="unit">g</span>
-          </div>
-          <div className="of" style={{ marginTop: 4 }}>
-            <span data-testid="water-value">{data.day.water}</span> Gläser Wasser
-          </div>
-        </Card>
-      ),
-    },
     habits: {
       l: (
         <Card label="Habits" icon={Repeat} ariaLabel="Habits" action={<Button variant="ghost" size="s" onClick={() => navigate('habits')}>Alle</Button>}>

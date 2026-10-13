@@ -17,6 +17,7 @@ function empty(): ReviewData {
     exams: [],
     habits: [],
     checks: [],
+    earnings: [],
   };
 }
 

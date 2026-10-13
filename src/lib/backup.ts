@@ -3,6 +3,7 @@ import { BACKUP_KV_KEYS, DATA_TABLES, db, SCHEMA_VERSION, type DataTable } from 
 import {
   zDay,
   zDeadline,
+  zEarning,
   zExam,
   zExerciseTemplate,
   zGoal,
@@ -13,6 +14,7 @@ import {
   zLesson,
   zMeal,
   zMealTemplate,
+  zMockExam,
   zModule,
   zSemesterResult,
   zSession,
@@ -34,6 +36,8 @@ const TABLE_SCHEMAS: Record<DataTable, z.ZodType> = {
   studyBlocks: zStudyBlock,
   lessons: zLesson,
   goals: zGoal,
+  earnings: zEarning,
+  mockExams: zMockExam,
   sessions: zSession,
   exerciseTemplates: zExerciseTemplate,
   meals: zMeal,
@@ -72,6 +76,8 @@ export const TABLE_LABEL: Record<DataTable, string> = {
   studyBlocks: 'Lerneinheiten (Plan)',
   lessons: 'Stundenplan',
   goals: 'Ziele',
+  earnings: 'Verdienst',
+  mockExams: 'Probe-Klausuren',
 };
 
 /** kv-Schlüssel, die ins Backup gehören (Zeitstempel des Backups selbst nicht). */
@@ -135,6 +141,12 @@ export function migrateBackup(b: BackupFile): BackupFile {
     // neue Felder sind optional; Einstellungen werden beim Lesen ergänzt (parseSettings).
     for (const t of DATA_TABLES) out.tables[t] ??= [];
     out.schemaVersion = 2;
+  }
+  if (out.schemaVersion < 3) {
+    // v2 → v3: nur neue Tabellen (Verdienst, Probe-Klausuren). Mahlzeiten, Wasser und FernUni bleiben
+    // unverändert erhalten, auch wenn die Oberfläche sie nicht mehr zeigt.
+    for (const t of DATA_TABLES) out.tables[t] ??= [];
+    out.schemaVersion = 3;
   }
   return out;
 }
@@ -344,16 +356,19 @@ export async function ensureDailySnapshot(now: Date = new Date()): Promise<boole
   return true;
 }
 
+/** Kennung der Sicherung vor dem Update auf die aktuelle Schemaversion. */
+export const MIGRATION_SNAPSHOT_ID = `vor-v${SCHEMA_VERSION}`;
+
 /**
- * Nach dem Update v1 → v2: Sicherung „vor-v2“. Die Migration ist rein additiv, der Inhalt entspricht
- * also dem v1-Stand. Läuft nach dem Öffnen in einer normalen Transaktion – ein Fehler hier blockiert
- * die App nicht. Wird nach 30 Tagen automatisch entfernt.
+ * Nach einem Schema-Update (v1/v2 → v3): Sicherung „vor-v3“. Die Migrationen sind rein additiv, der
+ * Inhalt entspricht also dem alten Stand. Läuft nach dem Öffnen in einer normalen Transaktion – ein
+ * Fehler hier blockiert die App nicht. Wird nach 30 Tagen automatisch entfernt.
  */
 export async function ensureMigrationSnapshot(now: Date = new Date()): Promise<boolean> {
-  if (!db.migratedFromV1) return false;
-  db.migratedFromV1 = false;
-  if ((await readIndex(false)).some((m) => m.id === 'vor-v2')) return false;
-  const { backup, meta } = await snapshotOf('migration', 'vor-v2', now);
+  if (db.migratedFrom === null) return false;
+  db.migratedFrom = null;
+  if ((await readIndex(false)).some((m) => m.id === MIGRATION_SNAPSHOT_ID)) return false;
+  const { backup, meta } = await snapshotOf('migration', MIGRATION_SNAPSHOT_ID, now);
   if (meta.rows === 0) return false;
   await writeSnapshot(meta, backup, now);
   return true;

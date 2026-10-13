@@ -1,5 +1,6 @@
 import type {
   Day,
+  Earning,
   Exam,
   Habit,
   HabitCheck,
@@ -26,6 +27,8 @@ export interface ReviewData {
   exams: Exam[];
   habits: Habit[];
   checks: HabitCheck[];
+  /** v3 */
+  earnings: Earning[];
 }
 
 export interface DayPoint {

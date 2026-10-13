@@ -1,27 +1,59 @@
 import {
   DASHBOARD_WIDGETS,
   DEFAULT_DASHBOARD,
+  V2_DEFAULT_DASHBOARD,
   type DashboardWidget,
   type DashboardWidgetId,
+  type StoredDashboardWidget,
 } from '../../db/schemas';
 
+const isCurrent = (id: string): id is DashboardWidgetId =>
+  (DASHBOARD_WIDGETS as readonly string[]).includes(id);
+
+const sameLayout = (a: StoredDashboardWidget[], b: StoredDashboardWidget[]) =>
+  a.length === b.length &&
+  a.every((w, i) => w.id === b[i]?.id && w.size === b[i]?.size && w.hidden === b[i]?.hidden);
+
 /**
- * Bereinigt eine gespeicherte Anordnung: unbekannte und doppelte Einträge fallen weg, Widgets aus
- * späteren Versionen werden mit Standardgröße hinten angehängt (sichtbar).
+ * Neue Widgets in ein eigenes Layout einsortieren: hinter das erste vorhandene Widget aus `after`,
+ * sonst ganz vorne (`nextExam`) bzw. hinten. So landet „Nächste Klausur“ direkt nach dem Briefing.
  */
-export function normalizeDashboard(list: DashboardWidget[]): DashboardWidget[] {
+const PLACE_AFTER: Partial<Record<DashboardWidgetId, DashboardWidgetId[]>> = {
+  nextExam: ['briefing'],
+  earnings: ['nextMatch', 'training', 'studyToday'],
+};
+
+/**
+ * Bereinigt eine gespeicherte Anordnung: unbekannte, entfallene (v2: Ernährung, Nächste Termine) und
+ * doppelte Einträge fallen weg, neue Widgets kommen sichtbar mit Standardgröße an ihren Platz.
+ * Wer die unveränderte v2-Standardanordnung hat (oder keine), bekommt den neuen Standard.
+ */
+export function normalizeDashboard(list: StoredDashboardWidget[]): DashboardWidget[] {
+  if (list.length === 0 || sameLayout(list, V2_DEFAULT_DASHBOARD))
+    return DEFAULT_DASHBOARD.map((w) => ({ ...w }));
   const seen = new Set<DashboardWidgetId>();
   const out: DashboardWidget[] = [];
   for (const w of list) {
-    if (!(DASHBOARD_WIDGETS as readonly string[]).includes(w.id) || seen.has(w.id)) continue;
-    seen.add(w.id);
-    out.push(w);
+    const id = w.id;
+    if (!isCurrent(id) || seen.has(id)) continue;
+    seen.add(id);
+    out.push({ ...w, id });
   }
-  for (const d of DEFAULT_DASHBOARD) if (!seen.has(d.id)) out.push(d);
+  for (const d of DEFAULT_DASHBOARD) {
+    if (seen.has(d.id)) continue;
+    const after = PLACE_AFTER[d.id];
+    if (after) {
+      // Anker in Prioritätsreihenfolge (Verdienst lieber hinter „Nächstes Spiel“ als hinter „Training“)
+      const anchor = after.map((id) => out.findIndex((w) => w.id === id)).find((i) => i >= 0) ?? -1;
+      if (anchor >= 0) out.splice(anchor + 1, 0, { ...d });
+      else if (d.id === 'nextExam') out.unshift({ ...d });
+      else out.push({ ...d });
+    } else out.push({ ...d });
+  }
   return out;
 }
 
-/** Sichtbare Widgets in Anzeigereihenfolge; bei kritischen Fristen stehen die Hinweise ganz oben. */
+/** Sichtbare Widgets in Anzeigereihenfolge; bei kritischen Hinweisen stehen sie ganz oben. */
 export function orderForDisplay(list: DashboardWidget[], critical: boolean): DashboardWidget[] {
   const visible = list.filter((w) => !w.hidden);
   if (!critical) return visible;

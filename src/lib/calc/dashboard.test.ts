@@ -74,6 +74,7 @@ const empty: ReviewData = {
   exams: [],
   habits: [],
   checks: [],
+  earnings: [],
 };
 const session = (date: string, type: Session['type']): Session => ({
   id: `${date}-${type}`,

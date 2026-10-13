@@ -22,6 +22,9 @@ const dated = { ...meta, date: zDate };
 // ---------- Training ----------
 
 export const SESSION_TYPES = ['football', 'match', 'gym', 'run', 'recovery', 'other'] as const;
+/** v3: Trainingssplit einer Gym-Einheit. */
+export const GYM_SPLITS = ['push', 'pull', 'legs'] as const;
+export type GymSplit = (typeof GYM_SPLITS)[number];
 export const zSessionType = z.enum(SESSION_TYPES);
 export type SessionType = z.infer<typeof zSessionType>;
 
@@ -71,6 +74,8 @@ export const zSession = z.object({
   bfv: zBfvMatch.optional(),
   /** v2: Index-Feld für schnelle Suche nach BFV-Spielen. */
   bfvId: z.string().max(80).optional(),
+  /** v3: Split einer Gym-Einheit (fehlt = „Gym“ ohne Split, z. B. alte Einheiten). */
+  split: z.enum(GYM_SPLITS).optional(),
 });
 export type Session = z.infer<typeof zSession>;
 
@@ -330,8 +335,11 @@ export const GOAL_METRICS = [
   'avgSteps',
   'habitRate',
   'abiAverage',
+  'earnings',
 ] as const;
 export type GoalMetric = (typeof GOAL_METRICS)[number];
+/** v3: In der Oberfläche wählbare Kennzahlen (`avgProtein` bleibt für alte, archivierte Ziele lesbar). */
+export const GOAL_METRICS_ACTIVE = GOAL_METRICS.filter((m) => m !== 'avgProtein');
 
 export const zGoal = z.object({
   ...meta,
@@ -353,6 +361,37 @@ export const zSnapshot = z.object({
   data: z.unknown(),
 });
 export type Snapshot = z.infer<typeof zSnapshot>;
+
+// ---------- v3: Probe-Klausuren, Verdienst ----------
+
+/** Probe-Durchgang einer Klausur: erreichte und maximale Bewertungseinheiten (BE, Kommazahlen erlaubt). */
+export const zMockExam = z
+  .object({
+    ...dated,
+    examId: zId,
+    subjectId: zId,
+    points: z.number().min(0).max(1000),
+    maxPoints: z.number().positive().max(1000),
+    durationMin: zInt(1, 600).optional(),
+    note: zText(500).optional(),
+  })
+  .refine((m) => m.points <= m.maxPoints, {
+    error: 'Erreichte BE dürfen nicht über dem Maximum liegen',
+    path: ['points'],
+  });
+export type MockExam = z.infer<typeof zMockExam>;
+
+/** Verdienst-Eintrag. Beträge immer in Cent als Ganzzahl (nie Kommazahlen speichern). */
+export const zEarning = z.object({
+  ...dated,
+  amountCents: z
+    .number()
+    .int({ error: 'Betrag in Cent muss eine ganze Zahl sein' })
+    .positive({ error: 'Betrag muss größer als 0 sein' })
+    .max(10_000_000, { error: 'Betrag ist unplausibel hoch' }),
+  note: zText(80).optional(),
+});
+export type Earning = z.infer<typeof zEarning>;
 
 // ---------- Habits ----------
 
@@ -397,14 +436,14 @@ export type SkyPhase = (typeof SKY_PHASES)[number];
 export const DASHBOARD_WIDGETS = [
   'briefing',
   'ring',
+  'nextExam',
   'alerts',
-  'deadlines',
   'studyToday',
   'training',
   'nextMatch',
+  'earnings',
   'steps',
   'sleep',
-  'nutrition',
   'habits',
   'mood',
   'abi',
@@ -412,13 +451,16 @@ export const DASHBOARD_WIDGETS = [
   'journal',
 ] as const;
 export type DashboardWidgetId = (typeof DASHBOARD_WIDGETS)[number];
+/** Widgets aus v2, die es nicht mehr gibt. Gespeicherte Anordnungen mit ihnen bleiben gültig (sie fallen beim Anzeigen weg). */
+export const LEGACY_WIDGETS = ['deadlines', 'nutrition'] as const;
 
 export const zDashboardWidget = z.object({
-  id: z.enum(DASHBOARD_WIDGETS),
+  id: z.enum([...DASHBOARD_WIDGETS, ...LEGACY_WIDGETS]),
   size: z.enum(['s', 'l']),
   hidden: z.boolean(),
 });
-export type DashboardWidget = z.infer<typeof zDashboardWidget>;
+export type StoredDashboardWidget = z.infer<typeof zDashboardWidget>;
+export type DashboardWidget = StoredDashboardWidget & { id: DashboardWidgetId };
 
 export const zSettings = z.object({
   goals: zGoals,
@@ -430,10 +472,16 @@ export const zSettings = z.object({
   /** In den Tagesring einbezogene Ziele. */
   ring: z.object({
     habits: z.boolean(),
+    /** v1/v2, seit v3 ohne Wirkung (bleibt für alte Backups lesbar). */
     protein: z.boolean(),
+    /** v1/v2, seit v3 ohne Wirkung (bleibt für alte Backups lesbar). */
     water: z.boolean(),
     study: z.boolean(),
     sleep: z.boolean(),
+    /** v3 */
+    training: z.boolean(),
+    /** v3 */
+    earnings: z.boolean(),
   }),
   // ----- v2 -----
   snowMode: z.enum(['off', 'subtle', 'weather']),
@@ -467,10 +515,31 @@ export const zSettings = z.object({
     }),
   }),
   bfv: z.object({ enabled: z.boolean(), playerName: zText(80) }),
+  // ----- v3 -----
+  /** Wochenziel Verdienst in Cent (0 = aus). */
+  earnings: z.object({ weeklyGoalCents: z.number().int().min(0).max(10_000_000) }),
+  /**
+   * Schätzung Prozent → Notenpunkte für Probe-Klausuren: Mindestprozent für 15, 14, …, 1 Punkt
+   * (15 Werte, streng fallend). Darunter 0 Punkte.
+   */
+  npScale: z
+    .array(z.number().min(0).max(100))
+    .length(15)
+    .refine((xs) => xs.every((x, i) => i === 0 || x < (xs[i - 1] ?? 101)), {
+      error: 'Die Schwellen müssen von 15 nach 1 Punkt fallen',
+    }),
 });
 export type Settings = z.infer<typeof zSettings>;
 
-export const DEFAULT_DASHBOARD: DashboardWidget[] = [
+/**
+ * Standard-Notenschlüssel für Probe-Klausuren: der verbreitete Abitur-Schlüssel nach den
+ * Einheitlichen Prüfungsanforderungen (EPA) – 15 Punkte ab 95 %, in 5-%-Schritten bis 5 Punkte ab 45 %,
+ * dann 4 ab 40, 3 ab 33, 2 ab 27, 1 ab 20 %. Nur eine Schätzung, der Schlüssel der Schule kann abweichen.
+ */
+export const DEFAULT_NP_SCALE = [95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 40, 33, 27, 20];
+
+/** Standard-Anordnung von v2 (eingefroren): Wer sie unverändert hat, bekommt den neuen Standard. */
+export const V2_DEFAULT_DASHBOARD: StoredDashboardWidget[] = [
   { id: 'briefing', size: 'l', hidden: false },
   { id: 'ring', size: 'l', hidden: false },
   { id: 'alerts', size: 'l', hidden: false },
@@ -483,6 +552,25 @@ export const DEFAULT_DASHBOARD: DashboardWidget[] = [
   { id: 'abi', size: 's', hidden: false },
   { id: 'training', size: 'l', hidden: false },
   { id: 'habits', size: 'l', hidden: false },
+  { id: 'goals', size: 'l', hidden: false },
+  { id: 'mood', size: 'l', hidden: false },
+  { id: 'journal', size: 'l', hidden: false },
+];
+
+/** Standard ab v3: Briefing, Ring, Nächste Klausur, Lernen, Training/Spiel, Verdienst, Habits, Rest. */
+export const DEFAULT_DASHBOARD: DashboardWidget[] = [
+  { id: 'briefing', size: 'l', hidden: false },
+  { id: 'ring', size: 'l', hidden: false },
+  { id: 'nextExam', size: 'l', hidden: false },
+  { id: 'alerts', size: 'l', hidden: false },
+  { id: 'studyToday', size: 'l', hidden: false },
+  { id: 'training', size: 'l', hidden: false },
+  { id: 'nextMatch', size: 's', hidden: false },
+  { id: 'earnings', size: 's', hidden: false },
+  { id: 'habits', size: 'l', hidden: false },
+  { id: 'steps', size: 's', hidden: false },
+  { id: 'sleep', size: 's', hidden: false },
+  { id: 'abi', size: 's', hidden: false },
   { id: 'goals', size: 'l', hidden: false },
   { id: 'mood', size: 'l', hidden: false },
   { id: 'journal', size: 'l', hidden: false },
@@ -502,7 +590,15 @@ export const DEFAULT_SETTINGS: Settings = {
   glassMl: 250,
   snow: true,
   shortcutName: 'Winter Health',
-  ring: { habits: true, protein: true, water: true, study: true, sleep: true },
+  ring: {
+    habits: true,
+    protein: true,
+    water: true,
+    study: true,
+    sleep: true,
+    training: true,
+    earnings: true,
+  },
   snowMode: 'subtle',
   skySimulate: 'auto',
   tilt: false,
@@ -519,6 +615,8 @@ export const DEFAULT_SETTINGS: Settings = {
     seminar: { s1: null, s2: null, paper: null },
   },
   bfv: { enabled: true, playerName: '' },
+  earnings: { weeklyGoalCents: 0 },
+  npScale: DEFAULT_NP_SCALE,
 };
 
 /** Laufender Lern-Timer: gespeicherte Startzeit, damit er Schließen/Neuladen übersteht. */

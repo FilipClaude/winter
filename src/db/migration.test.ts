@@ -7,6 +7,7 @@ import {
   ensureDailySnapshot,
   ensureMigrationSnapshot,
   listSnapshots,
+  MIGRATION_SNAPSHOT_ID,
   saveSafetySnapshot,
   SAFETY_KEEP,
   previewBackup,
@@ -29,8 +30,8 @@ beforeEach(async () => {
   await db.open();
 });
 
-describe('Migration v1 → v2 (echte Dexie-Datenbank)', () => {
-  it('öffnet eine v1-Datenbank mit v2, ohne einen Datensatz zu verlieren, und legt einen Sicherungs-Snapshot an', async () => {
+describe('Migration v1 → v3 (echte Dexie-Datenbank)', () => {
+  it('öffnet eine v1-Datenbank mit v3, ohne einen Datensatz zu verlieren, und legt einen Sicherungs-Snapshot an', async () => {
     const name = 'migration-v1';
     await Dexie.delete(name);
     const v1 = new Dexie(name);
@@ -57,7 +58,15 @@ describe('Migration v1 → v2 (echte Dexie-Datenbank)', () => {
       expect(actual.sort(byId), t).toEqual([...expected].sort(byId));
     }
     // Neue Tabellen existieren und sind leer
-    for (const t of ['grades', 'semesterResults', 'studyBlocks', 'lessons', 'goals']) {
+    for (const t of [
+      'grades',
+      'semesterResults',
+      'studyBlocks',
+      'lessons',
+      'goals',
+      'earnings',
+      'mockExams',
+    ]) {
       expect(await v2.table(t).count(), t).toBe(0);
     }
     // Einstellungen: v1-Werte bleiben, v2-Felder kommen dazu
@@ -69,26 +78,26 @@ describe('Migration v1 → v2 (echte Dexie-Datenbank)', () => {
     expect((await v2.kv.get('timer'))?.value).toEqual(f.kv.timer);
     // Das Upgrade selbst schreibt nichts (ein Fehler dort würde die App bei jedem Start blockieren),
     // es merkt sich nur die Migration für den Snapshot danach.
-    expect(v2.migratedFromV1).toBe(true);
+    expect(v2.migratedFrom).toBe(1);
     expect(await v2.snapshots.count()).toBe(0);
     v2.close();
     await Dexie.delete(name);
   });
 
-  it('nach der Migration: Sicherung „vor-v2“ mit allen Datensätzen, genau einmal', async () => {
+  it('nach der Migration: Sicherung „vor-v3“ mit allen Datensätzen, genau einmal', async () => {
     const p = previewBackup(FIXTURE_TEXT);
     if (!p.ok) throw new Error(p.error);
     await restoreBackup(p.preview.backup);
-    db.migratedFromV1 = true;
+    db.migratedFrom = 1;
     expect(await ensureMigrationSnapshot(new Date('2026-10-12T19:00:00Z'))).toBe(true);
     expect(await ensureMigrationSnapshot(new Date('2026-10-12T19:05:00Z'))).toBe(false);
-    const meta = (await listSnapshots()).find((s) => s.id === 'vor-v2');
+    const meta = (await listSnapshots()).find((s) => s.id === MIGRATION_SNAPSHOT_ID);
     expect(meta?.reason).toBe('migration');
     expect(meta?.rows).toBe(p.preview.total);
   });
 
   it('frische Installation: kein Migrations-Snapshot, Standardfächer vorhanden', async () => {
-    expect(db.migratedFromV1).toBe(false);
+    expect(db.migratedFrom).toBeNull();
     expect(await ensureMigrationSnapshot()).toBe(false);
     expect(await db.snapshots.count()).toBe(0);
     expect(await db.subjects.count()).toBeGreaterThan(5);
@@ -100,7 +109,7 @@ describe('Import alter Backups', () => {
     const p = previewBackup(FIXTURE_TEXT);
     expect(p.ok).toBe(true);
     if (!p.ok) return;
-    expect(p.preview.backup.schemaVersion).toBe(2);
+    expect(p.preview.backup.schemaVersion).toBe(SCHEMA_VERSION);
     await restoreBackup(p.preview.backup);
     const out = await createBackup();
     expect(out.schemaVersion).toBe(SCHEMA_VERSION);
@@ -236,14 +245,14 @@ describe('Automatische Snapshots', () => {
     expect(await db.snapshots.count()).toBe(SAFETY_KEEP);
   });
 
-  it('„vor-v2“ wird nach 30 Tagen beim nächsten Snapshot entfernt', async () => {
-    db.migratedFromV1 = true;
+  it('„vor-v3“ wird nach 30 Tagen beim nächsten Snapshot entfernt', async () => {
+    db.migratedFrom = 1;
     await ensureMigrationSnapshot(new Date('2026-10-12T10:00:00Z'));
     await ensureDailySnapshot(new Date('2026-11-05T10:00:00Z'));
-    expect((await listSnapshots()).some((s) => s.id === 'vor-v2')).toBe(true);
+    expect((await listSnapshots()).some((s) => s.id === MIGRATION_SNAPSHOT_ID)).toBe(true);
     await ensureDailySnapshot(new Date('2026-11-12T10:00:00Z'));
-    expect((await listSnapshots()).some((s) => s.id === 'vor-v2')).toBe(false);
-    expect(await db.snapshots.get('vor-v2')).toBeUndefined();
+    expect((await listSnapshots()).some((s) => s.id === MIGRATION_SNAPSHOT_ID)).toBe(false);
+    expect(await db.snapshots.get(MIGRATION_SNAPSHOT_ID)).toBeUndefined();
   });
 
   it('kein Snapshot bei knappem Speicher (> 50 % belegt)', async () => {

@@ -631,6 +631,23 @@ export async function deleteGoal(id: string): Promise<void> {
   await db.goals.delete(id);
 }
 
+/** Kennzahlen, die es in der Oberfläche nicht mehr gibt (v3: Ernährung). Ziele dazu werden archiviert. */
+export const RETIRED_GOAL_METRICS: readonly Goal['metric'][] = ['avgProtein'];
+
+/**
+ * Archiviert Ziele mit entfallenen Kennzahlen (nicht löschen – sie bleiben in DB und Backup).
+ * Idempotent; läuft nach dem Start (nach der Sicherung „vor-v3“) und schreibt nur, wenn es etwas gibt.
+ */
+export async function archiveRetiredGoals(): Promise<number> {
+  return db.transaction('rw', db.goals, async () => {
+    const retired = (await db.goals.toArray()).filter(
+      (g) => !g.archived && RETIRED_GOAL_METRICS.includes(g.metric),
+    );
+    for (const g of retired) await db.goals.put({ ...g, archived: true, updatedAt: nowISO() });
+    return retired.length;
+  });
+}
+
 // ---------- Habits ----------
 
 export async function saveHabit(input: WithOptionalMeta<Omit<Habit, 'order'>> & { order?: number }) {

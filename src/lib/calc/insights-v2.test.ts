@@ -15,6 +15,7 @@ const empty = (): ReviewData => ({
   exams: [],
   habits: [],
   checks: [],
+  earnings: [],
 });
 const sleepOn = (date: string, h: number): Sleep => ({
   ...meta,
