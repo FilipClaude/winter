@@ -3,7 +3,7 @@ import type { SkyWeights } from './phase';
 
 export type RGB = [number, number, number];
 
-export const SKY_STOPS = ['top', 'mid', 'horizon', 'glow', 'alp-1', 'alp-2', 'alp-3'] as const;
+export const SKY_STOPS = ['top', 'mid', 'horizon', 'glow', 'alp-1', 'alp-2', 'alp-3', 'snow'] as const;
 export type SkyStop = (typeof SKY_STOPS)[number];
 
 export interface SkyPalette {
@@ -38,22 +38,38 @@ export function readPalettes(get: (name: string) => string): Record<SkyPhase, Sk
   return out;
 }
 
-/** Mischt die Paletten nach Gewichten (Summe 1) – weiche Übergänge zwischen den Phasen. */
-export function blendPalette(palettes: Record<SkyPhase, SkyPalette>, w: SkyWeights): SkyPalette {
-  const colors = {} as Record<SkyStop, RGB>;
-  for (const s of SKY_STOPS) {
-    const c: RGB = [0, 0, 0];
-    for (const p of SKY_PHASES) {
-      const pc = palettes[p].colors[s];
-      for (let i = 0; i < 3; i++) c[i] = (c[i] ?? 0) + (pc[i] ?? 0) * w[p];
-    }
-    colors[s] = c;
-  }
+/**
+ * Mischt die Paletten nach Gewichten (Summe 1) – weiche Übergänge zwischen den Phasen.
+ *
+ * Gemischt wird die **sichtbare** Farbe (nach Abdunklung mit `bg`), dann zurückgerechnet auf die
+ * gemischte Abdunklung. So liegt jede Zwischenstufe zwischen zwei getesteten Endzuständen. Früher
+ * wurden Rohfarbe und Abdunklung getrennt gemischt – mitten im Übergang Nacht → Morgen wurde der Himmel
+ * dadurch heller als jede der beiden Phasen (Text-Kontrast < 4,5).
+ */
+export function blendPalette(palettes: Record<SkyPhase, SkyPalette>, w: SkyWeights, bg: RGB): SkyPalette {
   let veil = 0;
   let glass = 0;
   for (const p of SKY_PHASES) {
     veil += palettes[p].veil * w[p];
     glass += palettes[p].glass * w[p];
   }
+  const colors = {} as Record<SkyStop, RGB>;
+  for (const s of SKY_STOPS) {
+    const c: RGB = [0, 0, 0];
+    for (let i = 0; i < 3; i++) {
+      let shown = 0;
+      for (const p of SKY_PHASES) {
+        const v = palettes[p].veil;
+        shown += (v * (bg[i] ?? 0) + (1 - v) * (palettes[p].colors[s][i] ?? 0)) * w[p];
+      }
+      c[i] = veil >= 1 ? 0 : Math.max(0, (shown - veil * (bg[i] ?? 0)) / (1 - veil));
+    }
+    colors[s] = c;
+  }
   return { colors, veil, glass };
+}
+
+/** Sichtbare Farbe eines Paletten-Stopps nach der Abdunklung (für Tests und Kontrastprüfung). */
+export function shownColor(pal: SkyPalette, stop: SkyStop, bg: RGB): RGB {
+  return pal.colors[stop].map((c, i) => pal.veil * (bg[i] ?? 0) + (1 - pal.veil) * c) as RGB;
 }

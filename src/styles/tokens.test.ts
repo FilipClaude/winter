@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { blendPalette, readPalettes, shownColor, SKY_STOPS } from '../lib/sky/palette';
 
 const css = readFileSync(new URL('./tokens.css', import.meta.url), 'utf8');
 
@@ -56,7 +57,7 @@ describe('Design-Tokens: Kontrast nach WCAG AA', () => {
 describe('Winterhimmel: Lesbarkeit in jeder Phase (WCAG AA)', () => {
   // Jede Stelle des Himmels kann hinter Text liegen – also jede Farbe der Palette prüfen,
   // auch das hellste Horizontlicht und die Alpen.
-  const STOPS = ['top', 'mid', 'horizon', 'glow', 'alp-1', 'alp-2', 'alp-3'];
+  const STOPS = ['top', 'mid', 'horizon', 'glow', 'alp-1', 'alp-2', 'alp-3', 'snow'];
   for (const phase of ['night', 'dawn', 'day', 'dusk']) {
     const veil = numberToken(`sky-${phase}-veil`);
     const glass = numberToken(`sky-${phase}-glass`);
@@ -74,6 +75,49 @@ describe('Winterhimmel: Lesbarkeit in jeder Phase (WCAG AA)', () => {
       }
     }
   }
+
+  it('auch jede Zwischenstufe der Übergänge bleibt lesbar (Mischung in 5-%-Schritten)', () => {
+    const palettes = readPalettes((name) => {
+      const m = new RegExp(`${name}:\\s*([^;]+);`).exec(css);
+      return m?.[1]?.trim() ?? '';
+    });
+    const bg = rgb(token('color-bg'));
+    const pairs = [
+      ['night', 'dawn'],
+      ['dawn', 'day'],
+      ['day', 'dusk'],
+      ['dusk', 'night'],
+    ] as const;
+    let worst = Infinity;
+    for (const [a, b] of pairs) {
+      for (let t = 0; t <= 1.0001; t += 0.05) {
+        const w = { night: 0, dawn: 0, day: 0, dusk: 0, [a]: 1 - t, [b]: t };
+        const pal = blendPalette(palettes, w, bg);
+        for (const stop of SKY_STOPS) {
+          const shown = hex(shownColor(pal, stop, bg));
+          for (const fg of TEXTS) worst = Math.min(worst, contrast(token(fg), shown));
+        }
+      }
+    }
+    expect(worst).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('Alpen heben sich vom Himmel ab: nachts hellere ferne Kette, tagsüber dunkle Silhouetten, helle Gipfel', () => {
+    const shown = (phase: string, stop: string) =>
+      luminance(over(token('color-bg'), numberToken(`sky-${phase}-veil`), token(`sky-${phase}-${stop}`)));
+    // Nacht: ferne Kette deutlich heller als der Horizont dahinter (L* ≈ 11,6 gegenüber 6,3)
+    expect(shown('night', 'alp-1')).toBeGreaterThan(shown('night', 'horizon') * 1.8);
+    for (const phase of ['dawn', 'day', 'dusk']) {
+      // Tag/Dämmerung: Silhouette deutlich dunkler als der Himmel in ihrer Höhe (mid … horizon)
+      expect(shown(phase, 'alp-1')).toBeLessThan(shown(phase, 'mid') * 0.8);
+    }
+    for (const phase of ['night', 'dawn', 'day', 'dusk']) {
+      expect(shown(phase, 'snow')).toBeGreaterThan(shown(phase, 'alp-1') * 1.2);
+      // Ebenen von fern nach nah dunkler
+      expect(shown(phase, 'alp-2')).toBeLessThan(shown(phase, 'alp-1'));
+      expect(shown(phase, 'alp-3')).toBeLessThanOrEqual(shown(phase, 'alp-2'));
+    }
+  });
 
   it('Tag ist heller als Nacht (der Himmel ist sichtbar, nicht nur schwarz)', () => {
     const veiled = (p: string) =>

@@ -302,6 +302,12 @@ Ein Subagent hat den Diff seit Beginn von v2 ohne meine Begründungen geprüft (
 
 **CI-Fund danach (die Schranke hat gegriffen, nichts ging live):** In WebKit mit „Bewegung reduzieren“ kam der Fokus nach der Einführung nicht zurück. Ursache war nicht die Einführung, sondern die globale Regel für reduzierte Bewegung (0,01-ms-Übergänge auf *allem*). Sie hielt `visibility: hidden` fest. Das hätte auch Filips iPhone getroffen, falls die Einstellung aktiv ist (DECISIONS #76). Lokal mit `CI=1` nachgestellt, behoben und in beiden Konfigurationen grün getestet.
 
+## v2 · Nachbesserung Alpen (13.10.2026, Filips Rückmeldung) ✓
+- **Fund am iPhone:** Tageszeiten sichtbar, Alpen nicht. Ursache: Ebenen nur 10–20 % hoch (größtenteils hinter Tab-Leiste und Karten), Bergfarben fast gleich dem Himmel (nachts `#0c121d` vor `#0d1422`), Parallaxe schob sie beim Scrollen nach unten. Meine Screenshots zeigten nur leere Seiten – dort fiel es nicht auf.
+- **Behoben** (DECISIONS #77): Ketten bis 60 % hoch, breite Massive, Schneekuppen, nachts mondhell / tagsüber Silhouette, Parallaxe nach oben. Farben berechnet statt geschätzt, damit Text direkt darauf lesbar bleibt.
+- **Nebenbei gefunden:** Mitten in den Phasenübergängen konnte der Himmel heller werden als jede der beiden Phasen (Text-Kontrast knapp unter 4,5) → Mischung der sichtbaren Farbe, Test in 5-%-Schritten für alle Übergänge.
+- **Geprüft:** 955 Unit-Tests (u. a. 664 Kontrastprüfungen), 142 E2E, visuelle Referenzbilder neu erzeugt und angesehen (Heute, Schule, Einführung in Nacht und Tag).
+
 ## v2 · Phase 11 – Abschluss-Audit ✓
 - **CI** (Typecheck, Lint, Format, 873 Unit-Tests, E2E Chromium + WebKit gegen den echten `/winter/`-Build) grün, deployt.
 - **Live geprüft** (13.10.2026): Seite, Manifest (`start_url /winter/#/heute`, Scope `/winter/`, standalone, Hochformat, 4 Icons), Service Worker aktiv und kontrollierend, `bfv.json`, Icons und Startbildschirme erreichbar. **Update-Hinweis** im Browser mit alter Version im Cache ausgelöst → „Aktualisieren“ lädt die neue Version. Einführung erscheint bei frischem Profil, BFV-Karte mit echten Daten, keine Konsolenfehler.

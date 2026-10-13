@@ -51,14 +51,16 @@ const lerp = (a: RGB, b: RGB, t: number): RGB => [
 ];
 
 /** Alpenkamm als Punkte (x 0–1, y 0–1 = Anteil der Ebenenhöhe), aus überlagerten Zacken. */
-function ridge(seed: number, peaks: number, jag: number): [number, number][] {
+function ridge(seed: number, peaks: number, jag: number, width: [number, number]): [number, number][] {
   const rnd = seeded(seed);
   const pts: [number, number][] = [];
   const n = 120;
+  // Breite Massive statt Nadeln: Die Ebenen sind hoch (bis 60 % des Hochformats), schmale Gipfel
+  // sähen dort wie Stalagmiten aus.
   const tops = Array.from({ length: peaks }, () => ({
     x: rnd(),
     h: 0.45 + rnd() * 0.55,
-    w: 0.06 + rnd() * 0.12,
+    w: width[0] + rnd() * (width[1] - width[0]),
   }));
   for (let i = 0; i <= n; i++) {
     const x = i / n;
@@ -73,10 +75,22 @@ function ridge(seed: number, peaks: number, jag: number): [number, number][] {
   return pts;
 }
 
-const RIDGES = [ridge(7, 9, 0.05), ridge(19, 7, 0.07), ridge(31, 5, 0.09)];
-/** Höhe der Alpen-Ebenen (Anteil der Bildschirmhöhe) und Parallaxe-Faktoren (fern → nah). */
-const ALP_HEIGHT = [0.2, 0.15, 0.1];
-const PARALLAX = [0.015, 0.035, 0.07];
+const RIDGES = [
+  ridge(7, 6, 0.012, [0.22, 0.4]),
+  ridge(19, 5, 0.016, [0.25, 0.45]),
+  ridge(31, 4, 0.02, [0.3, 0.55]),
+];
+/**
+ * Höhe der Alpen-Ebenen (Anteil der Bildschirmhöhe, fern → nah). Die ferne Kette reicht bis 60 % hinauf –
+ * vorher (20/15/10 %) lagen die Berge fast ganz hinter Tab-Leiste und Karten (Filips Fund am iPhone).
+ */
+const ALP_HEIGHT = [0.6, 0.42, 0.26];
+/** Parallaxe: Beim Scrollen wandern die Ebenen langsamer als der Inhalt nach oben (nah = schneller). */
+const PARALLAX = [0.03, 0.06, 0.1];
+/** Höchstens so weit (px) verschiebt die Parallaxe; so viel Fläche liegt unter jeder Ebene in Reserve. */
+const PARALLAX_MAX = 80;
+/** Anteil der Schneefarbe auf den Gipfeln je Ebene (fern → nah). */
+const SNOW_MIX = [1, 0.7, 0.45];
 
 function readCssVar(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -98,6 +112,7 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
     let snowDpr = 1;
     const palettes = readPalettes(readCssVar);
     const bgColor = readCssVar('--color-bg');
+    const bgRgb = parseRgb(bgColor);
     const starColor = readCssVar('--color-star');
     const moonColor = readCssVar('--color-moon');
     const frost = readCssVar('--color-frost');
@@ -107,7 +122,7 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
     let h = 0;
     let dpr = 1;
     let state: SkyState = skyState(new Date(), skySimulate);
-    let pal: SkyPalette = blendPalette(palettes, state.weights);
+    let pal: SkyPalette = blendPalette(palettes, state.weights, bgRgb);
     const back = document.createElement('canvas');
     const alps = [0, 1, 2].map(() => document.createElement('canvas'));
     let snowFactor = snowMode === 'off' || reduce ? 0 : 1;
@@ -184,11 +199,16 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
       }
     };
 
+    /**
+     * Jede Ebene: Bergkamm (Höhe `ridgeH`) + darunter PARALLAX_MAX px Reserve, damit beim Hochwandern
+     * unten keine Lücke entsteht. Gipfel mit Schneekuppen (Token `snow`, nach unten in die Bergfarbe).
+     */
     const renderAlps = () => {
       alps.forEach((cv, i) => {
         const a = cv.getContext('2d');
         if (!a) return;
-        const lh = Math.round(h * (ALP_HEIGHT[i] ?? 0.1) + 40);
+        const ridgeH = Math.round(h * (ALP_HEIGHT[i] ?? 0.1));
+        const lh = ridgeH + PARALLAX_MAX;
         cv.width = Math.round(w * dpr);
         cv.height = Math.round(lh * dpr);
         a.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -196,18 +216,18 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
         a.fillStyle = rgbString(col);
         a.beginPath();
         a.moveTo(0, lh);
-        for (const [x, y] of RIDGES[i] ?? []) a.lineTo(x * w * 1.1 - w * 0.05, lh - y * (lh - 40));
+        for (const [x, y] of RIDGES[i] ?? []) a.lineTo(x * w * 1.1 - w * 0.05, ridgeH - y * ridgeH);
         a.lineTo(w, lh);
         a.closePath();
         a.fill();
-        // Schneekuppen ganz dezent heller
         a.globalCompositeOperation = 'source-atop';
-        const snowCap = lerp(col, parseRgb(frost), 0.06 + 0.04 * (2 - i));
-        const sg = a.createLinearGradient(0, 0, 0, lh * 0.6);
+        const snowCap = lerp(col, pal.colors.snow, SNOW_MIX[i] ?? 0.5);
+        const sg = a.createLinearGradient(0, 0, 0, ridgeH * 0.55);
         sg.addColorStop(0, rgbString(snowCap));
+        sg.addColorStop(0.35, rgbString(lerp(col, snowCap, 0.5)));
         sg.addColorStop(1, rgbString(col));
         a.fillStyle = sg;
-        a.fillRect(0, 0, w, lh * 0.6);
+        a.fillRect(0, 0, w, ridgeH * 0.55);
         a.globalCompositeOperation = 'source-over';
       });
     };
@@ -268,9 +288,10 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
       ctx.drawImage(back, 0, 0, w, h);
       alps.forEach((cv, i) => {
         const lh = cv.height / dpr;
-        const off = reduce ? 0 : Math.min(60, scrollY * (PARALLAX[i] ?? 0));
+        // Nach oben (wie ein ferner Hintergrund beim Scrollen) – vorher wanderten sie nach unten weg.
+        const off = reduce ? 0 : Math.min(PARALLAX_MAX, Math.max(0, scrollY) * (PARALLAX[i] ?? 0));
         const tx = reduce ? 0 : tiltX * (i + 1) * 3;
-        ctx.drawImage(cv, tx - 12, h - lh + off + 8, w + 24, lh);
+        ctx.drawImage(cv, tx - 12, h - (lh - PARALLAX_MAX) - off, w + 24, lh);
       });
       if (pal.veil > 0.001) {
         ctx.fillStyle = rgbString(parseRgb(bgColor), pal.veil);
@@ -307,7 +328,7 @@ export function Sky({ settings }: { settings: Pick<Settings, 'snowMode' | 'skySi
 
     const refreshSky = () => {
       state = skyState(new Date(), skySimulate);
-      pal = blendPalette(palettes, state.weights);
+      pal = blendPalette(palettes, state.weights, bgRgb);
       applyRootVars(state.phase, pal.glass);
       renderBack();
       renderAlps();
