@@ -236,3 +236,29 @@ describe('Review 3: Wiederholung ohne Fälligkeit, an verschiedenen Tagen abgeha
     expect(all.filter((x) => x.id !== t.id)).toHaveLength(1);
   });
 });
+
+describe('Review 4: zwei Serien mit gleichem Titel', () => {
+  it('Montags- und Donnerstagsserie beenden sich nicht gegenseitig', async () => {
+    const mo = await saveTodo({
+      date: '2026-10-05',
+      due: '2026-10-12',
+      title: 'Vokabeln',
+      done: false,
+      repeat: 'weekly',
+    });
+    await saveTodo({
+      date: '2026-10-05',
+      due: '2026-10-15',
+      title: 'Vokabeln',
+      done: false,
+      repeat: 'weekly',
+    });
+    await toggleTodo(mo.id);
+    const dues = (await db.todos.toArray()).map((t) => t.due).sort();
+    expect(dues.length).toBe(3);
+    expect(dues).toContain('2026-10-15');
+    // Folgeaufgabe der Montagsserie liegt wieder auf einem Montag nach heute
+    const next = dues.find((d) => d !== '2026-10-12' && d !== '2026-10-15') ?? '';
+    expect(new Date(`${next}T12:00:00Z`).getUTCDay()).toBe(1);
+  });
+});

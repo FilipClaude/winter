@@ -92,7 +92,8 @@ export function BfvCard() {
         )}
         <div className="row row--between" style={{ marginTop: 'var(--space-3)' }}>
           <span className="xsmall faint">
-            Stand {new Date(bfv.fetchedAt).toLocaleDateString('de-DE')} · <a href={bfv.team.url} target="_blank" rel="noreferrer">bfv.de</a>
+            {/* fetchedAt ändert sich nur, wenn sich Daten ändern (geprüft wird täglich) */}
+            Zuletzt geändert {new Date(bfv.fetchedAt).toLocaleDateString('de-DE')} · <a href={bfv.team.url} target="_blank" rel="noreferrer">bfv.de</a>
           </span>
           {form.length > 0 && (
             <span className="form-curve" role="img" aria-label={`Form der letzten ${form.length} Spiele: ${form.map((f) => FORM_LABEL[f]).join(', ')}`}>

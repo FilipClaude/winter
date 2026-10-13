@@ -3,7 +3,7 @@
 Stand: 12.10.2026 · Mannschaft: **SV Planegg-Krailling U17 (B-Junioren), U 17 (B-Jun.) Landesliga Bayern Süd**
 Mannschaftsseite: <https://www.bfv.de/mannschaften/sv-planegg-krailling/016PAD8FHK000000VV0AG811VTE5EA5R>
 
-> **Wichtig:** Der BFV hat **keine öffentliche API**. Der Abgleich nutzt einen offiziellen Export (iCal) und liest die Tabelle aus der öffentlichen Mannschaftsseite. Das ist für private Nutzung, zweimal pro Tag, vertretbar – aber **inoffiziell**: Jede Änderung an bfv.de kann ihn brechen. Dann wird der Workflow rot, die App behält den letzten Stand, und alles lässt sich weiter von Hand eintragen.
+> **Wichtig:** Der BFV hat **keine öffentliche API**. Der Abgleich nutzt einen offiziellen Export (iCal) und liest die Tabelle aus der öffentlichen Mannschaftsseite. Das ist für private Nutzung (ein Abgleich pro Tag, sonntags zwei, je 2 Anfragen) vertretbar – aber **inoffiziell**: Jede Änderung an bfv.de kann ihn brechen. Dann wird der Workflow rot, die App behält den letzten Stand, und alles lässt sich weiter von Hand eintragen.
 
 ## Ergebnis der Erkundung (12.10.2026)
 
@@ -29,14 +29,14 @@ GitHub Action „BFV-Abgleich“ (.github/workflows/bfv-sync.yml)
        1. iCal-Export holen          (1 Anfrage)
        2. Mannschaftsseite holen     (1 Anfrage, Tabelle)
        3. parsen + mit Zod prüfen    (src/lib/bfv/bfv.ts)
-       4. mit dem alten Stand zusammenführen (vergangene Spiele bleiben als „vorbei“)
+       4. mit dem alten Stand zusammenführen (vergangene Spiele bleiben als „vorbei“, abgesagte dauerhaft als „entfallen“; beim Saisonwechsel am 1. Juli bleiben nur die Spiele der letzten 21 Tage)
        5. public/data/bfv.json nur bei echten Änderungen schreiben
   └─ Commit „BFV-Abgleich JJJJ-MM-TT“ → startet das Deployment (pages.yml) direkt
 App: lädt data/bfv.json (Netz zuerst, offline Kopie im Service Worker und in IndexedDB)
 ```
 
 - **Schonend:** genau 2 Anfragen pro Lauf, eigener User-Agent mit Kontakt (`Winter-App/2 … github.com/FilipClaude/winter`), 20 s Zeitlimit, 3 Versuche mit wachsender Pause (2/4/8 s).
-- **Fehler:** HTTP-Fehler, kein Kalender, keine Tabelle, eigene Mannschaft fehlt oder Zod-Prüfung scheitert → Skript endet mit Code 1, **alte Datei bleibt**, Workflow rot (GitHub schickt eine Mail).
+- **Fehler:** HTTP-Fehler, kein Kalender, weniger als die Hälfte der Termine lesbar (Formatänderung), keine Tabelle, eigene Mannschaft fehlt oder Zod-Prüfung scheitert → Skript endet mit Code 1, **alte Datei bleibt**, Workflow rot (GitHub schickt eine Mail).
 - **Konfiguration:** `bfv.config.json` (Vereinsname, Mannschafts-URL, iCal-URL, optional Spieler-ID).
 
 ## 60-Tage-Regel
@@ -57,6 +57,6 @@ GitHub deaktiviert geplante Workflows in öffentlichen Repos nach **60 Tagen ohn
 ## Was die App daraus macht
 
 - **Dashboard:** Widget „Nächstes Spiel“ (Anstoß, Gegner, Heim/Auswärts, Tabellenplatz).
-- **Training:** nächstes Spiel und die folgenden, Tabelle mit eigener Zeile hervorgehoben, Formkurve (letzte 5, aus eigenen Einträgen), Stand und Link zu bfv.de.
+- **Training:** nächstes Spiel und die folgenden, Tabelle mit eigener Zeile hervorgehoben, Formkurve (letzte 5, aus eigenen Einträgen), Datum der letzten Änderung und Link zu bfv.de.
 - **Nach dem Spiel** (ab 2 h nach Anstoß, bis 21 Tage zurück): Hinweis „Spiel gegen … eintragen?“ auf Heute und Training. Gespeicherte Spiele tragen die BFV-ID; der Abgleich überschreibt **nie** manuelle Werte.
 - **Saisonstatistik:** Spiele, Tore, Assists, Scorerpunkte, Minuten, Tore/90, Assists/90, Chancenverwertung, Ø Note, S-U-N, Vergleich zur Vorsaison.

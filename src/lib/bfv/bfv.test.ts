@@ -123,6 +123,35 @@ describe('Zusammenführen und Änderungserkennung', () => {
     expect(merged.map((m) => m.kickoff)).toEqual([...merged.map((m) => m.kickoff)].sort());
   });
 
+  it('abgesagtes Spiel bleibt über mehrere Läufe „entfallen“ (Review-4-Fund)', () => {
+    const x = {
+      id: 'x',
+      kickoff: '2026-10-15T15:00:00Z',
+      home: true,
+      opponent: 'X',
+      competition: '',
+      league: '',
+      location: '',
+      status: 'geplant' as const,
+    };
+    const run1 = mergeMatches([x], [], new Date('2026-10-14T05:00:00Z'));
+    expect(run1.find((m) => m.id === 'x')?.status).toBe('entfallen');
+    const run2 = mergeMatches(run1, [], new Date('2026-10-16T05:00:00Z'));
+    expect(run2.find((m) => m.id === 'x')?.status).toBe('entfallen');
+    // Taucht es (verlegt) wieder im Export auf, ist es wieder geplant
+    const run3 = mergeMatches(
+      run2,
+      [{ ...x, kickoff: '2026-11-05T15:00:00Z' }],
+      new Date('2026-10-17T05:00:00Z'),
+    );
+    expect(run3.find((m) => m.id === 'x')?.status).toBe('geplant');
+  });
+
+  it('Formatänderung (Ortszeit mit TZID statt UTC): Fehler statt still leerer Spielplan', () => {
+    const tzid = ICS.replace(/DTSTART:(\d{8}T\d{6})Z/g, 'DTSTART;TZID=Europe/Berlin:$1');
+    expect(() => parseIcs(tzid, TEAM)).toThrow('iCal-Format unbekannt');
+  });
+
   it('Saison und Vergleich ohne Zeitstempel; Schema validiert', () => {
     expect(seasonFor(new Date('2026-10-12T00:00:00Z'))).toBe('2026/27');
     expect(seasonFor(new Date('2027-05-12T00:00:00Z'))).toBe('2026/27');

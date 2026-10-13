@@ -9,16 +9,16 @@ export function skippedByTest(): boolean {
   }
 }
 
-let reopen: (() => void) | null = null;
+let reopen: ((trigger: HTMLElement | null) => void) | null = null;
 
-export function registerOnboarding(fn: () => void): () => void {
+export function registerOnboarding(fn: (trigger: HTMLElement | null) => void): () => void {
   reopen = fn;
   return () => {
     if (reopen === fn) reopen = null;
   };
 }
 
-/** Einführung erneut zeigen (Einstellungen). */
-export function showOnboarding(): void {
-  reopen?.();
+/** Einführung erneut zeigen (Einstellungen). `trigger` bekommt danach den Fokus zurück. */
+export function showOnboarding(trigger: HTMLElement | null = null): void {
+  reopen?.(trigger);
 }

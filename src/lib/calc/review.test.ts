@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Day, Exam, Session, Sleep, StudySession } from '../../db/schemas';
 import { addDays } from '../date';
-import { buildInsights, dailySeries, periodSummary, type ReviewData } from './review';
+import { buildInsights, dailySeries, periodSummary, significant, type ReviewData } from './review';
 
 const T = '2026-10-11';
 const meta = { createdAt: '2026-10-01T00:00:00.000Z', updatedAt: '2026-10-01T00:00:00.000Z' };
@@ -164,8 +164,7 @@ describe('Zusammenhänge', () => {
   });
 });
 
-describe('Signifikanz (Review-Fund)', async () => {
-  const { significant } = await import('./review');
+describe('Signifikanz (Review-Fund)', () => {
   it('kritische Werte: n = 14 braucht |r| ≥ ~0,53, n = 30 ~0,36', () => {
     expect(significant(0.3, 14)).toBe(false);
     expect(significant(0.5, 14)).toBe(false);
@@ -173,5 +172,13 @@ describe('Signifikanz (Review-Fund)', async () => {
     expect(significant(0.35, 30)).toBe(false);
     expect(significant(0.38, 30)).toBe(true);
     expect(significant(-0.6, 20)).toBe(true);
+  });
+});
+
+describe('Review 4: kritischer t-Wert nie zu großzügig', () => {
+  it('df = 13 nutzt den Wert für 12 Freiheitsgrade (2,18), nicht den für 15', () => {
+    // t bei r = 0,51, n = 15 (df 13): 0,51 · √(13 / (1 − 0,2601)) ≈ 2,138 → zwischen 2,13 und 2,18
+    expect(significant(0.51, 15)).toBe(false);
+    expect(significant(0.53, 15)).toBe(true);
   });
 });

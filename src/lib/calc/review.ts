@@ -144,7 +144,9 @@ export function significant(r: number, n: number): boolean {
   if (n < 3 || Math.abs(r) >= 1) return n >= 3;
   const df = n - 2;
   const t = Math.abs(r) * Math.sqrt(df / (1 - r * r));
-  const crit = T_CRIT.find(([d]) => df <= d)?.[1] ?? 1.96;
+  // Größter Tabelleneintrag ≤ df: kleinere Freiheitsgrade haben größere kritische Werte – so wird nie zu
+  // großzügig gerundet (Review-4-Fund). Unter 10 Freiheitsgraden (n < 12) gilt ohnehin MIN_INSIGHT_N.
+  const crit = [...T_CRIT].reverse().find(([d]) => d <= df)?.[1] ?? 2.23;
   return t >= crit;
 }
 

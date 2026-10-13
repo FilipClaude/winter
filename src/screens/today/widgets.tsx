@@ -64,7 +64,17 @@ export function BriefingWidget({ today }: { today: ISODate }) {
       habitsOpen: active.filter((h) => isScheduled(h, today) && !checks.some((c) => c.habitId === h.id)).length,
     });
   }, [today, settings.weekPlan]);
-  if (!lines) return null;
+  // Platz schon beim Laden reservieren: Das Briefing steht ganz oben, sein spätes Erscheinen schob sonst
+  // das ganze Dashboard um ~100 px nach unten (Lighthouse-Fund, CLS 0,29).
+  if (!lines)
+    return (
+      <Card label="Briefing" icon={Sparkles} ariaLabel="Tagesbriefing">
+        {/* genau eine Briefing-Zeile hoch – der häufigste Fall, so springt nichts */}
+        <div className="stack stack--s" aria-busy="true">
+          <p className="briefing__line skeleton__text">&nbsp;</p>
+        </div>
+      </Card>
+    );
   return (
     <Card label="Briefing" icon={Sparkles} ariaLabel="Tagesbriefing" testId="briefing">
       <div className="stack stack--s">

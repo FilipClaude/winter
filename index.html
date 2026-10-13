@@ -17,6 +17,22 @@
     <meta name="format-detection" content="telephone=no" />
     <!-- robots.txt greift unter github.io/winter/ nicht (nur im Domain-Root), daher zusätzlich hier. -->
     <meta name="robots" content="noindex, nofollow" />
+    <!-- Schriften parallel zum JS laden: Sonst tauscht die Mono-Schrift nach dem ersten Rendern und
+         verschiebt das Layout (Lighthouse-Fund, CLS 0,3). Gleiche Dateien wie in fonts.css. -->
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      crossorigin
+      href="/node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2"
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      crossorigin
+      href="/node_modules/@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2"
+    />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />

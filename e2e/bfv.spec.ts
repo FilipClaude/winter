@@ -86,7 +86,9 @@ test('BFV: nächstes Spiel, Tabelle mit Platz, Spiel nach dem Abpfiff mit einem 
   await expect(d).toBeHidden();
   // Eingetragen: keine Abfrage mehr; Form zeigt einen Sieg
   await expect(page.getByTestId('pending-matches')).toHaveCount(0);
-  await expect(page.getByTestId('bfv-card')).toContainText('S');
+  await expect(
+    page.getByTestId('bfv-card').getByRole('img', { name: /Form der letzten 1 Spiele: Sieg/ }),
+  ).toBeVisible();
 });
 
 test('BFV auf dem Dashboard: Widget „Nächstes Spiel“ mit Tabellenplatz', async ({ page }) => {

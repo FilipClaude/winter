@@ -1342,3 +1342,12 @@ button.list-item:active {
 .chart__labels--free span:first-child {
   transform: none;
 }
+
+/* Platzhalter in Textzeilenhöhe (z. B. Briefing beim Laden) */
+.skeleton__text {
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--color-surface-2), var(--color-surface-3), var(--color-surface-2));
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s var(--ease-in-out) infinite;
+  max-width: 80%;
+}

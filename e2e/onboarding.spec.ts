@@ -9,7 +9,8 @@ test.describe('Einführung beim Erststart', () => {
     await expect(intro).toBeVisible();
     await expect(intro.getByRole('heading', { name: 'Willkommen bei Winter' })).toBeFocused();
     await intro.getByRole('button', { name: 'Weiter' }).click();
-    await expect(intro.getByRole('heading', { name: 'Alles bleibt auf deinem iPhone' })).toBeVisible();
+    // Fokus wandert mit (VoiceOver liest den neuen Schritt vor) – Review-4-Fund
+    await expect(intro.getByRole('heading', { name: 'Alles bleibt auf deinem iPhone' })).toBeFocused();
     await intro.getByRole('button', { name: 'Zurück' }).click();
     await expect(intro.getByRole('heading', { name: 'Willkommen bei Winter' })).toBeVisible();
     for (let i = 0; i < 3; i++) await intro.getByRole('button', { name: 'Weiter' }).click();
@@ -26,9 +27,17 @@ test.describe('Einführung beim Erststart', () => {
     await expect(page.getByTestId('onboarding')).toBeHidden();
     await page.goto('./#/einstellungen');
     await page.getByTestId('show-onboarding').click();
-    await expect(page.getByTestId('onboarding')).toBeVisible();
+    const intro = page.getByTestId('onboarding');
+    await expect(intro).toBeVisible();
+    // Escape wirkt auch nach dem Blättern; Tab bleibt im Dialog
+    await intro.getByRole('button', { name: 'Weiter' }).click();
+    await expect(intro.getByRole('heading', { name: 'Alles bleibt auf deinem iPhone' })).toBeFocused();
+    for (let i = 0; i < 5; i++) await page.keyboard.press('Tab');
+    await expect(intro.locator(':focus')).toHaveCount(1);
     await page.keyboard.press('Escape');
-    await expect(page.getByTestId('onboarding')).toBeHidden();
+    await expect(intro).toBeHidden();
+    // Fokus zurück auf den Auslöser
+    await expect(page.getByTestId('show-onboarding')).toBeFocused();
   });
 
   test('mit Demo-Daten starten', async ({ page }) => {

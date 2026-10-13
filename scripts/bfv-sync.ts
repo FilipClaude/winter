@@ -22,7 +22,7 @@ import {
 
 const OUT = 'public/data/bfv.json';
 const UA =
-  'Winter-App/2 (private Nutzung, max. 2 Abrufe/Tag; Kontakt: https://github.com/FilipClaude/winter)';
+  'Winter-App/2 (private Nutzung, 1-2 Abgleiche/Tag mit je 2 Anfragen; Kontakt: https://github.com/FilipClaude/winter)';
 
 async function fetchText(url: string, attempts = 3): Promise<string> {
   let lastError: unknown;
@@ -63,6 +63,17 @@ function mainLeague(matches: { competition: string; league: string }[]): string 
   return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? '';
 }
 
+/**
+ * Spiele aus dem bisherigen Stand. Beim Saisonwechsel (1. Juli) nur die letzten 21 Tage – so bleiben
+ * Eintragen-Hinweise für Spiele Ende Juni erhalten, die alte Saison wächst aber nicht endlos weiter.
+ */
+function carryOver(previous: BfvData | null, now: Date): BfvData['matches'] {
+  if (!previous) return [];
+  if (previous.season === seasonFor(now)) return previous.matches;
+  const cutoff = now.getTime() - 21 * 86_400_000;
+  return previous.matches.filter((m) => new Date(m.kickoff).getTime() >= cutoff);
+}
+
 function setOutput(name: string, value: string) {
   if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `${name}=${value}\n`);
 }
@@ -85,7 +96,7 @@ async function main() {
       league: mainLeague(fresh) || parseLeague(html) || (previous?.team.league ?? ''),
     },
     season: seasonFor(now),
-    matches: mergeMatches(previous?.season === seasonFor(now) ? previous.matches : [], fresh, now),
+    matches: mergeMatches(carryOver(previous, now), fresh, now),
     table,
     notes: [
       'Ergebnisse und Einzelstatistiken liefert der BFV nicht maschinenlesbar (verschleiert) – bitte nach dem Spiel selbst eintragen.',

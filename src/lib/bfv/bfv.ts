@@ -94,9 +94,12 @@ export function parseIcs(ics: string, teamName: string): Omit<BfvMatch, 'status'
   if (!ics.includes('BEGIN:VCALENDAR')) throw new Error('Kein iCal-Kalender (BEGIN:VCALENDAR fehlt)');
   const out: Omit<BfvMatch, 'status'>[] = [];
   let ev: Record<string, string> | null = null;
+  let events = 0;
   for (const line of unfold(ics)) {
-    if (line === 'BEGIN:VEVENT') ev = {};
-    else if (line === 'END:VEVENT') {
+    if (line === 'BEGIN:VEVENT') {
+      ev = {};
+      events++;
+    } else if (line === 'END:VEVENT') {
       if (ev) {
         const parsed = parseEvent(ev, teamName);
         if (parsed) out.push(parsed);
@@ -107,6 +110,10 @@ export function parseIcs(ics: string, teamName: string): Omit<BfvMatch, 'status'
       if (i > 0) ev[line.slice(0, i).split(';')[0] ?? ''] = line.slice(i + 1);
     }
   }
+  // Format geändert (z. B. Ortszeit mit TZID statt UTC, anderes SUMMARY)? Lieber laut scheitern – die
+  // alte Datei bleibt dann stehen – als still alle künftigen Spiele als „entfallen“ auszuliefern.
+  if (events > 0 && out.length < events / 2)
+    throw new Error(`iCal-Format unbekannt: nur ${out.length} von ${events} Terminen lesbar`);
   return out;
 }
 
@@ -198,6 +205,9 @@ export function mergeMatches(previous: BfvMatch[], fresh: Omit<BfvMatch, 'status
   for (const m of fresh) byId.set(m.id, { ...m, status: 'geplant' });
   for (const [id, m] of byId) {
     if (freshIds.has(id)) continue;
+    // Einmal „entfallen“ bleibt „entfallen“ – sonst würde ein abgesagtes Spiel nach seinem Termin zu
+    // „vorbei“ und 21 Tage lang zum Eintragen angeboten (Review-4-Fund).
+    if (m.status !== 'geplant') continue;
     byId.set(id, { ...m, status: new Date(m.kickoff).getTime() < now.getTime() ? 'vorbei' : 'entfallen' });
   }
   // Ein geplantes Spiel, dessen Anstoß vorbei ist, gilt als vorbei (Export kann verzögert sein).

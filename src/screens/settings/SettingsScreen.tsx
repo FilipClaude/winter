@@ -66,7 +66,7 @@ export default function SettingsScreen() {
       <AppearanceCard settings={settings} />
       <DangerCard />
       <div style={{ textAlign: 'center', marginTop: 'var(--space-6)' }}>
-        <Button variant="ghost" size="s" icon={MoonStar} onClick={showOnboarding} data-testid="show-onboarding">
+        <Button variant="ghost" size="s" icon={MoonStar} onClick={(e) => showOnboarding(e.currentTarget)} data-testid="show-onboarding">
           Einführung erneut zeigen
         </Button>
       </div>

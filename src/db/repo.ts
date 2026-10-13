@@ -1,5 +1,5 @@
 import type { z } from 'zod';
-import { addDays, nowISO, splitAtMidnight, todayISO, type ISODate } from '../lib/date';
+import { addDays, diffDays, nowISO, splitAtMidnight, todayISO, type ISODate } from '../lib/date';
 import { uid } from '../lib/id';
 import { semesterForDate } from '../lib/calc/calendar-by';
 import { pomodoroState } from '../lib/calc/school';
@@ -436,9 +436,17 @@ export async function toggleTodo(id: string): Promise<void> {
       const base = t.due ?? t.date;
       let due = addDays(base, step);
       while (due <= today) due = addDays(due, step);
-      // Gibt es schon eine spätere Instanz dieser Aufgabe (auch erledigt)? Dann keine weitere anlegen.
-      const exists = (await db.todos.where('due').above(base).toArray()).some(
-        (x) => x.id !== t.id && x.title === t.title && x.subjectId === t.subjectId && x.repeat === t.repeat,
+      // Gibt es schon eine spätere Instanz **dieser Serie** (auch erledigt)? Dann keine weitere anlegen.
+      // Zur Serie gehört nur, was im eigenen Rhythmus liegt – „Vokabeln“ montags und donnerstags sind
+      // zwei Serien und dürfen sich nicht gegenseitig beenden (Review-4-Fund).
+      const exists = (await db.todos.where('due').between(base, due, false, true).toArray()).some(
+        (x) =>
+          x.id !== t.id &&
+          x.title === t.title &&
+          x.subjectId === t.subjectId &&
+          x.repeat === t.repeat &&
+          x.due !== undefined &&
+          diffDays(base, x.due) % step === 0,
       );
       if (!exists) {
         const { id: _id, createdAt: _c, updatedAt: _u, doneAt: _d, ...rest } = t;

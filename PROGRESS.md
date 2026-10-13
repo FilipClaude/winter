@@ -293,4 +293,9 @@ Ein Subagent hat den Diff seit Beginn von v2 ohne meine Begründungen geprüft (
 - **Visuelle Regression** (DECISIONS #68): 16 Referenzbilder, zweimal hintereinander stabil.
 - **Gefunden & behoben:** Fokusring an der Einführungs-Überschrift; Glas ließ den Heute-Screen verschwommen durchscheinen → App ausgeblendet, Himmel sichtbar. XML-Kommentar mit `--` brach die Icon-Erzeugung. **Testfehler um Mitternacht:** Datumsrechnung in 24-h-Schritten landete über die Zeitumstellung (25.10.) einen Tag zu früh → gemeinsamer Helfer rechnet in Kalendertagen.
 
-**Geprüft:** typecheck, lint, Prettier, 869 Unit-Tests, 142 E2E (Chromium + WebKit + Offline + visuell) gegen den `/winter/`-Build.
+**Geprüft:** typecheck, lint, Prettier, 869 Unit-Tests, 142 E2E (Chromium + WebKit + Offline + visuell) gegen den `/winter/`-Build. CI grün, deployt.
+
+## v2 · Unabhängiges Review 4 (Phasen 9–10) – Funde abgearbeitet ✓
+12 Funde, keiner mit Datenverlust. Behoben: abgesagte BFV-Spiele wurden später zu „vorbei“ (Banner-Flut), stiller Formatbruch beim iCal, zu breiter Dublettenschutz bei Aufgaben-Serien, Fokus/Escape/Fokusfalle in der Einführung, Push-Race und Zeitlimit der Action, irreführendes „Stand“-Datum, wirkungslose E2E-Prüfung der Formkurve, unbehandelte Fehler beim Start der Einführung, 10-min-Sperre nach Offline-Fehler, Saisonwechsel, Signifikanz-Rundung, Doku zur Abrufzahl (DECISIONS #72–#75). Neue Tests: zwei aufeinanderfolgende BFV-Läufe, TZID-Format, zwei Aufgaben-Serien, df = 13, Fokus nach „Weiter“, Escape + Tab-Falle + Fokus-Rückgabe.
+
+**Geprüft:** 873 Unit-Tests, 142 E2E gegen den `/winter/`-Build.
