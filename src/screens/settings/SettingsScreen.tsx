@@ -175,9 +175,10 @@ function GoalsCard({ settings }: { settings: Settings }) {
   );
 }
 
-const RING_KEYS = ['habits', 'study', 'sleep', 'training', 'earnings'] as const;
-const RING_LABEL: Record<(typeof RING_KEYS)[number], string> = { habits: 'Habits', study: 'Lernzeit', sleep: 'Schlaf', training: 'Training', earnings: 'Verdienst' };
+const RING_KEYS = ['habits', 'homework', 'sleep', 'training', 'earnings'] as const;
+const RING_LABEL: Record<(typeof RING_KEYS)[number], string> = { habits: 'Habits', homework: 'Hausaufgaben', sleep: 'Schlaf', training: 'Training', earnings: 'Verdienst' };
 const RING_HINT: Partial<Record<(typeof RING_KEYS)[number], string>> = {
+  homework: 'Auf „Heute“ in der Ring-Karte abhaken. Nur an Schultagen (nicht am Wochenende, in Ferien, an Feiertagen).',
   training: 'Erfüllt, sobald eine Einheit eingetragen ist. Ruhetage laut Wochenplan zählen nicht.',
   earnings: 'Wochenziel anteilig bis heute (Mittwoch = 3/7). Nur mit Wochenziel.',
 };
@@ -192,7 +193,7 @@ function GoalsSheet({ settings, close }: { settings: Settings; close: () => void
   return (
     <div className="form">
       <div className="form-row">
-        <NumberField label="Lernen (min)" value={g.studyMin} onValue={num('studyMin')} min={0} max={1440} />
+        <NumberField label="Lernen pro Tag (min, Lernplan)" value={g.studyMin} onValue={num('studyMin')} min={0} max={1440} />
         <NumberField label="Schlaf (h)" value={g.sleepH} onValue={num('sleepH')} min={0} max={14} decimal />
       </div>
       <div className="form-row">

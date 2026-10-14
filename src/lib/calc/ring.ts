@@ -3,7 +3,8 @@ import type { Goals, Settings } from '../../db/schemas';
 export interface RingInput {
   habitsDone: number;
   habitsPlanned: number;
-  studyMin: number;
+  /** Schultag (Hausaufgaben fällig) und abgehakt? An schulfreien Tagen fällt das Segment heraus. */
+  homework: { due: boolean; done: boolean };
   sleepMin: number | null;
   /** Steht heute laut Wochenplan Training an, und ist schon eine Einheit eingetragen? */
   training: { planned: boolean; done: boolean };
@@ -11,7 +12,7 @@ export interface RingInput {
   earnings: { weekCents: number; goalCents: number; weekday: number };
 }
 
-export type RingKey = 'habits' | 'study' | 'sleep' | 'training' | 'earnings';
+export type RingKey = 'habits' | 'homework' | 'sleep' | 'training' | 'earnings';
 
 export interface RingPart {
   key: RingKey;
@@ -24,15 +25,15 @@ export interface RingPart {
 const clamp01 = (n: number) => (Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 0);
 
 /**
- * Tagesring (v3): Habits, Lernen, Schlaf, Training und Verdienst – Durchschnitt der aktiven Teilziele,
+ * Tagesring (v3.1): Habits, Hausaufgaben, Schlaf, Training und Verdienst – Durchschnitt der aktiven Teilziele,
  * jedes gedeckelt auf 100 %. Ein Segment fällt heraus (zählt nicht als verfehlt), wenn es abgeschaltet
- * ist oder heute nichts zu tun gibt: keine Habits geplant, Ziel 0, Ruhetag laut Wochenplan, kein
- * Wochenziel. Verdienst misst den Wochenfortschritt **bis heute**: Am Mittwoch ist 3/7 des Wochenziels
+ * ist oder heute nichts zu tun gibt: keine Habits geplant, schulfrei, Ziel 0, Ruhetag laut Wochenplan,
+ * kein Wochenziel. Verdienst misst den Wochenfortschritt **bis heute**: Am Mittwoch ist 3/7 des Wochenziels
  * schon 100 %. Protein und Wasser zählen seit v3 nicht mehr (Einstellungen bleiben lesbar).
  */
 export function dayRing(
   input: RingInput,
-  goals: Pick<Goals, 'studyMin' | 'sleepH'>,
+  goals: Pick<Goals, 'sleepH'>,
   enabled: Settings['ring'],
 ): { parts: RingPart[]; total: number } {
   const parts: RingPart[] = [];
@@ -44,12 +45,12 @@ export function dayRing(
       detail: `${input.habitsDone}/${input.habitsPlanned}`,
     });
   }
-  if (enabled.study && goals.studyMin > 0) {
+  if (enabled.homework && input.homework.due) {
     parts.push({
-      key: 'study',
-      label: 'Lernen',
-      value: clamp01(input.studyMin / goals.studyMin),
-      detail: `${input.studyMin}/${goals.studyMin} min`,
+      key: 'homework',
+      label: 'Hausaufgaben',
+      value: input.homework.done ? 1 : 0,
+      detail: input.homework.done ? 'erledigt' : 'offen',
     });
   }
   if (enabled.sleep && goals.sleepH > 0) {

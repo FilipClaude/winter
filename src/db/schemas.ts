@@ -118,6 +118,8 @@ export const zDay = z.object({
   good: zText(2000),
   better: zText(2000),
   tomorrow: zText(2000),
+  /** v3.1: Hausaufgaben des Tages erledigt (Tagesring). */
+  homeworkDone: z.boolean().optional(),
 });
 export type Day = z.infer<typeof zDay>;
 
@@ -477,8 +479,11 @@ export const zSettings = z.object({
     protein: z.boolean(),
     /** v1/v2, seit v3 ohne Wirkung (bleibt für alte Backups lesbar). */
     water: z.boolean(),
+    /** bis v3: Lernzeit im Ring, seit v3.1 ohne Wirkung (bleibt lesbar). */
     study: z.boolean(),
     sleep: z.boolean(),
+    /** v3.1: Hausaufgaben erledigt (ersetzt Lernzeit im Ring). */
+    homework: z.boolean(),
     /** v3 */
     training: z.boolean(),
     /** v3 */
@@ -599,6 +604,7 @@ export const DEFAULT_SETTINGS: Settings = {
     sleep: true,
     training: true,
     earnings: true,
+    homework: true,
   },
   snowMode: 'subtle',
   skySimulate: 'auto',

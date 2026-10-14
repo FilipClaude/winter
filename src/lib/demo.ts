@@ -153,6 +153,8 @@ export function generateDemo(
       date,
       // Wasser zählt seit v3 nicht mehr (Feld bleibt Pflicht für ältere Backups)
       water: 0,
+      // v3.1: Hausaufgaben an Schultagen meist erledigt (heute noch offen)
+      ...(!isToday && wd <= 5 && r.chance(0.8) ? { homeworkDone: true } : {}),
       ...(isToday && r.chance(0.5) ? {} : { mood, energy }),
       note:
         !isToday && r.chance(0.35)

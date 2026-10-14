@@ -194,77 +194,89 @@ describe('Habits und Streaks', () => {
   });
 });
 
-describe('Tagesring (v3)', () => {
+describe('Tagesring (v3.1)', () => {
   const none = {
+    homework: { due: false, done: false },
     training: { planned: false, done: false },
     earnings: { weekCents: 0, goalCents: 0, weekday: 3 },
   };
-  const goals = { studyMin: 90, sleepH: 8 };
+  const goals = { sleepH: 8 };
 
-  it('Durchschnitt gedeckelter Teilziele: Habits, Lernen, Schlaf, Training, Verdienst', () => {
+  it('Durchschnitt gedeckelter Teilziele: Habits, Hausaufgaben, Schlaf, Training, Verdienst', () => {
     const r = dayRing(
       {
         habitsDone: 1,
         habitsPlanned: 2,
-        studyMin: 45,
+        homework: { due: true, done: true },
         sleepMin: 600,
-        training: { planned: true, done: true },
+        training: { planned: true, done: false },
         // Mittwoch: 3/7 von 70 € = 30 € fällig, 15 € verdient → 50 %
         earnings: { weekCents: 1500, goalCents: 7000, weekday: 3 },
       },
       goals,
       DEFAULT_SETTINGS.ring,
     );
-    expect(r.parts.map((p) => p.key)).toEqual(['habits', 'study', 'sleep', 'training', 'earnings']);
-    // 0,5 · 0,5 · 1 (gedeckelt) · 1 · 0,5
-    expect(r.total).toBeCloseTo(0.7);
+    expect(r.parts.map((p) => p.key)).toEqual(['habits', 'homework', 'sleep', 'training', 'earnings']);
+    // 0,5 · 1 · 1 (gedeckelt) · 0 · 0,5
+    expect(r.total).toBeCloseTo(0.6);
+    expect(r.parts.find((p) => p.key === 'homework')?.detail).toBe('erledigt');
     expect(r.parts.find((p) => p.key === 'earnings')?.detail).toBe('15 / 30 €');
   });
 
-  it('Ruhetag und fehlendes Wochenziel fallen heraus statt als verfehlt zu zählen', () => {
-    const r = dayRing(
-      { habitsDone: 0, habitsPlanned: 0, studyMin: 90, sleepMin: null, ...none },
+  it('Hausaufgaben offen = 0; schulfrei, Ruhetag und fehlendes Wochenziel fallen heraus', () => {
+    const open = dayRing(
+      { habitsDone: 0, habitsPlanned: 0, sleepMin: 480, ...none, homework: { due: true, done: false } },
       goals,
       DEFAULT_SETTINGS.ring,
     );
-    expect(r.parts.map((p) => p.key)).toEqual(['study', 'sleep']);
-    expect(r.total).toBe(0.5);
+    expect(open.parts.map((p) => [p.key, p.value])).toEqual([
+      ['homework', 0],
+      ['sleep', 1],
+    ]);
+    expect(open.parts[0]?.detail).toBe('offen');
+    const free = dayRing(
+      { habitsDone: 0, habitsPlanned: 0, sleepMin: null, ...none },
+      goals,
+      DEFAULT_SETTINGS.ring,
+    );
+    expect(free.parts.map((p) => p.key)).toEqual(['sleep']);
   });
 
-  it('Training geplant, aber noch nicht eingetragen = 0; Sonntag braucht das volle Wochenziel', () => {
+  it('Sonntag braucht das volle Wochenziel', () => {
     const r = dayRing(
       {
         habitsDone: 0,
         habitsPlanned: 0,
-        studyMin: 0,
         sleepMin: null,
-        training: { planned: true, done: false },
+        ...none,
         earnings: { weekCents: 7000, goalCents: 7000, weekday: 7 },
       },
-      { studyMin: 0, sleepH: 0 },
+      { sleepH: 0 },
       DEFAULT_SETTINGS.ring,
     );
-    expect(r.parts.map((p) => [p.key, p.value])).toEqual([
-      ['training', 0],
-      ['earnings', 1],
-    ]);
+    expect(r.parts.map((p) => [p.key, p.value])).toEqual([['earnings', 1]]);
   });
 
-  it('abgeschaltete Segmente zählen nicht; Protein/Wasser haben keine Wirkung mehr', () => {
-    const r = dayRing({ habitsDone: 1, habitsPlanned: 1, studyMin: 0, sleepMin: 480, ...none }, goals, {
-      habits: false,
-      protein: true,
-      water: true,
-      study: false,
-      sleep: true,
-      training: false,
-      earnings: false,
-    });
+  it('abgeschaltete Segmente zählen nicht; Lernzeit, Protein, Wasser haben keine Wirkung mehr', () => {
+    const r = dayRing(
+      { habitsDone: 1, habitsPlanned: 1, sleepMin: 480, ...none, homework: { due: true, done: true } },
+      goals,
+      {
+        habits: false,
+        protein: true,
+        water: true,
+        study: true,
+        sleep: true,
+        training: false,
+        earnings: false,
+        homework: false,
+      },
+    );
     expect(r.parts.map((p) => p.key)).toEqual(['sleep']);
     expect(
       dayRing(
-        { habitsDone: 0, habitsPlanned: 0, studyMin: 0, sleepMin: null, ...none },
-        { studyMin: 0, sleepH: 0 },
+        { habitsDone: 0, habitsPlanned: 0, sleepMin: null, ...none },
+        { sleepH: 0 },
         DEFAULT_SETTINGS.ring,
       ).total,
     ).toBe(0);

@@ -201,11 +201,12 @@ test('Verdienst: Komma-Eingabe, Wochenziel, Ring, Bearbeiten, Löschen mit Rück
   await expect(page.getByTestId('week-report')).toContainText('Verdienst 40,00 € von 80 €');
 });
 
-test('Tagesring: Habits, Lernen, Schlaf, Training, Verdienst – einzeln abschaltbar', async ({ page }) => {
+test('Tagesring: Habits, Hausaufgaben, Schlaf, Training, Verdienst – einzeln abschaltbar', async ({
+  page,
+}) => {
   await page.goto('./#/heute');
   const ring = page.getByTestId('ring-card');
   // Ohne Habits, ohne Wochenziel: Lernen, Schlaf und – falls heute laut Plan Training ist – Training
-  await expect(ring).toContainText('Lernen');
   await expect(ring).toContainText('Schlaf');
   await expect(ring).not.toContainText('Protein');
   await expect(ring).not.toContainText('Wasser');
@@ -214,21 +215,20 @@ test('Tagesring: Habits, Lernen, Schlaf, Training, Verdienst – einzeln abschal
   await page.goto('./#/einstellungen');
   await page.getByRole('region', { name: 'Tagesziele' }).getByRole('button', { name: 'Ändern' }).click();
   const sheet = page.getByRole('dialog');
-  for (const name of ['Habits', 'Lernzeit', 'Schlaf', 'Training', 'Verdienst'])
+  for (const name of ['Habits', 'Hausaufgaben', 'Schlaf', 'Training', 'Verdienst'])
     await expect(sheet.getByRole('switch', { name })).toBeChecked();
   await expect(sheet.getByRole('switch', { name: 'Protein' })).toHaveCount(0);
   await sheet.getByTestId('earnings-goal').fill('70');
   await sheet.getByRole('switch', { name: 'Schlaf' }).uncheck();
-  await sheet.getByRole('switch', { name: 'Lernzeit' }).uncheck();
+  await expect(sheet.getByRole('switch', { name: 'Lernzeit' })).toHaveCount(0);
   await sheet.getByRole('button', { name: 'Speichern' }).click();
 
   await page.goto('./#/heute');
   await expect(ring).toContainText('Verdienst');
   await expect(ring).not.toContainText('Schlaf');
-  await expect(ring).not.toContainText('Lernen');
   await page.reload();
   await expect(ring).toContainText('Verdienst');
-  await expect(ring).not.toContainText('Lernen');
+  await expect(ring).not.toContainText('Schlaf');
 });
 
 test('Verdienst-Widget an einem Tag einer früheren Woche nennt die KW', async ({ page }) => {
@@ -236,4 +236,25 @@ test('Verdienst-Widget an einem Tag einer früheren Woche nennt die KW', async (
   const widget = page.getByTestId('earnings-widget');
   await expect(widget).toContainText(/KW \d+/);
   await expect(widget).not.toContainText('diese Woche');
+});
+
+test('Hausaufgaben im Tagesring abhaken (nur an Schultagen)', async ({ page }) => {
+  // Mittwoch, 14.10.2026 = Schultag; Samstag, 17.10. = schulfrei
+  await page.clock.install({ time: new Date('2026-10-14T16:00:00+02:00') });
+  await page.goto('./#/heute');
+  const ring = page.getByTestId('ring-card');
+  const hw = ring.getByTestId('ring-homework');
+  const check = hw.getByRole('checkbox', { name: 'Hausaufgaben erledigt' });
+  await expect(check).toHaveAttribute('aria-checked', 'false');
+  await check.click();
+  await expect(check).toHaveAttribute('aria-checked', 'true');
+  await page.reload();
+  await expect(ring.getByRole('checkbox', { name: 'Hausaufgaben erledigt' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  );
+  await shot(page, 'v3-07-hausaufgaben');
+  await page.goto('./#/heute/2026-10-17');
+  await expect(page.getByTestId('ring-card')).toBeVisible();
+  await expect(page.getByTestId('ring-homework')).toHaveCount(0);
 });

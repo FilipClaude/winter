@@ -93,6 +93,14 @@
   }
 }
 
+.ring-card__parts li.ring-card__check {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2);
+  margin: calc(-1 * var(--space-2)) 0;
+}
+
 .ring-card__parts li {
   display: flex;
   flex-direction: column;

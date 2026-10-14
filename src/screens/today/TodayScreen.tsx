@@ -18,6 +18,7 @@ import { db } from '../../db/db';
 import { toggleHabit, updateDay } from '../../db/repo';
 import { useKV, useSettings } from '../../hooks/useSettings';
 import { useToday } from '../../hooks/useNow';
+import { isSchoolDay } from '../../lib/calc/calendar-by';
 import { dayRing } from '../../lib/calc/ring';
 import { SESSION_LABEL, sessionLoad, sessionTitle } from '../../lib/calc/training';
 import { addDays, formatHM, formatMonth, isoWeekNumber, isoWeekday, relativeDayName, toISODate, toTimeHM, type ISODate } from '../../lib/date';
@@ -120,7 +121,7 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
     {
       habitsDone: data.habits.filter((h) => data.checked.has(h.id)).length,
       habitsPlanned: data.habits.length,
-      studyMin: data.studyMin,
+      homework: { due: isSchoolDay(date), done: data.day.homeworkDone === true },
       sleepMin: data.sleep?.minutes ?? null,
       training: { planned: plan.length > 0, done: data.sessions.length > 0 },
       earnings: { weekCents: data.weekEarningsCents, goalCents: settings.earnings.weeklyGoalCents, weekday: isoWeekday(date) },
@@ -185,15 +186,27 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
               </div>
             </Ring>
             <ul className="ring-card__parts">
-              {ring.parts.map((p) => (
-                <li key={p.key}>
-                  <div className="row row--between xsmall">
-                    <span className="muted">{p.label}</span>
-                    <span className="mono faint">{p.detail}</span>
-                  </div>
-                  <ProgressBar value={p.value} label={p.label} />
-                </li>
-              ))}
+              {ring.parts.map((p) =>
+                p.key === 'homework' ? (
+                  <li key={p.key} className="ring-card__check" data-testid="ring-homework">
+                    <FrostCheck
+                      checked={p.value === 1}
+                      label="Hausaufgaben erledigt"
+                      onChange={() => void updateDay(date, { homeworkDone: p.value !== 1 })}
+                    />
+                    {/* Zustand zeigt das Häkchen; ein zweiter Text passte nicht in die schmale Spalte */}
+                    <span className="xsmall muted grow truncate">Hausaufgaben</span>
+                  </li>
+                ) : (
+                  <li key={p.key}>
+                    <div className="row row--between xsmall">
+                      <span className="muted">{p.label}</span>
+                      <span className="mono faint">{p.detail}</span>
+                    </div>
+                    <ProgressBar value={p.value} label={p.label} />
+                  </li>
+                ),
+              )}
               {ring.parts.length === 0 && <li className="small muted">Keine Tagesziele aktiv.</li>}
             </ul>
           </div>

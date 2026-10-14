@@ -460,3 +460,8 @@ Drei unabhängige Reviews mit zusammen 26 Funden, keiner davon Datenverlust; all
 5. Demo-Markierung beim Bearbeiten in allen Sheets erhalten (Review-2-Rest).
 6. Benachrichtigungen für Klausuren („morgen Mathe, 3 Themen offen“) per Web Push.
 7. Visuelle Regression zusätzlich in der CI mit Linux-Referenzbildern.
+
+## v3.1 – Hausaufgaben im Tagesring ✓
+- Segment „Lernen“ → **„Hausaufgaben“** mit Häkchen in der Ring-Karte, nur an Schultagen; Schalter in den Tageszielen, Demo-Daten mit erledigten Hausaufgaben (DECISIONS #102).
+- **Geprüft:** Unit (Segment, schulfrei fällt heraus, alte `study`-Einstellung ohne Wirkung, Migration ergänzt `homework`), E2E (abhaken, bleibt nach Neuladen, Samstag ohne Segment, Schalter), 1091 Unit-Tests, 153 E2E grün; Screenshot angesehen.
+- **Gefunden & behoben:** Häkchen und Text standen zuerst untereinander bzw. überlappten in der schmalen Ring-Spalte.

@@ -102,6 +102,7 @@ describe('Migration v2 → v3 (echte Dexie-Datenbank)', () => {
       sleep: true,
       training: true,
       earnings: true,
+      homework: true,
     });
     expect(s.earnings.weeklyGoalCents).toBe(0);
     expect(s.npScale).toHaveLength(15);
