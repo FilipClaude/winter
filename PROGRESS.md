@@ -417,3 +417,46 @@ Unabhängiger Reviewer über `d882f1a..b993d3b`: keine Funde zu Datenverlust ode
 - Visuelle Referenzbilder neu (7 Screens + 2 Alltag-Bereiche × Nacht/Tag + Einführung), angesehen.
 - **Geprüft:** 1090 Unit-Tests, 147 E2E (Chromium, WebKit, Offline, visuell, axe) grün.
 - **Gefunden & behoben:** Wechsel `#/koerper` → `#/habits` innerhalb des Alltag-Tabs wählte den Bereich nicht neu (Screen behielt seinen Zustand) – jetzt nach Adresse geschlüsselt, E2E deckt es ab.
+
+## v3 · Review 3 (nach Phase 8) ✓
+Unabhängiger Reviewer über `b993d3b..95659f8`: nichts Schweres, alle Navigationsziele gültig. 2 mittlere Funde (Alltag-Bereich nicht in der Adresse; Charts durch eine Verschiebung im Start-Chunk) und 8 kleinere – behoben bzw. begründet (DECISIONS #100), neue E2E für Adresse/Neuladen/Schnellerfassung und KW-Beschriftung.
+
+## v3 · Phase 9 – Abschluss-Audit ✓
+- **CI** (Typecheck, Lint, Format, 1091 Unit-Tests, E2E Chromium + WebKit gegen den `/winter/`-Build) für jeden Push grün, deployt.
+- **Lokal:** 151 E2E grün (Chromium, WebKit, Offline mit echtem Service Worker, visuell, axe für alle Screens, Alltag-Bereiche und Sheets).
+- **Lighthouse mobil:** Performance **92**, Barrierefreiheit **100**, Best Practices **100**, SEO 63 (gewollt `noindex`). Erst 85 – Fund und Behebung siehe DECISIONS #101.
+- **Daten:** Migration v1 → v3 und v2 → v3 auf echten Datenbanken (Unit) und im Browser (E2E, jede ID jeder Tabelle), Backup-Roundtrip identisch, Import alter v1-/v2-Backups, Health-Import v1 unverändert (bestehende Tests grün).
+- **Kein Uni-, Protein-, Wasser- oder kcal-Text** in der Oberfläche: `e2e/v3-clean.spec.ts` mit migrierten v2-Daten plus Uni-Klausur, -Aufgabe, -Stunde und -Lerneinheit; Gegenprobe ohne Filter schlägt fehl.
+- **Durchgeklickt** mit frischem Start (leere DB) und mit migrierten v2-Daten (Screenshots unter `screens/v3/`, Referenzbilder neu).
+- `README.md` (Kurzanleitung Verdienst, Probe-Klausur, Split) und `ARCHITECTURE.md` (Schema v3) aktualisiert.
+
+---
+
+## Ehrliche Zusammenfassung v3
+
+### Was neu ist bzw. sich geändert hat (getestet)
+FernUni und Ernährung sind aus der Oberfläche verschwunden, ihre Daten liegen unverändert in Datenbank und Backups · „Nächste Klausur“ auf Heute und als Hero im Schule-Tab, Klausurenplan chronologisch · Probe-Klausuren mit Prozent, geschätzten Punkten und Verlauf je Klausur und Fach · Gym-Split Push/Pull/Legs überall sichtbar, Verteilung im Rückblick · Verdienst mit Wochenziel, Ziel-Metrik, Wochenbericht und 8-Wochen-Verlauf · Tagesring mit Habits, Lernen, Schlaf, Training, Verdienst · Schul-Hinweise statt Fristen · neuer Tab „Alltag“ (Habits, Schlaf, Health, Verdienst).
+
+Drei unabhängige Reviews mit zusammen 26 Funden, keiner davon Datenverlust; alle behoben oder begründet abgelehnt (DECISIONS #92, #98, #100). Der wichtigste: Ein Verdienst-Ziel „50 €“ hätte schon bei 0,50 € als erreicht gegolten.
+
+### Unsicher (bitte im Kopf behalten)
+- **NP-Tabelle der Probe-Klausuren:** Standard ist der Abitur-Schlüssel nach EPA (15 P ab 95 %, 10 P ab 70 %, 5 P ab 45 % …). Er trifft beide Prüfwerte, ist aber nur eine Schätzung – den Schlüssel deiner Schule unter Einstellungen → Notenschlüssel eintragen.
+- **Abi-Regeln** wie in v2: nicht amtlich belegte Rundung und Umrechnung, Sonderfälle nur gemeldet.
+- **Verdienst im Ring** zählt anteilig bis heute (Mittwoch = 3/7 des Ziels). Wer am Wochenende verdient, sieht unter der Woche einen eher niedrigen Wert.
+- **FernUni-Lernzeit** zählt nicht mehr in Lernzeit, Zielen und Ring – auch rückwirkend. Wochenberichte alter Wochen können deshalb weniger Lernzeit zeigen als früher.
+- **BFV:** wie in v2 ohne offizielle API.
+
+### Am echten iPhone noch zu testen
+- Erster Start nach dem Update: Sicherung „Vor dem Update auf v3“ in Einstellungen → Automatische Sicherungen, eigenes Dashboard mit „Nächste Klausur“ nach dem Briefing.
+- Komma-Eingabe beim Verdienst und bei BE mit der iOS-Dezimaltastatur.
+- Tab „Alltag“ im Standalone-Modus (Bereich bleibt nach App-Wechsel erhalten).
+- Safe-Areas und Glas über den neuen Karten, „Bewegung reduzieren“.
+
+### Ideen für v4
+1. Verdienst-Kategorien (Nachhilfe, Babysitten …) und Monatsübersicht.
+2. Probe-Klausuren: Altklausuren-Liste je Fach, Zeit je BE.
+3. Split-Vorschlag: nächster fälliger Split (z. B. „Pull ist dran“).
+4. Schule merkt sich den gewählten Bereich in der Adresse (wie Alltag).
+5. Demo-Markierung beim Bearbeiten in allen Sheets erhalten (Review-2-Rest).
+6. Benachrichtigungen für Klausuren („morgen Mathe, 3 Themen offen“) per Web Push.
+7. Visuelle Regression zusätzlich in der CI mit Linux-Referenzbildern.
