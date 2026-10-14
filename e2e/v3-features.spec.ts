@@ -200,3 +200,33 @@ test('Verdienst: Komma-Eingabe, Wochenziel, Ring, Bearbeiten, Löschen mit Rück
   await expect(page.getByTestId('earnings-weeks')).toContainText('Zusammen 40,00 €');
   await expect(page.getByTestId('week-report')).toContainText('Verdienst 40,00 € von 80 €');
 });
+
+test('Tagesring: Habits, Lernen, Schlaf, Training, Verdienst – einzeln abschaltbar', async ({ page }) => {
+  await page.goto('./#/heute');
+  const ring = page.getByTestId('ring-card');
+  // Ohne Habits, ohne Wochenziel: Lernen, Schlaf und – falls heute laut Plan Training ist – Training
+  await expect(ring).toContainText('Lernen');
+  await expect(ring).toContainText('Schlaf');
+  await expect(ring).not.toContainText('Protein');
+  await expect(ring).not.toContainText('Wasser');
+  await expect(ring).not.toContainText('Verdienst');
+
+  await page.goto('./#/einstellungen');
+  await page.getByRole('region', { name: 'Tagesziele' }).getByRole('button', { name: 'Ändern' }).click();
+  const sheet = page.getByRole('dialog');
+  for (const name of ['Habits', 'Lernzeit', 'Schlaf', 'Training', 'Verdienst'])
+    await expect(sheet.getByRole('switch', { name })).toBeChecked();
+  await expect(sheet.getByRole('switch', { name: 'Protein' })).toHaveCount(0);
+  await sheet.getByTestId('earnings-goal').fill('70');
+  await sheet.getByRole('switch', { name: 'Schlaf' }).uncheck();
+  await sheet.getByRole('switch', { name: 'Lernzeit' }).uncheck();
+  await sheet.getByRole('button', { name: 'Speichern' }).click();
+
+  await page.goto('./#/heute');
+  await expect(ring).toContainText('Verdienst');
+  await expect(ring).not.toContainText('Schlaf');
+  await expect(ring).not.toContainText('Lernen');
+  await page.reload();
+  await expect(ring).toContainText('Verdienst');
+  await expect(ring).not.toContainText('Lernen');
+});
