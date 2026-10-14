@@ -19,7 +19,7 @@ const STEPS: Step[] = [
   {
     icon: MoonStar,
     title: 'Willkommen bei Winter',
-    text: 'Training, Schule, Körper und Habits an einem Ort. Der Himmel im Hintergrund folgt der echten Tageszeit in München – mit Mond, Sternen und Schnee.',
+    text: 'Training, Schule und Alltag – Habits, Schlaf, Verdienst – an einem Ort. Der Himmel im Hintergrund folgt der echten Tageszeit in München – mit Mond, Sternen und Schnee.',
   },
   {
     icon: Lock,

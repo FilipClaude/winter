@@ -1,4 +1,4 @@
-import { addDays, diffDays, startOfWeek, type ISODate } from '../date';
+import { addDays, diffDays, type ISODate } from '../date';
 import type { StudySession } from '../../db/schemas';
 
 /** Durchschnitt der Oberstufen-Punkte (0–15), eine Nachkommastelle. Leere Liste → null. */
@@ -103,13 +103,6 @@ export function studyMinutesInRange(
   to: ISODate,
 ): number {
   return sessions.filter((s) => s.date >= from && s.date <= to).reduce((a, s) => a + s.minutes, 0);
-}
-
-export function studyMinutesThisWeek(
-  sessions: Pick<StudySession, 'date' | 'minutes'>[],
-  today: ISODate,
-): number {
-  return studyMinutesInRange(sessions, startOfWeek(today), today);
 }
 
 export function studyBySubject(sessions: Pick<StudySession, 'subjectId' | 'minutes'>[]): Map<string, number> {

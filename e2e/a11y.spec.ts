@@ -26,7 +26,16 @@ test('Barrierefreiheit (axe, WCAG AA) aller Screens mit Demo-Daten', async ({ pa
   await enableDemo(page);
   await page.waitForTimeout(2800); // Toast abwarten
 
-  for (const route of ['heute', 'training', 'schule', 'koerper', 'rueckblick', 'habits', 'einstellungen']) {
+  for (const route of [
+    'heute',
+    'training',
+    'schule',
+    'alltag/habits',
+    'alltag/schlaf',
+    'alltag/verdienst',
+    'rueckblick',
+    'einstellungen',
+  ]) {
     await page.goto(`./#/${route}`);
     await audit(page, route);
   }

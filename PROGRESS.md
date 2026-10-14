@@ -405,3 +405,15 @@ Unabhängiger Reviewer über `1500963..d882f1a`: keine Datenverlust-Risiken; 8 F
 ## v3 · Phase 7 – Tagesring neu ✓
 - Umsetzung schon in Phase 2 (DECISIONS #86): Segmente Habits, Lernen, Schlaf, Training, Verdienst, einzeln abschaltbar in den Tageszielen (mit Erklärung bei Training und Verdienst). Ruhetag laut Wochenplan bzw. kein Wochenziel → Segment fällt heraus. `ring.protein`/`ring.water` ohne Wirkung, bleiben lesbar; `training`/`earnings` kommen bei alten Einstellungen mit „an“ dazu.
 - **Geprüft:** Unit (Durchschnitt, Ruhetag, Wochenziel anteilig Mi = 3/7, So = volles Ziel, Abschalten, alte Schalter ohne Wirkung), Migration (v2-Einstellungen bekommen `training`/`earnings: true`, `protein`/`water` bleiben), E2E (keine Protein-/Wasser-Schalter, Abschalten bleibt nach Neuladen, Verdienst-Segment erst mit Ziel).
+
+## v3 · Review 2 (nach Phase 6) ✓
+Unabhängiger Reviewer über `d882f1a..b993d3b`: keine Funde zu Datenverlust oder Geldbeträgen (Cent, Komma, Wochengrenzen, Zeitumstellung, Euro ↔ Cent korrekt und getestet). 8 Funde (2 mittel: Probe-Durchgänge behielten beim Fachwechsel das alte Fach; Löschen einer Klausur löschte ihre Proben ohne Hinweis) – alle behoben, eins begründet offen (DECISIONS #98), mit Regressionstests.
+
+## v3 · Phase 8 – Großes Aufräumen ✓
+- **Tab-Struktur:** „Körper“ → „Alltag“ (Habits · Schlaf · Health · Verdienst), alte Adressen leiten weiter (DECISIONS #96). Verdienst-Bereich mit Woche, 8-Wochen-Verlauf und allen Wochen (ältere Einträge korrigierbar).
+- **Dashboard-Standard** nach Auftrag (DECISIONS #97); „Nächstes Spiel“ hat eine kleine Variante.
+- **Durchgesehen** (mit Demo-Daten und leer, Nacht und Tag, 390 × 844): Heute, Schule, Klausuren, Alltag (alle vier Bereiche), Training, Rückblick, Einstellungen. **Behoben:** Wochensumme doppelt in der Verdienst-Übersicht, Kennzahlen-Raster im Rückblick nach Protein-Wegfall nur 5 Kacheln (jetzt Verdienst), Rückblick zeigte „Keine Daten“ bei reinem Verdienst, Einführungstext nannte noch „Körper“.
+- **Toter Code:** 4 unbenutzte Hilfsfunktionen entfernt, kein unbenutztes CSS. **Bundle** vorher/nachher in DECISIONS #99.
+- Visuelle Referenzbilder neu (7 Screens + 2 Alltag-Bereiche × Nacht/Tag + Einführung), angesehen.
+- **Geprüft:** 1090 Unit-Tests, 147 E2E (Chromium, WebKit, Offline, visuell, axe) grün.
+- **Gefunden & behoben:** Wechsel `#/koerper` → `#/habits` innerhalb des Alltag-Tabs wählte den Bereich nicht neu (Screen behielt seinen Zustand) – jetzt nach Adresse geschlüsselt, E2E deckt es ab.

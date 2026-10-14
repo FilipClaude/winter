@@ -154,7 +154,7 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
   );
 
   const sleep = (
-    <Card label="Schlaf" icon={Moon} ariaLabel="Schlaf" onClick={() => navigate('koerper')}>
+    <Card label="Schlaf" icon={Moon} ariaLabel="Schlaf" onClick={() => navigate('alltag', 'schlaf')}>
       {data.sleep ? (
         <>
           <div className="big big--m num">{formatHM(data.sleep.minutes)}</div>
@@ -247,10 +247,10 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
     sleep: { l: sleep, s: sleep },
     habits: {
       l: (
-        <Card label="Habits" icon={Repeat} ariaLabel="Habits" action={<Button variant="ghost" size="s" onClick={() => navigate('habits')}>Alle</Button>}>
+        <Card label="Habits" icon={Repeat} ariaLabel="Habits" action={<Button variant="ghost" size="s" onClick={() => navigate('alltag', 'habits')}>Alle</Button>}>
           {data.habits.length === 0 ? (
             <EmptyState icon={Repeat} title="Keine Habits für heute">
-              <Button variant="secondary" size="s" onClick={() => navigate('habits')}>
+              <Button variant="secondary" size="s" onClick={() => navigate('alltag', 'habits')}>
                 Habit anlegen
               </Button>
             </EmptyState>

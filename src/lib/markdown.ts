@@ -142,10 +142,12 @@ export function dayMarkdown(data: MarkdownData, date: ISODate): string {
     '## Training',
     ...(sessions.length > 0 ? sessions.flatMap(sessionLines) : ['- frei']),
   ];
-  if (study || body) {
+  const earned = sumCents(data.earnings, date, date);
+  if (study || body || earned > 0) {
     lines.push('', '## Zahlen');
     if (study) lines.push(`- Lernen: ${study}`);
     if (body) lines.push(`- Körper: ${body}`);
+    if (earned > 0) lines.push(`- Verdienst: ${formatEuro(earned)}`);
   }
   return `${lines
     .join('\n')

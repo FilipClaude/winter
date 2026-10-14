@@ -67,19 +67,24 @@ export function MockSection({ examId, subjectId, realPoints }: { examId: string 
   const results = mockResults(rows, settings.npScale);
   const last = results.at(-1);
   const trend = mockTrend(results);
-  const valid = points !== '' && max !== '' && max > 0 && points <= max;
+  const valid = points !== '' && max !== '' && max >= 1 && points <= max && (minutes === '' || (Number.isInteger(minutes) && minutes >= 1 && minutes <= 600));
 
   const add = () => {
     if (points === '' || max === '') return;
-    void saveMockExam({
+    // Fach der gespeicherten Klausur, nicht das gerade im Formular gewählte (Review-2-Fund)
+    void db.exams
+      .get(examId)
+      .then((exam) =>
+        saveMockExam({
       date,
       examId,
-      subjectId,
+      subjectId: exam?.subjectId ?? subjectId,
       points,
       maxPoints: max,
       ...(minutes !== '' ? { durationMin: Math.round(minutes) } : {}),
       ...(note.trim() ? { note: note.trim() } : {}),
-    })
+        }),
+      )
       .then(() => {
         toast('Probe eingetragen');
         setPoints('');
@@ -154,7 +159,7 @@ export function MockSection({ examId, subjectId, realPoints }: { examId: string 
           )}
           {points !== '' && max !== '' && points > max && <p className="field__error">Erreichte BE dürfen nicht über dem Maximum liegen.</p>}
           <div className="form-row">
-            <TextField label="Datum" type="date" value={date} onValue={(v) => v && setDate(v)} />
+            <TextField label="Datum der Probe" type="date" value={date} onValue={(v) => v && setDate(v)} />
             <NumberField label="Dauer (min, optional)" value={minutes} onValue={setMinutes} min={1} max={600} />
           </div>
           <TextField label="Notiz (optional)" value={note} onValue={setNote} maxLength={500} placeholder="z. B. Altklausur 2024" />
@@ -193,8 +198,8 @@ export function SubjectMockTrends() {
         <div className="stack">
           {bySubject.map(({ s, rs }) => {
             const last = rs.at(-1);
-            const graded = data.exams.filter((e) => e.subjectId === s.id && e.points !== undefined && rs.some((r) => r.examId === e.id));
-            const real = graded.sort((a, b) => b.date.localeCompare(a.date))[0];
+            // „echt“ nur, wenn die Klausur des letzten Durchgangs schon bewertet ist (sonst verglich man Äpfel mit Birnen)
+            const real = data.exams.find((e) => e.id === last?.examId && e.points !== undefined);
             return (
               <div key={s.id} className="stack stack--s" data-testid="mock-trend">
                 <div className="row row--between small">

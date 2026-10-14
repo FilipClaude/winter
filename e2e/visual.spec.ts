@@ -15,9 +15,10 @@ const SCREENS = [
   ['heute', './#/heute'],
   ['training', './#/training'],
   ['schule', './#/schule'],
-  ['koerper', './#/koerper'],
+  ['alltag', './#/alltag'],
+  ['alltag-schlaf', './#/alltag/schlaf'],
+  ['alltag-verdienst', './#/alltag/verdienst'],
   ['rueckblick', './#/rueckblick'],
-  ['habits', './#/habits'],
   ['einstellungen', './#/einstellungen'],
 ] as const;
 

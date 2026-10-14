@@ -153,11 +153,11 @@ test('kein Uni- und kein Ernährungstext in der Oberfläche – mit migrierten v
   await expectClean(page, 'Lernzeit (Fachauswahl)');
   await closeSheet(page);
 
-  await visit('./#/koerper', 'Körper');
+  for (const part of ['habits', 'schlaf', 'health', 'verdienst'])
+    await visit(`./#/alltag/${part}`, `Alltag · ${part}`);
   await visit('./#/rueckblick', 'Rückblick · Woche');
   await page.getByRole('group', { name: 'Zeitraum' }).getByRole('button', { name: 'Monat' }).click();
   await expectClean(page, 'Rückblick · Monat');
-  await visit('./#/habits', 'Habits');
 
   await visit('./#/einstellungen', 'Einstellungen');
   await page.getByRole('region', { name: 'Tagesziele' }).getByRole('button', { name: 'Ändern' }).click();

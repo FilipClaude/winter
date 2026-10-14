@@ -8,6 +8,7 @@ import {
   restoreRow,
   saveEarning,
   saveExam,
+  saveExamWithGrade,
   saveMockExam,
   saveSession,
   ValidationError,
@@ -149,5 +150,22 @@ describe('Gym-Split (Datenschicht)', () => {
       split: 'legs',
     });
     expect((await db.sessions.get(run.id))?.split).toBeUndefined();
+  });
+});
+
+describe('Review 2 (Datenschicht)', () => {
+  it('Fachwechsel der Klausur nimmt ihre Probe-Durchgänge mit', async () => {
+    const exam = await mathe();
+    await saveMockExam({
+      date: '2026-10-12',
+      examId: exam.id,
+      subjectId: exam.subjectId,
+      points: 10,
+      maxPoints: 20,
+    });
+    const bio = (await db.subjects.toArray()).find((s) => s.name === 'Bio');
+    if (!bio) throw new Error('Bio fehlt');
+    await saveExamWithGrade({ ...exam, subjectId: bio.id });
+    expect((await db.mockExams.toArray()).map((m) => m.subjectId)).toEqual([bio.id]);
   });
 });

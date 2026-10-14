@@ -74,13 +74,15 @@ export function mockResults(
     .sort((a, b) => a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt))
     .map((m) => {
       const percent = mockPercent(m);
+      const exact = m.maxPoints > 0 ? (Math.min(m.points, m.maxPoints) / m.maxPoints) * 100 : 0;
       return {
         id: m.id,
         date: m.date,
         examId: m.examId,
         subjectId: m.subjectId,
         percent,
-        points: percentToPoints(percent, scale),
+        // Schwelle am ungerundeten Wert prüfen: 14,5/44 BE = 32,95 % sind 2 P, nicht 3 (Review-2-Fund)
+        points: percentToPoints(exact, scale),
       };
     });
 }

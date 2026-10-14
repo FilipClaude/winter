@@ -372,7 +372,7 @@ export function ExamSheet({ close, exam }: { close: () => void; exam?: Exam }) {
           icon={Trash2}
           onClick={() => {
             // Löscht auch die verknüpfte Note und offene Lerneinheiten – deshalb nachfragen.
-            if (window.confirm('Klausur samt verknüpfter Note und offenen Lerneinheiten löschen?')) void deleteExam(stored.id).then(close);
+            if (window.confirm('Klausur samt verknüpfter Note, offenen Lerneinheiten und Probe-Durchgängen löschen?')) void deleteExam(stored.id).then(close);
           }}
         >
           Löschen

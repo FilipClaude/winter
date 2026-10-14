@@ -12,27 +12,38 @@ import { Segmented } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
 import { Badge, Button, Card, EmptyState, ScreenHeader, Stat } from '../../ui/primitives';
 import { openHealthSheet } from '../health/openHealth';
+import { HabitsPanel } from '../habits/HabitsScreen';
+import { EarningsPanel } from '../today/Earnings';
 import { SleepSheet } from './SleepSheet';
 
-type Tab = 'schlaf' | 'health';
+type Tab = 'habits' | 'schlaf' | 'health' | 'verdienst';
+const TABS: Tab[] = ['habits', 'schlaf', 'health', 'verdienst'];
 
-export default function BodyScreen() {
-  const [tab, setTab] = useState<Tab>('schlaf');
+/**
+ * v3: Tab „Alltag“ = Habits, Schlaf, Health und Verdienst (bis v2 „Körper“ mit Ernährung und der
+ * Habits-Screen ohne eigenen Tab). DECISIONS #96.
+ */
+export default function AlltagScreen({ tab: initial }: { tab?: string | undefined }) {
+  const [tab, setTab] = useState<Tab>(TABS.find((t) => t === initial) ?? 'habits');
   return (
     <div className="screen">
-      <ScreenHeader eyebrow="Schlaf · Health" />
-      <h1 className="screen-title">Körper</h1>
+      <ScreenHeader eyebrow="Habits · Schlaf · Health · Verdienst" />
+      <h1 className="screen-title">Alltag</h1>
       <Segmented<Tab>
         label="Bereich"
         value={tab}
         onChange={setTab}
         options={[
+          { value: 'habits', label: 'Habits' },
           { value: 'schlaf', label: 'Schlaf' },
           { value: 'health', label: 'Health' },
+          { value: 'verdienst', label: 'Verdienst' },
         ]}
       />
+      {tab === 'habits' && <HabitsPanel />}
       {tab === 'schlaf' && <SleepPanel />}
       {tab === 'health' && <HealthPanel />}
+      {tab === 'verdienst' && <EarningsPanel />}
     </div>
   );
 }

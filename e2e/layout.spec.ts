@@ -20,7 +20,7 @@ test.describe('Desktop', () => {
 
 test('Kein horizontales Scrollen auf schmalen Geräten (320 px)', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 640 });
-  for (const route of ['heute', 'training', 'schule', 'koerper', 'rueckblick', 'einstellungen']) {
+  for (const route of ['heute', 'training', 'schule', 'alltag', 'rueckblick', 'einstellungen']) {
     await page.goto(`./#/${route}`);
     await page.waitForTimeout(200);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);

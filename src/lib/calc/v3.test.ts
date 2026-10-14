@@ -298,3 +298,40 @@ describe('Verdienst in Zielen, Wochenbericht und Export', () => {
     expect(md).toContain('- Verdienst: 12,50 €');
   });
 });
+
+describe('Review 2', () => {
+  it('Punkte aus dem ungerundeten Anteil: 14,5/44 BE = 32,95 % → 2 P (gerundet angezeigt 33 %)', () => {
+    const [r] = mockResults([
+      {
+        id: 'x',
+        date: '2026-10-01',
+        createdAt: at,
+        examId: 'e',
+        subjectId: 's',
+        points: 14.5,
+        maxPoints: 44,
+      },
+    ]);
+    expect(r?.percent).toBe(33);
+    expect(r?.points).toBe(2);
+    const [q] = mockResults([
+      { id: 'y', date: '2026-10-01', createdAt: at, examId: 'e', subjectId: 's', points: 17, maxPoints: 63 },
+    ]);
+    expect(q?.points).toBe(1); // 26,98 % < 27 % → 1 P statt 2
+  });
+
+  it('Wochenbericht ohne Verdienst in beiden Wochen hat keine Verdienst-Kennzahl', () => {
+    const d: ReviewData = {
+      sessions: [],
+      days: [],
+      sleep: [],
+      health: [],
+      study: [],
+      exams: [],
+      habits: [],
+      checks: [],
+      earnings: [],
+    };
+    expect(weeklyReport(d, '2026-10-12', '2026-10-19').kpis.some((k) => k.key === 'earnings')).toBe(false);
+  });
+});

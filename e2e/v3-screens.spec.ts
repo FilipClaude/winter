@@ -39,8 +39,12 @@ for (const [phase, time] of PHASES) {
     await snap(page, `schule-${phase}`);
     await page.getByRole('group', { name: 'Bereich' }).getByRole('button', { name: 'Klausuren' }).click();
     await snap(page, `schule-klausuren-${phase}`, true);
-    await page.goto('./#/koerper');
-    await snap(page, `koerper-${phase}`);
+    await page.goto('./#/alltag');
+    await snap(page, `alltag-habits-${phase}`, true);
+    await page.goto('./#/alltag/verdienst');
+    await snap(page, `alltag-verdienst-${phase}`, true);
+    await page.goto('./#/alltag/schlaf');
+    await snap(page, `alltag-schlaf-${phase}`, true);
     await page.goto('./#/rueckblick');
     await snap(page, `rueckblick-voll-${phase}`, true);
     await page.goto('./#/training');

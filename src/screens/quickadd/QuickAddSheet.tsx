@@ -5,6 +5,7 @@ import { db } from '../../db/db';
 import { emptyDay, updateDay } from '../../db/repo';
 import { useSettings } from '../../hooks/useSettings';
 import { todayISO } from '../../lib/date';
+import { navigate } from '../../router';
 import { Scale } from '../../ui/controls';
 import { useOverlay, type OverlayApi } from '../../ui/overlay-context';
 import { Button } from '../../ui/primitives';
@@ -40,7 +41,7 @@ const ENTRIES: Entry[] = [
     },
   },
   { id: 'health', label: 'Health holen', icon: HeartPulse, run: (api, ctx) => openHealthSheet(api.openSheet, ctx.shortcutName) },
-  { id: 'habits', label: 'Habits', icon: BookOpenCheck, run: (api) => { api.closeSheet(); window.location.hash = '#/habits'; } },
+  { id: 'habits', label: 'Habits', icon: BookOpenCheck, run: (api) => { api.closeSheet(); navigate('alltag', 'habits'); } },
 ];
 
 export function QuickAddSheet() {

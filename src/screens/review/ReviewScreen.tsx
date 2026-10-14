@@ -1,11 +1,10 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { CalendarRange, ChevronLeft, ChevronRight, ClipboardCopy, FileText, Lightbulb, Share2, TrendingUp, Trophy, Wallet } from 'lucide-react';
+import { CalendarRange, ChevronLeft, ChevronRight, ClipboardCopy, FileText, Lightbulb, Share2, TrendingUp, Trophy } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { db } from '../../db/db';
 import type { Goal } from '../../db/schemas';
 import { useSettings } from '../../hooks/useSettings';
 import { useToday } from '../../hooks/useNow';
-import { formatEuro, formatEuroShort, weeklyTotals } from '../../lib/calc/earnings';
 import { formatDecimal } from '../../lib/calc/insights';
 import { buildInsights, dailySeries, periodSummary, type PeriodSummary, type ReviewData } from '../../lib/calc/review';
 import { seasonOf, seasonRange, seasonStats, splitCounts, splitSummary } from '../../lib/calc/training';
@@ -32,6 +31,7 @@ import { Segmented, TextField } from '../../ui/controls';
 import { StatTile } from '../../ui/kit';
 import { useOverlay } from '../../ui/overlay-context';
 import { Button, Card, EmptyState, IconButton, ScreenHeader, SectionTitle, Stat } from '../../ui/primitives';
+import { EarningsWeeks } from '../today/Earnings';
 import { withoutUni } from '../../lib/calc/subjects';
 
 type Period = 'woche' | 'monat' | 'frei';
@@ -119,7 +119,7 @@ export default function ReviewScreen() {
       {data && period === 'woche' && r.from <= today && (
         <WeekReportCard data={data.review} goals={data.goals} weekStart={r.from} today={today} earningsGoal={settings.earnings.weeklyGoalCents} />
       )}
-      {data && <EarningsWeeks data={data.review} today={today} goal={settings.earnings.weeklyGoalCents} />}
+      {data && data.review.earnings.length > 0 && <EarningsWeeks rows={data.review.earnings} today={today} goal={settings.earnings.weeklyGoalCents} />}
       {data && <Trends data={data.review} today={today} />}
       {data && <Insights data={data.review} today={today} />}
       {data && <Season data={data.review} today={today} />}
@@ -154,6 +154,7 @@ function deltaKpis(s: PeriodSummary, p: PeriodSummary) {
     sleep: d(s.sleepAvgMin === null ? null : s.sleepAvgMin / 60, p.sleepAvgMin === null ? null : p.sleepAvgMin / 60),
     habits: d(s.habitRate === null ? null : s.habitRate * 100, p.habitRate === null ? null : p.habitRate * 100),
     mood: d(s.moodAvg, p.moodAvg),
+    earnings: d(s.earningsCents / 100, p.earningsCents / 100),
   };
 }
 
@@ -183,7 +184,7 @@ function PeriodView({
   const long = diffDays(from, to) > 31;
   const label = (d: ISODate) => (labelMode === 'weekday' && !long ? formatWeekdayShort(d) : formatDayMonth(d).slice(0, long ? 5 : 2));
   const splits = splitSummary(splitCounts(data.sessions.filter((x) => x.date >= from && x.date <= to)));
-  const hasAny = series.some((d) => d.studyMin > 0 || d.load > 0 || d.sleepMin !== null || d.mood !== null);
+  const hasAny = s.earningsCents > 0 || series.some((d) => d.studyMin > 0 || d.load > 0 || d.sleepMin !== null || d.mood !== null);
 
   return (
     <>
@@ -194,6 +195,7 @@ function PeriodView({
           <StatTile label="Ø Schlaf" value={s.sleepAvgMin === null ? '–' : formatHM(s.sleepAvgMin)} unit="h" delta={dk.sleep} deltaLabel={signed(dk.sleep, 1, 'h')} />
           <StatTile label="Habit-Quote" value={s.habitRate === null ? '–' : Math.round(s.habitRate * 100)} unit="%" delta={dk.habits} deltaLabel={signed(dk.habits, 0, '%')} />
           <StatTile label="Ø Stimmung" value={formatDecimal(s.moodAvg, 1)} delta={dk.mood} deltaLabel={signed(dk.mood, 1)} />
+          <StatTile label="Verdienst" value={formatDecimal(s.earningsCents / 100, s.earningsCents % 100 ? 2 : 0)} unit="€" delta={dk.earnings} deltaLabel={signed(dk.earnings, 2, '€')} />
         </div>
         <p className="xsmall faint" style={{ marginTop: 'var(--space-3)' }}>
           Pfeile: Vergleich mit {formatDE(prev.from)} – {formatDE(prev.to)} (gleich lang davor).
@@ -339,28 +341,6 @@ function WeekReportCard({
           </div>
         </div>
       )}
-    </Card>
-  );
-}
-
-// ---------- Verdienst: letzte 8 Wochen ----------
-
-function EarningsWeeks({ data, today, goal }: { data: ReviewData; today: ISODate; goal: number }) {
-  if (data.earnings.length === 0) return null;
-  const weeks = weeklyTotals(data.earnings, today, 8);
-  const total = weeks.reduce((a, w) => a + w.cents, 0);
-  return (
-    <Card label="Verdienst · 8 Wochen" icon={Wallet} ariaLabel="Verdienst der letzten 8 Wochen" testId="earnings-weeks">
-      <BarChart
-        label="Verdienst pro Woche in Euro"
-        data={weeks.map((w, i) => ({ label: `KW ${w.kw}`, value: w.cents / 100, highlight: i === weeks.length - 1 }))}
-        {...(goal > 0 ? { goal: goal / 100, goalLabel: `Ziel ${formatEuroShort(goal)}` } : {})}
-        format={(n) => formatEuroShort(Math.round(n * 100))}
-        height={90}
-      />
-      <p className="xsmall faint" style={{ marginTop: 6 }}>
-        Zusammen {formatEuro(total)} · Ø {formatEuro(Math.round(total / weeks.length))} pro Woche
-      </p>
     </Card>
   );
 }

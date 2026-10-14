@@ -96,7 +96,7 @@ export function weeklyReport(
     ),
     kpi('mood', 'Ø Stimmung', '', s.moodAvg, p.moodAvg),
     kpi('earnings', 'Verdienst', '€', s.earningsCents / 100, p.earningsCents / 100, true, 2),
-  ];
+  ].filter((k) => k.key !== 'earnings' || s.earningsCents > 0 || p.earningsCents > 0);
 
   const series = dailySeries(data, weekStart, weekEnd > today ? today : weekEnd);
   const highlights: string[] = [];

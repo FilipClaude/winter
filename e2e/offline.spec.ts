@@ -36,7 +36,7 @@ test('PWA ist installierbar und läuft ohne Netz weiter', async ({ page, context
   for (const [tab, title] of [
     ['Training', 'Training'],
     ['Schule', 'Schule'],
-    ['Körper', 'Körper'],
+    ['Alltag', 'Alltag'],
     ['Rückblick', 'Rückblick'],
   ] as const) {
     await page.getByRole('navigation').getByRole('button', { name: tab }).click();

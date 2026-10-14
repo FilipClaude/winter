@@ -169,7 +169,7 @@ function GoalsCard({ settings }: { settings: Settings }) {
     <Card label="Tagesziele" icon={Target} ariaLabel="Tagesziele" action={<Button variant="ghost" size="s" onClick={() => openSheet({ title: 'Tagesziele', render: (close) => <GoalsSheet settings={settings} close={close} /> })}>Ändern</Button>}>
       <p className="small muted">
         {g.studyMin} min Lernen · {formatDecimal(g.sleepH, 1)} h Schlaf · {g.steps.toLocaleString('de-DE')} Schritte · Verdienst{' '}
-        {settings.earnings.weeklyGoalCents > 0 ? `${formatEuroShort(settings.earnings.weeklyGoalCents)} pro Woche` : 'ohne Wochenziel'}
+        {settings.earnings.weeklyGoalCents > 0 ? `${formatEuroShort(settings.earnings.weeklyGoalCents)} pro Woche` : 'ohne Wochenziel (0 = aus)'}
       </p>
     </Card>
   );

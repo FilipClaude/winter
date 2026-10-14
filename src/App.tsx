@@ -11,18 +11,16 @@ import { OverlayProvider } from './ui/OverlayProvider';
 
 const TrainingScreen = lazy(() => import('./screens/training/TrainingScreen'));
 const SchoolScreen = lazy(() => import('./screens/school/SchoolScreen'));
-const BodyScreen = lazy(() => import('./screens/body/BodyScreen'));
+const AlltagScreen = lazy(() => import('./screens/body/BodyScreen'));
 const ReviewScreen = lazy(() => import('./screens/review/ReviewScreen'));
-const HabitsScreen = lazy(() => import('./screens/habits/HabitsScreen'));
 const SettingsScreen = lazy(() => import('./screens/settings/SettingsScreen'));
 
 const TITLES: Record<RouteId, string> = {
   heute: 'Heute',
   training: 'Training',
   schule: 'Schule',
-  koerper: 'Körper',
+  alltag: 'Alltag',
   rueckblick: 'Rückblick',
-  habits: 'Habits',
   einstellungen: 'Einstellungen',
 };
 
@@ -47,9 +45,8 @@ export function App() {
               {route.id === 'heute' && <TodayScreen date={route.param} />}
               {route.id === 'training' && <TrainingScreen />}
               {route.id === 'schule' && <SchoolScreen tab={route.param} />}
-              {route.id === 'koerper' && <BodyScreen />}
+              {route.id === 'alltag' && <AlltagScreen key={route.param ?? ''} tab={route.param} />}
               {route.id === 'rueckblick' && <ReviewScreen />}
-              {route.id === 'habits' && <HabitsScreen />}
               {route.id === 'einstellungen' && <SettingsScreen />}
             </div>
           </Suspense>

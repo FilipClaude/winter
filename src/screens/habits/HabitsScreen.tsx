@@ -10,13 +10,14 @@ import { addDays, dateRange, formatDE, startOfWeek, type ISODate } from '../../l
 import { Heatmap } from '../../ui/charts';
 import { FrostCheck, Segmented, TextField } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
-import { Button, Card, EmptyState, ScreenHeader, SectionTitle } from '../../ui/primitives';
+import { Button, Card, EmptyState, SectionTitle } from '../../ui/primitives';
 import { ScreenSkeleton } from '../../ui/kit';
 
 const WEEKS = 18;
 const WD = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
-export default function HabitsScreen() {
+/** Bereich „Habits“ im Tab Alltag (bis v2 ein eigener Screen). */
+export function HabitsPanel() {
   const today = useToday();
   const { openSheet } = useOverlay();
   const data = useLiveQuery(async () => ({ habits: await db.habits.orderBy('order').toArray(), checks: await db.habitChecks.toArray() }), []);
@@ -39,14 +40,16 @@ export default function HabitsScreen() {
   const open = () => openSheet({ title: 'Neuer Habit', render: (close) => <HabitSheet close={close} today={today} /> });
 
   return (
-    <div className="screen">
-      <ScreenHeader eyebrow="Gewohnheiten" />
-      <div className="row row--between">
-        <h1 className="screen-title">Habits</h1>
-        <Button variant="primary" size="s" icon={Plus} onClick={open}>
-          Habit
-        </Button>
-      </div>
+    <>
+      <SectionTitle
+        action={
+          <Button variant="ghost" size="s" icon={Plus} onClick={open}>
+            Habit
+          </Button>
+        }
+      >
+        Gewohnheiten
+      </SectionTitle>
 
       {/* Ohne Habits wäre die Heatmap nur ein leeres Raster – dann erst die Einladung unten */}
       {active.length > 0 && (
@@ -124,7 +127,7 @@ export default function HabitsScreen() {
           </Card>
         </>
       )}
-    </div>
+    </>
   );
 }
 

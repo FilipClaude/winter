@@ -1,9 +1,15 @@
 import { useSyncExternalStore } from 'react';
 
-export type TabId = 'heute' | 'training' | 'schule' | 'koerper' | 'rueckblick';
-export type RouteId = TabId | 'einstellungen' | 'habits';
+export type TabId = 'heute' | 'training' | 'schule' | 'alltag' | 'rueckblick';
+export type RouteId = TabId | 'einstellungen';
 
-const ROUTES: RouteId[] = ['heute', 'training', 'schule', 'koerper', 'rueckblick', 'einstellungen', 'habits'];
+const ROUTES: RouteId[] = ['heute', 'training', 'schule', 'alltag', 'rueckblick', 'einstellungen'];
+
+/** v3: „Körper“ und „Habits“ sind im Tab „Alltag“ aufgegangen – alte Adressen und Lesezeichen leiten dorthin. */
+const LEGACY: Record<string, Route> = {
+  koerper: { id: 'alltag', param: 'schlaf' },
+  habits: { id: 'alltag', param: 'habits' },
+};
 
 export interface Route {
   id: RouteId;
@@ -13,6 +19,8 @@ export interface Route {
 
 export function parseHash(hash: string): Route {
   const [, id, param] = hash.replace(/^#/, '').split('/');
+  const legacy = id !== undefined ? LEGACY[id] : undefined;
+  if (legacy) return param ? { ...legacy, param: decodeURIComponent(param) } : legacy;
   const route = ROUTES.find((r) => r === id) ?? 'heute';
   return param ? { id: route, param: decodeURIComponent(param) } : { id: route };
 }

@@ -16,7 +16,7 @@ test('Navigation über die Tab-Leiste', async ({ page }) => {
   for (const [tab, title] of [
     ['Training', 'Training'],
     ['Schule', 'Schule'],
-    ['Körper', 'Körper'],
+    ['Alltag', 'Alltag'],
     ['Rückblick', 'Rückblick'],
   ] as const) {
     await page.getByRole('navigation').getByRole('button', { name: tab }).click();

@@ -236,10 +236,6 @@ export async function deleteSession(id: string): Promise<void> {
   await db.sessions.delete(id);
 }
 
-export async function deleteExerciseTemplate(id: string): Promise<void> {
-  await db.exerciseTemplates.delete(id);
-}
-
 // ---------- Schlaf und Health ----------
 
 /** Manueller Schlaf für einen Aufwachtag (ein Eintrag pro Tag, wird ersetzt). */
@@ -362,10 +358,6 @@ export async function addStudyManual(subjectId: string, date: ISODate, minutes: 
   return s;
 }
 
-export async function deleteStudySession(id: string): Promise<void> {
-  await db.studySessions.delete(id);
-}
-
 export async function saveTodo(input: WithOptionalMeta<Todo>): Promise<Todo> {
   const t = validate(zTodo, stamp(input));
   await db.todos.put(t);
@@ -470,9 +462,15 @@ export async function syncExamGrade(exam: Exam): Promise<void> {
 
 /** Klausur speichern und die verknüpfte Note in einer Transaktion nachziehen. */
 export async function saveExamWithGrade(input: WithOptionalMeta<Exam>): Promise<Exam> {
-  return db.transaction('rw', db.exams, db.grades, async () => {
+  return db.transaction('rw', [db.exams, db.grades, db.mockExams], async () => {
     const saved = await saveExam(input);
     await syncExamGrade(saved);
+    // v3: Probe-Durchgänge gehören zum Fach der Klausur – Fachwechsel nimmt sie mit (Review-2-Fund)
+    await db.mockExams
+      .where('examId')
+      .equals(saved.id)
+      .filter((m) => m.subjectId !== saved.subjectId)
+      .modify({ subjectId: saved.subjectId, updatedAt: nowISO() });
     return saved;
   });
 }

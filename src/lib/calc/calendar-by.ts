@@ -1,4 +1,4 @@
-import { addDays, dateRange, diffDays, isoWeekday, startOfWeek, type ISODate } from '../date';
+import { addDays, diffDays, isoWeekday, startOfWeek, type ISODate } from '../date';
 
 /**
  * Ferien Bayern, Schuljahre 2026/27 bis 2029/30 (offline hinterlegt, Q12/Q13 und danach).
@@ -131,9 +131,4 @@ export function semesterForDate(date: ISODate): '12/1' | '12/2' | '13/1' | '13/2
   const firstHalf = md >= '08-01' || md < '02-15';
   const q12 = schoolYearStart <= 2026;
   return q12 ? (firstHalf ? '12/1' : '12/2') : firstHalf ? '13/1' : '13/2';
-}
-
-/** Schultage in einem Zeitraum (für Lernpläne). */
-export function schoolDaysBetween(from: ISODate, to: ISODate): ISODate[] {
-  return dateRange(from, to).filter(isSchoolDay);
 }
