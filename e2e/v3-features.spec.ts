@@ -230,3 +230,10 @@ test('Tagesring: Habits, Lernen, Schlaf, Training, Verdienst – einzeln abschal
   await expect(ring).toContainText('Verdienst');
   await expect(ring).not.toContainText('Lernen');
 });
+
+test('Verdienst-Widget an einem Tag einer früheren Woche nennt die KW', async ({ page }) => {
+  await page.goto(`./#/heute/${berlinDate(-7)}`);
+  const widget = page.getByTestId('earnings-widget');
+  await expect(widget).toContainText(/KW \d+/);
+  await expect(widget).not.toContainText('diese Woche');
+});

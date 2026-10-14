@@ -44,3 +44,17 @@ test('Health-Bereich im Leerzustand @screens', async ({ page }) => {
   await expect(page.getByText('Noch keine Health-Daten')).toBeVisible();
   await shot(page, '04-koerper-health-leer');
 });
+
+test('Alltag: Bereich steht in der Adresse – Neuladen und Schnellerfassung „Habits“ landen richtig (Review-3-Fund)', async ({
+  page,
+}) => {
+  await page.goto('./#/alltag/habits');
+  const tabs = page.getByRole('group', { name: 'Bereich' });
+  await tabs.getByRole('button', { name: 'Verdienst' }).click();
+  await expect(page).toHaveURL(/#\/alltag\/verdienst$/);
+  await page.reload();
+  await expect(tabs.getByRole('button', { name: 'Verdienst' })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByTestId('fab').click();
+  await page.getByTestId('qa-habits').click();
+  await expect(tabs.getByRole('button', { name: 'Habits' })).toHaveAttribute('aria-pressed', 'true');
+});

@@ -186,7 +186,13 @@ export function SubjectMockTrends() {
     return { mocks, subjects: schoolSubjects(subjects), exams };
   }, []);
   if (!data || data.mocks.length === 0) return null;
-  const results = mockResults(data.mocks, settings.npScale);
+  // Fach aus der Klausur, nicht aus der Probe: Proben, die vor dem Review-Fix beim Fachwechsel das alte
+  // Fach behalten haben, landen so trotzdem richtig.
+  const examSubject = new Map(data.exams.map((e) => [e.id, e.subjectId]));
+  const results = mockResults(
+    data.mocks.map((m) => ({ ...m, subjectId: examSubject.get(m.examId) ?? m.subjectId })),
+    settings.npScale,
+  );
   const bySubject = data.subjects
     .map((s) => ({ s, rs: results.filter((r) => r.subjectId === s.id) }))
     .filter((x) => x.rs.length > 0);

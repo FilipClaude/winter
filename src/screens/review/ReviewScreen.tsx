@@ -31,7 +31,7 @@ import { Segmented, TextField } from '../../ui/controls';
 import { StatTile } from '../../ui/kit';
 import { useOverlay } from '../../ui/overlay-context';
 import { Button, Card, EmptyState, IconButton, ScreenHeader, SectionTitle, Stat } from '../../ui/primitives';
-import { EarningsWeeks } from '../today/Earnings';
+import { EarningsWeeks } from '../body/EarningsPanel';
 import { withoutUni } from '../../lib/calc/subjects';
 
 type Period = 'woche' | 'monat' | 'frei';
@@ -195,7 +195,9 @@ function PeriodView({
           <StatTile label="Ø Schlaf" value={s.sleepAvgMin === null ? '–' : formatHM(s.sleepAvgMin)} unit="h" delta={dk.sleep} deltaLabel={signed(dk.sleep, 1, 'h')} />
           <StatTile label="Habit-Quote" value={s.habitRate === null ? '–' : Math.round(s.habitRate * 100)} unit="%" delta={dk.habits} deltaLabel={signed(dk.habits, 0, '%')} />
           <StatTile label="Ø Stimmung" value={formatDecimal(s.moodAvg, 1)} delta={dk.mood} deltaLabel={signed(dk.mood, 1)} />
+          {(s.earningsCents > 0 || p.earningsCents > 0) && (
           <StatTile label="Verdienst" value={formatDecimal(s.earningsCents / 100, s.earningsCents % 100 ? 2 : 0)} unit="€" delta={dk.earnings} deltaLabel={signed(dk.earnings, 2, '€')} />
+          )}
         </div>
         <p className="xsmall faint" style={{ marginTop: 'var(--space-3)' }}>
           Pfeile: Vergleich mit {formatDE(prev.from)} – {formatDE(prev.to)} (gleich lang davor).
@@ -217,20 +219,20 @@ function PeriodView({
               min={1}
               max={5}
             />
-            <p className="xsmall faint" style={{ marginTop: 6 }}>
+            <p className="xsmall faint" style={{ marginTop: 'var(--space-2)' }}>
               Linie Stimmung · gestrichelt Energie · Ø Energie {formatDecimal(s.energyAvg, 1)}
             </p>
           </Card>
           <Card label="Lernzeit" ariaLabel="Lernzeit-Verlauf">
             <BarChart label="Lernzeit pro Tag in Stunden" data={series.map((d) => ({ label: label(d.date), value: d.studyMin / 60 }))} format={(n) => `${formatDecimal(n, 1)} h`} height={90} />
-            <p className="xsmall faint" style={{ marginTop: 6 }}>
+            <p className="xsmall faint" style={{ marginTop: 'var(--space-2)' }}>
               Gesamt {formatMinutes(s.studyMin)}
             </p>
           </Card>
           <Card label="Trainingslast" ariaLabel="Trainingslast-Verlauf">
             <BarChart label="Load pro Tag" data={series.map((d) => ({ label: label(d.date), value: d.load }))} height={90} />
             {splits && (
-              <p className="xsmall faint" style={{ marginTop: 6 }} data-testid="review-splits">
+              <p className="xsmall faint" style={{ marginTop: 'var(--space-2)' }} data-testid="review-splits">
                 Gym: {splits}
               </p>
             )}
@@ -396,7 +398,7 @@ function Trends({ data, today }: { data: ReviewData; today: ISODate }) {
               max={Math.max(...nums) * 1.05 || 1}
               height={100}
             />
-            <p className="xsmall faint" style={{ marginTop: 6 }}>
+            <p className="xsmall faint" style={{ marginTop: 'var(--space-2)' }}>
               Linie 7-Tage-Schnitt · gestrichelt 28-Tage-Schnitt{meta.unit ? ` · in ${meta.unit}` : ''}
             </p>
           </div>
@@ -476,7 +478,7 @@ function Season({ data, today }: { data: ReviewData; today: ISODate }) {
               height={80}
               showValues
             />
-            <p className="xsmall faint" style={{ marginTop: 6 }}>
+            <p className="xsmall faint" style={{ marginTop: 'var(--space-2)' }}>
               Tore + Assists pro Spiel · Ø Note {formatDecimal(st.avgRating, 1)} · {st.minutesPerGoal ? `alle ${st.minutesPerGoal} min ein Tor` : 'noch kein Tor'}
             </p>
           </>

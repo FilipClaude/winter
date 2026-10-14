@@ -32,6 +32,7 @@ test('Barrierefreiheit (axe, WCAG AA) aller Screens mit Demo-Daten', async ({ pa
     'schule',
     'alltag/habits',
     'alltag/schlaf',
+    'alltag/health',
     'alltag/verdienst',
     'rueckblick',
     'einstellungen',

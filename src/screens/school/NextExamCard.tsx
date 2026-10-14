@@ -60,7 +60,16 @@ export function NextExamCard({ today, hero = false }: { today: ISODate; hero?: b
   const data = useNextExams(today);
   const { openSheet } = useOverlay();
   const open = (exam?: Exam) => openSheet({ title: 'Klausur', render: (close) => <ExamSheet close={close} {...(exam ? { exam } : {})} /> });
-  if (!data) return null;
+  // Platz schon beim Laden reservieren (eine Zeile wie der Leerzustand) – sonst springt das Dashboard,
+  // sobald die Daten da sind (Lighthouse-Fund im Abschluss-Audit v3, CLS 0,14).
+  if (!data)
+    return (
+      <Card label="Nächste Klausur" icon={GraduationCap} ariaLabel="Nächste Klausur" className={hero ? 'next-exam next-exam--hero' : 'next-exam'}>
+        <div className="next-exam__empty" aria-busy="true">
+          <p className="small skeleton__text">&nbsp;</p>
+        </div>
+      </Card>
+    );
   const { next, also } = data;
   return (
     <Card

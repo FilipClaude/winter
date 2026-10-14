@@ -11,7 +11,6 @@ import { Heatmap } from '../../ui/charts';
 import { FrostCheck, Segmented, TextField } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
 import { Button, Card, EmptyState, SectionTitle } from '../../ui/primitives';
-import { ScreenSkeleton } from '../../ui/kit';
 
 const WEEKS = 18;
 const WD = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
@@ -21,7 +20,7 @@ export function HabitsPanel() {
   const today = useToday();
   const { openSheet } = useOverlay();
   const data = useLiveQuery(async () => ({ habits: await db.habits.orderBy('order').toArray(), checks: await db.habitChecks.toArray() }), []);
-  if (!data) return <ScreenSkeleton />;
+  if (!data) return null;
   const active = data.habits.filter((h) => !h.archived);
   const start = addDays(startOfWeek(today), -7 * (WEEKS - 1));
   const days = dateRange(start, addDays(startOfWeek(today), 6));
@@ -41,15 +40,6 @@ export function HabitsPanel() {
 
   return (
     <>
-      <SectionTitle
-        action={
-          <Button variant="ghost" size="s" icon={Plus} onClick={open}>
-            Habit
-          </Button>
-        }
-      >
-        Gewohnheiten
-      </SectionTitle>
 
       {/* Ohne Habits wäre die Heatmap nur ein leeres Raster – dann erst die Einladung unten */}
       {active.length > 0 && (
@@ -64,7 +54,15 @@ export function HabitsPanel() {
       </Card>
       )}
 
-      <SectionTitle>Heute & Streaks</SectionTitle>
+      <SectionTitle
+        action={
+          <Button variant="ghost" size="s" icon={Plus} onClick={open}>
+            Habit
+          </Button>
+        }
+      >
+        Heute & Streaks
+      </SectionTitle>
       {active.length === 0 ? (
         <Card ariaLabel="Keine Habits">
           <EmptyState icon={Repeat} title="Noch keine Habits" action={<Button variant="secondary" size="s" onClick={open}>Ersten Habit anlegen</Button>}>
@@ -90,7 +88,7 @@ export function HabitsPanel() {
                   <button
                     type="button"
                     className="grow"
-                    style={{ textAlign: 'left', minHeight: 44, minWidth: 0 }}
+                    style={{ textAlign: 'left', minHeight: 'var(--touch)', minWidth: 0 }}
                     onClick={() => openSheet({ title: 'Habit bearbeiten', render: (close) => <HabitSheet close={close} today={today} habit={h} /> })}
                   >
                     <span className="list-item__title truncate" style={{ display: 'block' }}>

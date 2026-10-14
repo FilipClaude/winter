@@ -1,8 +1,14 @@
 # Winter
 
-Persönliche Daily-Tracking-App für Filip: Training & Fußball (mit BFV-Spielplan und Tabelle), Schule (Noten, Klausuren, Abi-Rechner, Lernplan, Stundenplan) & FernUni, Ernährung & Schlaf, Habits, Stimmung, Journal, Rückblick mit Wochenbericht. Sie läuft als **PWA** auf dem iPhone, **offline-first** (IndexedDB), ohne Konto und ohne Cloud. Gestaltung: ein Winterhimmel nach echter Tageszeit in München, Glas-Karten, eine Akzentfarbe (Eisblau).
+Persönliche Daily-Tracking-App für Filip: Training & Fußball (Gym-Split, BFV-Spielplan und Tabelle), Schule (Nächste Klausur, Probe-Klausuren mit Trend, Noten, Abi-Rechner, Lernplan, Stundenplan), Alltag (Habits, Schlaf, Health, Verdienst mit Wochenziel), Stimmung, Journal, Rückblick mit Wochenbericht. Sie läuft als **PWA** auf dem iPhone, **offline-first** (IndexedDB), ohne Konto und ohne Cloud. Gestaltung: ein Winterhimmel nach echter Tageszeit in München, Glas-Karten, eine Akzentfarbe (Eisblau).
 
 Live: <https://filipclaude.github.io/winter/> (GitHub Pages, Deploy bei jedem Push nach grüner CI).
+
+## Kurzanleitung (neu in v3)
+
+- **Verdienst eintragen:** auf „Heute“ im Widget „Verdienst“ auf **+** tippen (oder **+** in der Mitte → „Verdienst“). Betrag mit Komma eingeben – „12,5“ wird 12,50 € –, Datum steht auf heute, Notiz optional, „Speichern“. Korrigieren oder löschen: im Widget „n Einträge“ bzw. unter **Alltag → Verdienst** auf den Eintrag tippen (Bearbeiten) oder den Mülleimer (mit „Rückgängig“). Wochenziel: **Einstellungen → Tagesziele → Verdienst pro Woche** (0 = aus).
+- **Probe-Klausur eintragen:** **Schule → Klausuren**, die Klausur öffnen (eine neue erst einmal speichern), unter „Probe-Klausuren“ auf **Probe** tippen, erreichte und maximale BE eintragen (Komma erlaubt, z. B. 15,5 von 22), optional Datum, Dauer, Notiz → „Probe speichern“. Winter zeigt Prozent und geschätzte Punkte; ab zwei Durchgängen den Verlauf. Die Umrechnung ist nur eine Schätzung – den Notenschlüssel der Schule unter **Einstellungen → Notenschlüssel** eintragen.
+- **Split wählen:** beim Eintragen einer Einheit „Gym“ wählen, dann unter „Split“ **Push**, **Pull** oder **Legs** antippen (nochmal tippen hebt die Wahl auf). Die Einheit heißt dann z. B. „Gym · Push“; die Verteilung steht im Rückblick unter „Trainingslast“.
 
 ## Start
 
@@ -28,7 +34,7 @@ npm run dev
 | `npm run typecheck` | TypeScript strict |
 | `npm run lint` | ESLint, keine Warnungen erlaubt |
 | `npm run format` | Prettier |
-| `npm run test` | Vitest: Logik, Datenschicht, Migration v1 → v2, BFV-Parser, Kontrast |
+| `npm run test` | Vitest: Logik, Datenschicht, Migrationen v1/v2 → v3, BFV-Parser, Kontrast |
 | `npm run e2e` | Build + alle Playwright-Tests (Chromium, WebKit, Offline, visuell) |
 | `npm run screens` | Build + nur die Screenshot-Tests → `screens/` |
 | `npm run icons` | Icons und Nachthimmel-Startbildschirme aus `public/icon.svg` bzw. `scripts/splash.ts` |
@@ -43,7 +49,7 @@ Beim ersten Mal für die E2E-Tests die Browser installieren: `npx playwright ins
 ```
 src/
   App.tsx, main.tsx, router.ts     Shell, Hash-Router
-  db/                              Dexie-Schema (v2), Zod-Schemas, Repositories, Seed
+  db/                              Dexie-Schema (v3), Zod-Schemas, Repositories, Seed
   lib/
     date.ts                        Europe/Berlin, Zeitumstellung, Mitternacht
     calc/                          reine Berechnungen (Load, Abi, Lernplan, Ferien, Ziele, Trends, Wochenbericht …)
@@ -51,7 +57,7 @@ src/
     sky/                           Sonne, Mond, Himmelsphasen
     health/                        HealthSource-Interface, JSON-Parser
     backup.ts, rescue.ts, markdown.ts, demo.ts, download.ts
-  screens/                         today, training, school, body, habits, review, settings, quickadd, health
+  screens/                         today, training, school, body (= Tab Alltag), habits, review, settings, quickadd, health
   shell/                           Himmel, Fehlergrenzen, Einführung, Tab-Leiste, Update-Hinweis
   ui/                              Bausteine, Charts, Sheets/Toasts, Motion-Tokens
   styles/                          tokens.css (einzige Farbquelle), base, ui, screens
@@ -63,9 +69,9 @@ public/                            Icons, Startbildschirme, data/bfv.json
 
 ## Dokumente
 
-- [PLAN-v2.md](PLAN-v2.md) / [PLAN.md](PLAN.md): Phasen, Risiken, Migrationsplan
+- [PLAN-v3.md](PLAN-v3.md) / [PLAN-v2.md](PLAN-v2.md) / [PLAN.md](PLAN.md): Phasen, Risiken, Migrationsplan
 - [DESIGN.md](DESIGN.md): Design-System, Tokens, Himmel
-- [ARCHITECTURE.md](ARCHITECTURE.md): Datenmodell v2, Zeitlogik, Migrationen, Health, BFV
+- [ARCHITECTURE.md](ARCHITECTURE.md): Datenmodell v3, Zeitlogik, Migrationen, Health, BFV
 - [DECISIONS.md](DECISIONS.md): getroffene Entscheidungen mit Begründung
 - [PROGRESS.md](PROGRESS.md): Fortschritt, Prüfungen, gefundene Fehler, ehrliche Zusammenfassung
 - [docs/BFV.md](docs/BFV.md): BFV-Abgleich, Grenzen, Reparaturanleitung

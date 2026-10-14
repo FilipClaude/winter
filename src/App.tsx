@@ -11,7 +11,7 @@ import { OverlayProvider } from './ui/OverlayProvider';
 
 const TrainingScreen = lazy(() => import('./screens/training/TrainingScreen'));
 const SchoolScreen = lazy(() => import('./screens/school/SchoolScreen'));
-const AlltagScreen = lazy(() => import('./screens/body/BodyScreen'));
+const AlltagScreen = lazy(() => import('./screens/body/AlltagScreen'));
 const ReviewScreen = lazy(() => import('./screens/review/ReviewScreen'));
 const SettingsScreen = lazy(() => import('./screens/settings/SettingsScreen'));
 
@@ -45,7 +45,7 @@ export function App() {
               {route.id === 'heute' && <TodayScreen date={route.param} />}
               {route.id === 'training' && <TrainingScreen />}
               {route.id === 'schule' && <SchoolScreen tab={route.param} />}
-              {route.id === 'alltag' && <AlltagScreen key={route.param ?? ''} tab={route.param} />}
+              {route.id === 'alltag' && <AlltagScreen tab={route.param} />}
               {route.id === 'rueckblick' && <ReviewScreen />}
               {route.id === 'einstellungen' && <SettingsScreen />}
             </div>

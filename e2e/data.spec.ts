@@ -167,8 +167,8 @@ test('Demo-Daten an → alle Screens mit Daten → aus = vollständig weg @scree
   await expect(page.getByTestId('grades-card')).toContainText('Gesamt');
   await shot(page, '07-demo-schule', true);
 
-  await page.goto('./#/koerper');
-  await shot(page, '07-demo-koerper', true);
+  await page.goto('./#/alltag/habits');
+  await shot(page, '07-demo-alltag', true);
   await page.getByRole('button', { name: 'Schlaf' }).click();
   await shot(page, '07-demo-schlaf', true);
 

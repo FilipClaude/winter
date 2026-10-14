@@ -1,6 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Footprints, HeartPulse, Moon } from 'lucide-react';
-import { useState } from 'react';
 import { db } from '../../db/db';
 import { useKV, useSettings } from '../../hooks/useSettings';
 import { useToday } from '../../hooks/useNow';
@@ -11,9 +10,10 @@ import { BarChart } from '../../ui/charts';
 import { Segmented } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
 import { Badge, Button, Card, EmptyState, ScreenHeader, Stat } from '../../ui/primitives';
+import { navigate } from '../../router';
 import { openHealthSheet } from '../health/openHealth';
-import { HabitsPanel } from '../habits/HabitsScreen';
-import { EarningsPanel } from '../today/Earnings';
+import { HabitsPanel } from '../habits/HabitsPanel';
+import { EarningsPanel } from './EarningsPanel';
 import { SleepSheet } from './SleepSheet';
 
 type Tab = 'habits' | 'schlaf' | 'health' | 'verdienst';
@@ -23,11 +23,12 @@ const TABS: Tab[] = ['habits', 'schlaf', 'health', 'verdienst'];
  * v3: Tab „Alltag“ = Habits, Schlaf, Health und Verdienst (bis v2 „Körper“ mit Ernährung und der
  * Habits-Screen ohne eigenen Tab). DECISIONS #96.
  */
-export default function AlltagScreen({ tab: initial }: { tab?: string | undefined }) {
-  const [tab, setTab] = useState<Tab>(TABS.find((t) => t === initial) ?? 'habits');
+export default function AlltagScreen({ tab: param }: { tab?: string | undefined }) {
+  const tab: Tab = TABS.find((t) => t === param) ?? 'habits';
+  const setTab = (t: Tab) => navigate('alltag', t);
   return (
     <div className="screen">
-      <ScreenHeader eyebrow="Habits · Schlaf · Health · Verdienst" />
+      <ScreenHeader eyebrow="Gewohnheiten, Erholung, Geld" />
       <h1 className="screen-title">Alltag</h1>
       <Segmented<Tab>
         label="Bereich"

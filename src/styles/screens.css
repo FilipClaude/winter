@@ -193,6 +193,7 @@
 }
 
 .next-exam__empty {
+  min-height: var(--touch);
   display: flex;
   align-items: center;
   justify-content: space-between;

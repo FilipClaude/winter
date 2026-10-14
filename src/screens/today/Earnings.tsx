@@ -5,10 +5,9 @@ import { db } from '../../db/db';
 import { deleteEarning, restoreRow, saveEarning, ValidationError } from '../../db/repo';
 import type { Earning } from '../../db/schemas';
 import { useSettings } from '../../hooks/useSettings';
-import { centsToInput, formatEuro, formatEuroShort, parseEuroToCents, sumCents, weekOf, weeklyTotals } from '../../lib/calc/earnings';
+import { centsToInput, formatEuro, formatEuroShort, parseEuroToCents, sumCents, weekOf } from '../../lib/calc/earnings';
 import { useToday } from '../../hooks/useNow';
-import { addDays, formatDayMonth, formatShort, formatWeekdayShort, isoWeekNumber, todayISO, type ISODate } from '../../lib/date';
-import { BarChart } from '../../ui/charts';
+import { formatShort, formatWeekdayShort, isoWeekNumber, todayISO, type ISODate } from '../../lib/date';
 import { TextField } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
 import { openEarningSheet } from './openEarning';
@@ -89,7 +88,7 @@ export function EarningSheet({ close, date, earning }: { close: () => void; date
 }
 
 /** Einträge einer Woche: Tap = bearbeiten, Mülleimer = löschen mit Rückgängig. */
-function EarningsList({ rows }: { rows: Earning[] }) {
+export function EarningsList({ rows }: { rows: Earning[] }) {
   const { openSheet, toast } = useOverlay();
   const list = [...rows].sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
   if (list.length === 0) return <p className="small faint">Noch nichts eingetragen – über das Plus.</p>;
@@ -145,13 +144,15 @@ function EarningsWeekSheet({ from, to, date }: { from: ISODate; to: ISODate; dat
  */
 export function EarningsWidget({ date, compact = false }: { date: ISODate; compact?: boolean }) {
   const settings = useSettings();
+  const today = useToday();
   const { openSheet } = useOverlay();
   const week = weekOf(date);
-  const rows = useLiveQuery(() => db.earnings.where('date').between(week.from, week.to, true, true).toArray(), [week.from, week.to]);
-  if (!rows) return null;
+  const loaded = useLiveQuery(() => db.earnings.where('date').between(week.from, week.to, true, true).toArray(), [week.from, week.to]);
+  // Beim Laden gleiche Höhe wie leer (kein Layout-Sprung, Lighthouse-Fund)
+  const rows = loaded ?? [];
   const goal = settings.earnings.weeklyGoalCents;
   const sum = sumCents(rows, week.from, week.to);
-  const current = week.from === weekOf(todayISO()).from;
+  const current = week.from === weekOf(today).from;
   const which = current ? 'diese Woche' : `KW ${isoWeekNumber(week.from)}`;
   return (
     <Card
@@ -162,7 +163,7 @@ export function EarningsWidget({ date, compact = false }: { date: ISODate; compa
       action={<IconButton icon={Plus} label="Verdienst eintragen" variant="accent" onClick={() => openEarningSheet(openSheet, { date })} />}
     >
       <div className={compact ? 'big big--s num' : 'big big--m num'} data-testid="earnings-sum">
-        {formatEuro(sum)}
+        {loaded ? formatEuro(sum) : ' '}
       </div>
       <div className="of earnings__of">
         {goal > 0 ? `von ${formatEuroShort(goal)}${compact ? '' : ` · ${which}`}` : which}
@@ -174,7 +175,7 @@ export function EarningsWidget({ date, compact = false }: { date: ISODate; compa
             type="button"
             className="btn btn--ghost btn--s earnings__more"
             data-testid="earnings-more"
-            onClick={() => openSheet({ title: 'Verdienst diese Woche', render: () => <EarningsWeekSheet from={week.from} to={week.to} date={date} /> })}
+            onClick={() => openSheet({ title: `Verdienst ${which}`, render: () => <EarningsWeekSheet from={week.from} to={week.to} date={date} /> })}
           >
             {rows.length} {rows.length === 1 ? 'Eintrag' : 'Einträge'}
           </button>
@@ -188,55 +189,3 @@ export function EarningsWidget({ date, compact = false }: { date: ISODate; compa
   );
 }
 
-/** Wochensummen der letzten 8 Wochen als Balken, mit Ziellinie (Rückblick und Alltag → Verdienst). */
-export function EarningsWeeks({ rows, today, goal }: { rows: Earning[]; today: ISODate; goal: number }) {
-  const weeks = weeklyTotals(rows, today, 8);
-  const total = weeks.reduce((a, w) => a + w.cents, 0);
-  return (
-    <Card label="Verdienst · 8 Wochen" icon={Wallet} ariaLabel="Verdienst der letzten 8 Wochen" testId="earnings-weeks">
-      <BarChart
-        label="Verdienst pro Woche in Euro"
-        data={weeks.map((w, i) => ({ label: `KW ${w.kw}`, value: w.cents / 100, highlight: i === weeks.length - 1 }))}
-        {...(goal > 0 ? { goal: goal / 100, goalLabel: `Ziel ${formatEuroShort(goal)}` } : {})}
-        format={(n) => formatEuroShort(Math.round(n * 100))}
-        height={90}
-      />
-      <p className="xsmall faint" style={{ marginTop: 6 }}>
-        Zusammen {formatEuro(total)} · Ø {formatEuro(Math.round(total / weeks.length))} pro Woche
-      </p>
-    </Card>
-  );
-}
-
-/** Höchstens so viele Wochen listet die Übersicht (ältere bleiben in Backup und Rückblick). */
-const HISTORY_WEEKS = 26;
-
-/** Alltag → Verdienst: diese Woche, 8-Wochen-Verlauf und alle Einträge nach Wochen (auch ältere bearbeiten). */
-export function EarningsPanel() {
-  const today = useToday();
-  const settings = useSettings();
-  const rows = useLiveQuery(() => db.earnings.toArray(), []);
-  if (!rows) return null;
-  const byWeek = new Map<ISODate, Earning[]>();
-  for (const r of rows) {
-    const from = weekOf(r.date).from;
-    byWeek.set(from, [...(byWeek.get(from) ?? []), r]);
-  }
-  const weeks = [...byWeek.entries()].sort((a, b) => b[0].localeCompare(a[0])).slice(0, HISTORY_WEEKS);
-  return (
-    <>
-      <EarningsWidget date={today} />
-      {rows.length > 0 && <EarningsWeeks rows={rows} today={today} goal={settings.earnings.weeklyGoalCents} />}
-      {weeks
-        .filter(([from]) => from !== weekOf(today).from)
-        .map(([from, list]) => (
-          <Card key={from} label={`KW ${isoWeekNumber(from)} · ${formatDayMonth(from)}–${formatDayMonth(addDays(from, 6))}`} ariaLabel={`Verdienst KW ${isoWeekNumber(from)}`}
-            testId="earnings-week"
-            action={<span className="num">{formatEuro(sumCents(list, from, addDays(from, 6)))}</span>}
-          >
-            <EarningsList rows={list} />
-          </Card>
-        ))}
-    </>
-  );
-}
