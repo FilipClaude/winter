@@ -1,7 +1,9 @@
 import { expect, test } from './fixtures';
 import { shot } from './helpers';
 
-test('Habit anlegen → auf Heute abhaken → Streak und Heatmap @screens', async ({ page }) => {
+test('Habit anlegen → im Alltag abhaken → Streak und Heatmap; nicht mehr auf Heute @screens', async ({
+  page,
+}) => {
   await page.goto('./#/habits');
   await expect(page.getByText('Noch keine Habits')).toBeVisible();
   await shot(page, '06-habits-leer');
@@ -21,8 +23,11 @@ test('Habit anlegen → auf Heute abhaken → Streak und Heatmap @screens', asyn
 
   // Alle heute geplanten Habits abhaken (Vokabeln ist sonntags nicht geplant), damit der Tag
   // an jedem Wochentag 100 % erreicht.
+  // v3.2: Habits stehen nicht mehr auf „Heute“, abgehakt wird im Alltag
   await page.goto('./#/heute');
-  const checks = page.getByTestId('habit-list').getByRole('checkbox');
+  await expect(page.getByTestId('dashboard').locator('[data-widget="habits"]')).toHaveCount(0);
+  await page.goto('./#/alltag/habits');
+  const checks = page.getByTestId('habit-streaks').getByRole('checkbox');
   await expect(checks.first()).toBeVisible();
   for (const box of await checks.all()) {
     await box.click();

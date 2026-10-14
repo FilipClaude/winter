@@ -19,6 +19,8 @@ test.describe('Desktop', () => {
 });
 
 test('Kein horizontales Scrollen auf schmalen Geräten (320 px)', async ({ page }) => {
+  // Fester Schultag: Hausaufgaben-Zeile im Ring und kleine Widgets sind sichtbar (CI-Fund v3.1: 6 px Überlauf)
+  await page.clock.install({ time: new Date('2026-10-14T16:00:00+02:00') });
   await page.setViewportSize({ width: 320, height: 640 });
   for (const route of ['heute', 'training', 'schule', 'alltag', 'rueckblick', 'einstellungen']) {
     await page.goto(`./#/${route}`);

@@ -447,15 +447,13 @@ export const DASHBOARD_WIDGETS = [
   'earnings',
   'steps',
   'sleep',
-  'habits',
   'mood',
-  'abi',
   'goals',
   'journal',
 ] as const;
 export type DashboardWidgetId = (typeof DASHBOARD_WIDGETS)[number];
-/** Widgets aus v2, die es nicht mehr gibt. Gespeicherte Anordnungen mit ihnen bleiben gültig (sie fallen beim Anzeigen weg). */
-export const LEGACY_WIDGETS = ['deadlines', 'nutrition'] as const;
+/** Widgets, die es auf „Heute“ nicht mehr gibt (v3: Ernährung, Termine; v3.2: Habits, Abi-Schnitt – auf Filips Wunsch). Gespeicherte Anordnungen mit ihnen bleiben gültig (sie fallen beim Anzeigen weg). */
+export const LEGACY_WIDGETS = ['deadlines', 'nutrition', 'habits', 'abi'] as const;
 
 export const zDashboardWidget = z.object({
   id: z.enum([...DASHBOARD_WIDGETS, ...LEGACY_WIDGETS]),
@@ -563,7 +561,7 @@ export const V2_DEFAULT_DASHBOARD: StoredDashboardWidget[] = [
   { id: 'journal', size: 'l', hidden: false },
 ];
 
-/** Standard ab v3: Briefing, Ring, Nächste Klausur, Lernen, Training/Spiel, Verdienst, Habits, Rest. */
+/** Standard ab v3: Briefing, Ring, Nächste Klausur, Lernen, Training/Spiel, Verdienst, Rest (v3.2 ohne Habits und Abi). */
 export const DEFAULT_DASHBOARD: DashboardWidget[] = [
   { id: 'briefing', size: 'l', hidden: false },
   { id: 'ring', size: 'l', hidden: false },
@@ -573,10 +571,8 @@ export const DEFAULT_DASHBOARD: DashboardWidget[] = [
   { id: 'training', size: 'l', hidden: false },
   { id: 'nextMatch', size: 's', hidden: false },
   { id: 'earnings', size: 's', hidden: false },
-  { id: 'habits', size: 'l', hidden: false },
   { id: 'steps', size: 's', hidden: false },
   { id: 'sleep', size: 's', hidden: false },
-  { id: 'abi', size: 's', hidden: false },
   { id: 'goals', size: 'l', hidden: false },
   { id: 'mood', size: 'l', hidden: false },
   { id: 'journal', size: 'l', hidden: false },

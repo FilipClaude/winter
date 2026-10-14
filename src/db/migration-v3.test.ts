@@ -239,7 +239,7 @@ describe('Dashboard-Anordnung nach v3', () => {
     expect(normalizeDashboard([])).toEqual(DEFAULT_DASHBOARD);
   });
 
-  it('eigenes Layout: Ernährung und Termine fallen weg, Nächste Klausur direkt nach dem Briefing, Rest bleibt', () => {
+  it('eigenes Layout: Ernährung, Termine, Habits und Abi fallen weg, Nächste Klausur direkt nach dem Briefing, Rest bleibt', () => {
     const s = parseSettings(v2().kv.settings);
     // Gespeicherte Anordnung bleibt trotz entfallener IDs gültig (sonst ginge das eigene Layout verloren)
     expect(s.dashboard.some((w) => w.id === 'nutrition')).toBe(true);
@@ -251,8 +251,6 @@ describe('Dashboard-Anordnung nach v3', () => {
       'alerts',
       'training',
       'studyToday',
-      'habits',
-      'abi',
       'steps',
       'sleep',
       'nextMatch',
@@ -262,6 +260,6 @@ describe('Dashboard-Anordnung nach v3', () => {
       'journal',
     ]);
     expect(out.find((w) => w.id === 'ring')?.size).toBe('s');
-    expect(out.find((w) => w.id === 'abi')?.hidden).toBe(true);
+    expect(out.some((w) => ['habits', 'abi'].includes(w.id))).toBe(false);
   });
 });

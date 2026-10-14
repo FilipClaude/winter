@@ -465,3 +465,9 @@ Drei unabhängige Reviews mit zusammen 26 Funden, keiner davon Datenverlust; all
 - Segment „Lernen“ → **„Hausaufgaben“** mit Häkchen in der Ring-Karte, nur an Schultagen; Schalter in den Tageszielen, Demo-Daten mit erledigten Hausaufgaben (DECISIONS #102).
 - **Geprüft:** Unit (Segment, schulfrei fällt heraus, alte `study`-Einstellung ohne Wirkung, Migration ergänzt `homework`), E2E (abhaken, bleibt nach Neuladen, Samstag ohne Segment, Schalter), 1091 Unit-Tests, 153 E2E grün; Screenshot angesehen.
 - **Gefunden & behoben:** Häkchen und Text standen zuerst untereinander bzw. überlappten in der schmalen Ring-Spalte.
+
+## v3.2 – Hausaufgaben automatisch, Startseite ohne Habits/Abi, Schritte-Rückfall ✓
+- Hausaufgaben-Häkchen füllt sich, wenn alle heute fälligen Aufgaben erledigt sind (Zähler „1/2“), Tap überschreibt; Habits und Abi-Schnitt von „Heute“ entfernt; Schritte-Karte zeigt ohne heutigen Import den letzten Stand mit Datum (DECISIONS #103–#105).
+- **CI-Fund behoben:** 6 px Überlauf bei 320 px im kleinen Verdienst-Widget (#106) – der v3.1-Push war daran gescheitert und nicht live gegangen.
+- **Geprüft:** 1091 Unit-Tests, 157 E2E (Chromium, WebKit, Offline, visuell, axe) grün; neue E2E für Automatik, Überschreiben, Schritte-Rückfall, Startseite ohne Habits/Abi.
+- **Offen:** Ursache der fehlenden Schritte auf „Heute“ am iPhone klären (Datum des Imports).

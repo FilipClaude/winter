@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ArrowDown, ArrowUp, BookOpenCheck, GraduationCap, GripVertical, Plus, Shield, Sparkles, Target, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, BookOpenCheck, GripVertical, Plus, Shield, Sparkles, Target, Trash2 } from 'lucide-react';
 import { Reorder, useDragControls } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { db } from '../../db/db';
@@ -161,38 +161,6 @@ export function NextMatchWidget({ today }: { today: ISODate }) {
         {days === 0 ? 'heute' : days === 1 ? 'morgen' : `in ${days} Tagen`}
         {own ? ` · Platz ${own.position}` : ''}
       </div>
-    </Card>
-  );
-}
-
-// ---------- Abi-Schnitt ----------
-
-export function AbiWidget() {
-  const settings = useSettings();
-  const r = useLiveQuery(async () => {
-    const [subjects, grades, results] = await Promise.all([db.subjects.toArray(), db.grades.toArray(), db.semesterResults.toArray()]);
-    if (grades.length === 0 && results.length === 0) return null;
-    const abi = settings.abi;
-    return computeAbi({
-      subjects: abiSubjects(subjects, abi),
-      known: knownHalfYears(grades, results, { big: abi.bigWeight, small: abi.smallWeight }),
-      seminar: abi.seminar,
-      examPoints: abi.examPoints,
-    });
-  }, [settings.abi]);
-  if (r === undefined) return null;
-  return (
-    <Card label="Abi-Schnitt" icon={GraduationCap} ariaLabel="Abi-Schnitt" testId="abi-widget" onClick={() => navigate('schule', 'abi')}>
-      {r === null ? (
-        <p className="small faint">Noch keine Noten – im Abi-Rechner eintragen.</p>
-      ) : (
-        <>
-          <div className="big big--m num">{r.grade === null ? '–' : formatDecimal(r.grade, 1)}</div>
-          <div className="xsmall faint">
-            {r.total} / 900 P{r.projectedShare > 0 ? ` · ${Math.round(r.projectedShare * 100)} % Prognose` : ''}
-          </div>
-        </>
-      )}
     </Card>
   );
 }

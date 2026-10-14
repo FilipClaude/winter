@@ -180,6 +180,25 @@
   font-weight: var(--weight-medium);
 }
 
+/* Kartenkopf: Überschrift darf schrumpfen, damit kleine Widgets auf 320 px nicht überlaufen (CI-Fund v3.1) */
+.card__head .label {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.card__head .label svg {
+  flex: none;
+}
+
+@media (max-width: 359px) {
+  /* Sehr schmal: in halbbreiten Karten kein Icon vor der Überschrift */
+  .dash__w--s .card__head .label svg {
+    display: none;
+  }
+}
+
 .label svg {
   color: var(--color-text-2);
 }

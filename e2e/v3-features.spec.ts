@@ -258,3 +258,69 @@ test('Hausaufgaben im Tagesring abhaken (nur an Schultagen)', async ({ page }) =
   await expect(page.getByTestId('ring-card')).toBeVisible();
   await expect(page.getByTestId('ring-homework')).toHaveCount(0);
 });
+
+test('Hausaufgaben füllen sich automatisch, wenn alle heute fälligen Aufgaben erledigt sind', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  // Ohne feste Uhr: Mit heute fälligen Aufgaben erscheint das Segment an jedem Tag (auch am Wochenende)
+  for (const title of ['Mathe S. 112', 'Englisch Vokabeln']) {
+    await page.goto('./#/schule/aufgaben');
+    await page.getByRole('button', { name: 'Aufgabe', exact: true }).click();
+    const d = page.getByRole('dialog', { name: 'Aufgabe' });
+    await d.getByLabel('Aufgabe').fill(title);
+    await d.getByLabel('Fällig').fill(berlinDate(0));
+    await d.getByRole('button', { name: 'Speichern' }).click();
+    await expect(d).toBeHidden();
+  }
+  await page.goto('./#/heute');
+  const hw = page.getByTestId('ring-homework');
+  const check = hw.getByRole('checkbox', { name: 'Hausaufgaben erledigt' });
+  await expect(hw.getByTestId('ring-homework-count')).toHaveText('0/2');
+  await expect(check).toHaveAttribute('aria-checked', 'false');
+
+  await page.goto('./#/schule/aufgaben');
+  await page.getByRole('checkbox', { name: 'Mathe S. 112 erledigt' }).click();
+  await page.goto('./#/heute');
+  await expect(hw.getByTestId('ring-homework-count')).toHaveText('1/2');
+  await expect(check).toHaveAttribute('aria-checked', 'false');
+
+  await page.goto('./#/schule/aufgaben');
+  await page.getByRole('checkbox', { name: 'Englisch Vokabeln erledigt' }).click();
+  await page.goto('./#/heute');
+  await expect(hw.getByTestId('ring-homework-count')).toHaveText('2/2');
+  await expect(check).toHaveAttribute('aria-checked', 'true');
+
+  // Ein Tap überschreibt die Automatik (z. B. noch etwas offen, das nicht eingetragen ist)
+  await check.click();
+  await expect(check).toHaveAttribute('aria-checked', 'false');
+  await page.reload();
+  await expect(
+    page.getByTestId('ring-homework').getByRole('checkbox', { name: 'Hausaufgaben erledigt' }),
+  ).toHaveAttribute('aria-checked', 'false');
+});
+
+test('Schritte: ohne Import für heute zeigt Heute den letzten Stand mit Datum', async ({ page }) => {
+  await page.goto('./#/heute');
+  await page.getByTestId('fab').click();
+  await page.getByTestId('qa-health').click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByRole('button', { name: 'JSON von Hand einfügen' }).click();
+  await dialog.getByTestId('health-text').fill(JSON.stringify({ v: 1, date: berlinDate(-1), steps: 9120 }));
+  await dialog.getByRole('button', { name: 'Text importieren' }).click();
+  await expect(dialog.getByTestId('health-result')).toBeVisible();
+  await page.keyboard.press('Escape');
+  const card = page.getByRole('region', { name: 'Schritte' });
+  await expect(card.getByTestId('steps-last')).toContainText('9.120');
+  await expect(card.getByTestId('steps-last')).toContainText('gestern · für heute noch kein Import');
+  // Mit Import für heute zählt der heutige Wert
+  await page.getByTestId('fab').click();
+  await page.getByTestId('qa-health').click();
+  await dialog.getByRole('button', { name: 'JSON von Hand einfügen' }).click();
+  await dialog.getByTestId('health-text').fill(JSON.stringify({ v: 1, date: berlinDate(0), steps: 4321 }));
+  await dialog.getByRole('button', { name: 'Text importieren' }).click();
+  await expect(dialog.getByTestId('health-result')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(card).toContainText('4.321');
+  await expect(card.getByTestId('steps-last')).toHaveCount(0);
+});

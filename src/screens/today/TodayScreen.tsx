@@ -10,22 +10,21 @@ import {
   Moon,
   NotebookPen,
   Plus,
-  Repeat,
   Smile,
 } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { db } from '../../db/db';
-import { toggleHabit, updateDay } from '../../db/repo';
+import { updateDay } from '../../db/repo';
 import { useKV, useSettings } from '../../hooks/useSettings';
 import { useToday } from '../../hooks/useNow';
 import { isSchoolDay } from '../../lib/calc/calendar-by';
 import { dayRing } from '../../lib/calc/ring';
 import { SESSION_LABEL, sessionLoad, sessionTitle } from '../../lib/calc/training';
-import { addDays, formatHM, formatMonth, isoWeekNumber, isoWeekday, relativeDayName, toISODate, toTimeHM, type ISODate } from '../../lib/date';
+import { addDays, formatHM, formatMonth, formatShort, isoWeekNumber, isoWeekday, relativeDayName, toISODate, toTimeHM, type ISODate } from '../../lib/date';
 import { navigate } from '../../router';
 import { FrostCheck, Scale } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
-import { Badge, Banner, Button, Card, EmptyState, IconButton, ProgressBar, ScreenHeader } from '../../ui/primitives';
+import { Badge, Banner, Button, Card, IconButton, ProgressBar, ScreenHeader } from '../../ui/primitives';
 import { NumberTicker, Ring } from '../../ui/visual';
 import { openHealthSheet } from '../health/openHealth';
 import { NextExamCard } from '../school/NextExamCard';
@@ -41,7 +40,7 @@ import { ScreenSkeleton } from '../../ui/kit';
 import type { ReactNode } from 'react';
 import type { DashboardWidgetId, GymSplit } from '../../db/schemas';
 import { normalizeDashboard, orderForDisplay } from '../../lib/calc/dashboard-layout';
-import { AbiWidget, BriefingWidget, DashboardEditor, GoalsWidget, NextMatchWidget, StudyTodayWidget } from './widgets';
+import { BriefingWidget, DashboardEditor, GoalsWidget, NextMatchWidget, StudyTodayWidget } from './widgets';
 
 export function TodayScreen({ date: dateParam }: { date?: string | undefined }) {
   const today = useToday();
@@ -117,11 +116,16 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
   if (!data) return <ScreenSkeleton cards={5} />;
 
   const plan = settings.weekPlan[String(isoWeekday(date))] ?? [];
+  // Hausaufgaben: von Hand abgehakt – oder automatisch, sobald alle heute fälligen Aufgaben erledigt sind.
+  // Ein Tap überschreibt die Automatik für diesen Tag (auch zurück auf „offen“).
+  const hwTotal = data.todosDue.length;
+  const hwDone = data.todosDue.filter((t) => t.done).length;
+  const hw = { total: hwTotal, doneCount: hwDone, done: data.day.homeworkDone ?? (hwTotal > 0 && hwDone === hwTotal) };
   const ring = dayRing(
     {
       habitsDone: data.habits.filter((h) => data.checked.has(h.id)).length,
       habitsPlanned: data.habits.length,
-      homework: { due: isSchoolDay(date), done: data.day.homeworkDone === true },
+      homework: { due: isSchoolDay(date) || hw.total > 0, done: hw.done },
       sleepMin: data.sleep?.minutes ?? null,
       training: { planned: plan.length > 0, done: data.sessions.length > 0 },
       earnings: { weekCents: data.weekEarningsCents, goalCents: settings.earnings.weeklyGoalCents, weekday: isoWeekday(date) },
@@ -148,6 +152,14 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
             <ProgressBar value={g.steps > 0 ? data.health.steps / g.steps : 0} label="Schrittziel" />
           </div>
         </>
+      ) : data.lastSteps?.steps !== undefined ? (
+        // Für diesen Tag noch nichts importiert: letzten Stand mit Datum zeigen statt einer leeren Karte
+        <div data-testid="steps-last">
+          <div className="big big--m faint num">{data.lastSteps.steps.toLocaleString('de-DE')}</div>
+          <div className="of" style={{ marginTop: 'var(--space-2)' }}>
+            {relativeDayName(data.lastSteps.date, date) ?? `am ${formatShort(data.lastSteps.date)}`} · für {date === today ? 'heute' : 'diesen Tag'} noch kein Import
+          </div>
+        </div>
       ) : (
         <p className="small faint card-empty">Noch kein Import</p>
       )}
@@ -192,10 +204,15 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
                     <FrostCheck
                       checked={p.value === 1}
                       label="Hausaufgaben erledigt"
-                      onChange={() => void updateDay(date, { homeworkDone: p.value !== 1 })}
+                      onChange={() => void updateDay(date, { homeworkDone: !hw.done })}
                     />
                     {/* Zustand zeigt das Häkchen; ein zweiter Text passte nicht in die schmale Spalte */}
                     <span className="xsmall muted grow truncate">Hausaufgaben</span>
+                    {hw.total > 0 && (
+                      <span className="mono faint xsmall" data-testid="ring-homework-count">
+                        {hw.doneCount}/{hw.total}
+                      </span>
+                    )}
                   </li>
                 ) : (
                   <li key={p.key}>
@@ -258,28 +275,6 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
     nextMatch: { l: <NextMatchWidget today={today} />, s: <NextMatchWidget today={today} /> },
     steps: { l: steps, s: steps },
     sleep: { l: sleep, s: sleep },
-    habits: {
-      l: (
-        <Card label="Habits" icon={Repeat} ariaLabel="Habits" action={<Button variant="ghost" size="s" onClick={() => navigate('alltag', 'habits')}>Alle</Button>}>
-          {data.habits.length === 0 ? (
-            <EmptyState icon={Repeat} title="Keine Habits für heute">
-              <Button variant="secondary" size="s" onClick={() => navigate('alltag', 'habits')}>
-                Habit anlegen
-              </Button>
-            </EmptyState>
-          ) : (
-            <div className="list" data-testid="habit-list">
-              {data.habits.map((h) => (
-                <div key={h.id} className="list-item">
-                  <FrostCheck checked={data.checked.has(h.id)} label={h.name} onChange={() => void toggleHabit(h.id, date)} />
-                  <span className={`grow ${data.checked.has(h.id) ? 'muted' : ''}`}>{h.name}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-      ),
-    },
     mood: {
       l: (
         <Card label="Stimmung & Energie" icon={Smile} ariaLabel="Stimmung und Energie">
@@ -296,7 +291,6 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
         </Card>
       ),
     },
-    abi: { l: <AbiWidget />, s: <AbiWidget /> },
     goals: { l: <GoalsWidget today={today} /> },
     journal: {
       l: (

@@ -145,15 +145,18 @@ describe('Ziele', () => {
 describe('Dashboard-Anordnung', () => {
   it('bereinigt Duplikate/Unbekanntes und hängt fehlende Widgets an', () => {
     const stored = [
-      { id: 'habits' as const, size: 's' as const, hidden: false },
-      { id: 'habits' as const, size: 'l' as const, hidden: true },
+      { id: 'mood' as const, size: 's' as const, hidden: false },
+      { id: 'mood' as const, size: 'l' as const, hidden: true },
+      // v3.2 entfernt: fällt weg
+      { id: 'habits' as const, size: 'l' as const, hidden: false },
       { id: 'gibtsnicht' as never, size: 'l' as const, hidden: false },
     ];
     const n = normalizeDashboard(stored);
     // ohne Briefing kommt „Nächste Klausur“ ganz nach vorne, danach das eigene Layout
     expect(n[0]?.id).toBe('nextExam');
-    expect(n[1]).toEqual({ id: 'habits', size: 's', hidden: false });
-    expect(n.filter((w) => w.id === 'habits')).toHaveLength(1);
+    expect(n[1]).toEqual({ id: 'mood', size: 's', hidden: false });
+    expect(n.filter((w) => w.id === 'mood')).toHaveLength(1);
+    expect(n.some((w) => (w.id as string) === 'habits')).toBe(false);
     expect(n).toHaveLength(DEFAULT_DASHBOARD.length);
   });
 
