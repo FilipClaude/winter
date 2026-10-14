@@ -58,8 +58,9 @@ const TABLE_SCHEMAS: Record<DataTable, z.ZodType> = {
 export const TABLE_LABEL: Record<DataTable, string> = {
   sessions: 'Trainingseinheiten',
   exerciseTemplates: 'Übungsvorlagen',
-  meals: 'Mahlzeiten',
-  mealTemplates: 'Mahlzeiten-Vorlagen',
+  // Seit v3 ausgeblendete Bereiche: neutral benannt (erscheinen höchstens in Fehlermeldungen beim Import)
+  meals: 'Ältere Daten (A)',
+  mealTemplates: 'Ältere Daten (B)',
   days: 'Tageswerte',
   sleep: 'Schlafeinträge',
   health: 'Health-Tage',
@@ -67,8 +68,8 @@ export const TABLE_LABEL: Record<DataTable, string> = {
   studySessions: 'Lerneinheiten',
   todos: 'Aufgaben',
   exams: 'Klausuren',
-  modules: 'Module',
-  deadlines: 'Fristen',
+  modules: 'Ältere Daten (C)',
+  deadlines: 'Ältere Daten (D)',
   habits: 'Habits',
   habitChecks: 'Habit-Häkchen',
   grades: 'Noten',

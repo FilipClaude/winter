@@ -1,7 +1,7 @@
 import type { Day, Session, Sleep, StudySession, Subject, Todo, HealthDay } from '../db/schemas';
 import { effectiveSleep } from './calc/sleep';
 import { withoutUni } from './calc/subjects';
-import { SESSION_LABEL, sessionLoad } from './calc/training';
+import { sessionLoad, sessionTitle } from './calc/training';
 import {
   addDays,
   dateRange,
@@ -36,7 +36,7 @@ const safe = (s: string) => s.trim().replace(/^#/gm, '\\#');
 
 function sessionLines(s: Session): string[] {
   const out: string[] = [];
-  const base = `${SESSION_LABEL[s.type]} · ${s.durationMin} min · RPE ${s.rpe} · Load ${sessionLoad(s.durationMin, s.rpe)}`;
+  const base = `${sessionTitle(s)} · ${s.durationMin} min · RPE ${s.rpe} · Load ${sessionLoad(s.durationMin, s.rpe)}`;
   if (s.match) {
     const m = s.match;
     out.push(`- ${base}`);
@@ -64,7 +64,7 @@ function taskLines(data: MarkdownData, from: ISODate, to: ISODate): string[] {
   const subj = new Map(data.subjects.map((s) => [s.id, s.name]));
   const inRange = (d: string | undefined) => d !== undefined && d >= from && d <= to;
   const lines: string[] = [];
-  const todos = data.todos.filter(
+  const todos = withoutUni(data.todos, data.subjects).filter(
     (t) => inRange(t.due) || (t.done && t.doneAt !== undefined && inRange(toISODate(t.doneAt))),
   );
   for (const t of todos) {

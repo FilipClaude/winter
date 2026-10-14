@@ -6,7 +6,7 @@ import { saveSettings } from '../../db/repo';
 import { SESSION_TYPES, type Session, type SessionType, type WeekPlan } from '../../db/schemas';
 import { useSettings } from '../../hooks/useSettings';
 import { useToday } from '../../hooks/useNow';
-import { detectPRs, exerciseBests, loadRatio, type LoadStatus, seasonOf, seasonRange, seasonStats, SESSION_LABEL, sessionLoad, weeklyLoads } from '../../lib/calc/training';
+import { detectPRs, exerciseBests, loadRatio, type LoadStatus, seasonOf, seasonRange, seasonStats, SESSION_LABEL, sessionLoad, weeklyLoads, sessionTitle } from '../../lib/calc/training';
 import { formatDecimal } from '../../lib/calc/insights';
 import { addDays, formatShort, formatWeekdayShort, isoWeekNumber, isoWeekday, startOfWeek, type ISODate } from '../../lib/date';
 import { BarChart } from '../../ui/charts';
@@ -208,7 +208,7 @@ function LoadStatusLine({ status }: { status: LoadStatus }) {
 function SessionRow({ s, pr, onOpen }: { s: Session; pr: boolean; onOpen: () => void }) {
   const Icon = SESSION_ICON[s.type];
   let meta = `${s.durationMin} min · RPE ${s.rpe} · Load ${sessionLoad(s.durationMin, s.rpe)}`;
-  let title = SESSION_LABEL[s.type];
+  let title = sessionTitle(s);
   if (s.match) {
     title = `${s.match.opponent || 'Spiel'} ${s.match.goalsFor}:${s.match.goalsAgainst}`;
     meta = `${s.match.minutes}′ · ${s.match.goals} T · ${s.match.assists} A · Note ${s.match.rating}`;

@@ -98,6 +98,7 @@ export function NextExamCard({ today, hero = false }: { today: ISODate; hero?: b
             <ProgressBar
               value={next.topics ? next.topics.done / next.topics.total : next.exam.progress / 100}
               label="Lernstand"
+              decorative
               warn={diffDays(today, next.exam.date) <= 3 && (next.topics ? next.topics.done < next.topics.total : next.exam.progress < 60)}
             />
           </button>

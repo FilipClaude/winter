@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { AlarmClock, GraduationCap } from 'lucide-react';
 import { db } from '../../db/db';
 import { schoolAlerts } from '../../lib/calc/school';
+import { withoutUni } from '../../lib/calc/subjects';
 import { addDays, type ISODate } from '../../lib/date';
 import { navigate } from '../../router';
 import { Banner, Button } from '../../ui/primitives';
@@ -16,12 +17,14 @@ export function SchoolAlerts({ today }: { today: ISODate }) {
       db.todos.where('due').below(today).toArray(),
     ]);
     const name = new Map(subjects.map((s) => [s.id, s.name]));
+    const visibleExams = withoutUni(exams, subjects);
+    const visibleTodos = withoutUni(todos, subjects);
     return schoolAlerts({
       today,
-      exams: exams
+      exams: visibleExams
         .filter((e) => e.points === undefined)
         .map((e) => ({ id: e.id, subject: name.get(e.subjectId) ?? 'Fach', kind: EXAM_KIND_LABEL[e.kind], date: e.date, progress: e.progress, topicList: e.topicList })),
-      overdueTodos: todos.filter((t) => !t.done).length,
+      overdueTodos: visibleTodos.filter((t) => !t.done).length,
     });
   }, [today]);
   if (!alerts || alerts.length === 0) return null;

@@ -2,6 +2,7 @@ import type { Goal } from '../../db/schemas';
 import { addDays, formatDE, formatWeekdayShort, isoWeekNumber, startOfWeek, type ISODate } from '../date';
 import { GOAL_LABEL, goalProgress } from './goals';
 import { formatDecimal } from './insights';
+import { splitCounts, splitSummary } from './training';
 import { dailySeries, periodSummary, type ReviewData } from './review';
 
 export interface Kpi {
@@ -110,6 +111,10 @@ export function weeklyReport(
       `Spiel gegen ${mm.opponent} ${mm.goalsFor}:${mm.goalsAgainst}${mm.goals > 0 ? `, ${mm.goals} ${mm.goals === 1 ? 'Tor' : 'Tore'}` : ''}${mm.assists > 0 ? `, ${mm.assists} Assist${mm.assists === 1 ? '' : 's'}` : ''}.`,
     );
   }
+  const splits = splitSummary(
+    splitCounts(data.sessions.filter((x) => x.date >= weekStart && x.date <= weekEnd)),
+  );
+  if (splits) highlights.push(`Gym: ${splits}.`);
   for (const e of data.exams.filter(
     (x) => x.points !== undefined && x.date >= weekStart && x.date <= weekEnd,
   ))

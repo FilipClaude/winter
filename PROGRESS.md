@@ -389,3 +389,10 @@ Vier unabhängige Reviews mit zusammen 54 Funden; alle behoben oder begründet a
 ## v3 · Phase 4 – Probe-Klausuren ✓
 - Im Klausur-Sheet: beliebig viele Probe-Durchgänge (Datum, BE mit Komma, max. BE, Dauer, Notiz), Liste mit Prozent und ≈ Punkten, Löschen mit Rückgängig, Verlaufsdiagramm, Vergleich „Echte Note … · letzte Probe ≈ …“. Schule → Klausuren: Verlauf je Fach. Widget „Nächste Klausur“ zeigt die letzte Probe. Einstellungen: Notenschlüssel mit 15 Schwellen, zurücksetzbar. Demo-Daten mit 5 Probe-Durchgängen.
 - **Geprüft:** Unit (Prüfwerte 13/25 → 6 P und 15,5/22 → 10 P, Schwellen und Ränder, eigene Tabelle, Trend, Validierung BE ≤ Maximum, Löschen mit Klausur, Rückgängig); E2E (Eintragen mit Komma, Vorschau, Trend, Widget, eigener Schlüssel ändert 10 → 9 P, Löschen + Rückgängig, Ablehnung zu vieler BE); Screenshot Sheet angesehen.
+
+## v3 · Phase 5 – Gym-Split ✓
+- Segment Push/Pull/Legs im Training-Sheet bei Gym, optional; „Gym · Push“ in Liste, Heute, Toast, Sheet-Titel, Markdown; Verteilung im Rückblick („Gym: 2× Push, 1× Pull, 1× Legs“) und im Wochenbericht; Demo-Daten mit Splits.
+- **Geprüft:** Unit (Titel, Verteilung, Split nur bei Gym), E2E (wählen, anzeigen, ohne Split „Gym“, Rückblick, Wochenbericht, abwählen), Screenshot Sheet angesehen.
+
+## v3 · Review 1 (nach Phase 3) ✓
+Unabhängiger Reviewer über `1500963..d882f1a`: keine Datenverlust-Risiken; 8 Funde, davon 1 kritisch (Verdienst-Ziel € vs. Cent) und 1 wichtig (Uni-Klausuren, -Aufgaben, -Stunden noch sichtbar). Alle behoben oder begründet (DECISIONS #92). Der Textsuch-Test legt jetzt Uni-Einträge an; Gegenprobe ohne Filter schlägt fehl.

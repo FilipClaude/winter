@@ -84,3 +84,39 @@ test('Probe-Eingabe: mehr BE als möglich wird abgelehnt', async ({ page }) => {
   await expect(section.getByText('Erreichte BE dürfen nicht über dem Maximum liegen.')).toBeVisible();
   await expect(section.getByRole('button', { name: 'Probe speichern' })).toBeDisabled();
 });
+
+test('Gym-Split: Push wählen, überall sichtbar, Verteilung im Rückblick @screens', async ({ page }) => {
+  await page.goto('./#/training');
+  await page.getByTestId('fab').click();
+  await page.getByTestId('qa-training').click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByRole('group', { name: 'Art der Einheit' }).getByRole('button', { name: 'Gym' }).click();
+  const split = dialog.getByRole('group', { name: 'Split' });
+  await expect(split.getByRole('button')).toHaveText(['Push', 'Pull', 'Legs']);
+  await split.getByRole('button', { name: 'Push' }).click();
+  await expect(split.getByRole('button', { name: 'Push' })).toHaveAttribute('aria-pressed', 'true');
+  await shot(page, 'v3-05-split-sheet');
+  await dialog.getByRole('button', { name: 'Speichern' }).click();
+  await expect(page.getByText('Gym · Push gespeichert')).toBeVisible();
+  await expect(page.getByTestId('session-row').first()).toContainText('Gym · Push');
+
+  // zweite Einheit ohne Split bleibt „Gym“
+  await page.getByTestId('fab').click();
+  await page.getByTestId('qa-training').click();
+  await dialog.getByRole('group', { name: 'Art der Einheit' }).getByRole('button', { name: 'Gym' }).click();
+  await dialog.getByRole('button', { name: 'Speichern' }).click();
+  await expect(page.getByText('Gym gespeichert')).toBeVisible();
+
+  await page.goto('./#/heute');
+  await expect(page.getByRole('region', { name: 'Training heute' })).toContainText('Gym · Push');
+  await page.goto('./#/rueckblick');
+  await expect(page.getByTestId('review-splits')).toContainText('Gym: 1× Push, 1× Gym');
+  await expect(page.getByTestId('week-report')).toContainText('Gym: 1× Push, 1× Gym.');
+
+  // Bearbeiten: Split wieder abwählen
+  await page.goto('./#/training');
+  await page.getByTestId('session-row').filter({ hasText: 'Gym · Push' }).click();
+  await dialog.getByRole('group', { name: 'Split' }).getByRole('button', { name: 'Push' }).click();
+  await dialog.getByRole('button', { name: 'Speichern' }).click();
+  await expect(page.getByTestId('session-row').filter({ hasText: 'Gym · Push' })).toHaveCount(0);
+});

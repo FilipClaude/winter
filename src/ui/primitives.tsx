@@ -181,8 +181,28 @@ export function Banner({
   );
 }
 
-export function ProgressBar({ value, warn, label }: { value: number; warn?: boolean; label?: string }) {
+/**
+ * Fortschrittsbalken. `decorative` innerhalb von Buttons: nur Optik (span, aria-hidden) – der Wert steht dann
+ * als Text im Button, sonst ginge er für VoiceOver verloren (Inhalt von Buttons ist präsentational).
+ */
+export function ProgressBar({
+  value,
+  warn,
+  label,
+  decorative,
+}: {
+  value: number;
+  warn?: boolean;
+  label?: string;
+  decorative?: boolean;
+}) {
   const pct = Math.round(Math.min(1, Math.max(0, value)) * 100);
+  if (decorative)
+    return (
+      <span className={`bar ${warn ? 'bar--warn' : ''}`} aria-hidden style={{ display: 'block' }}>
+        <span className="bar__fill" style={{ width: `${pct}%`, display: 'block' }} />
+      </span>
+    );
   return (
     <div
       className={`bar ${warn ? 'bar--warn' : ''}`}

@@ -19,7 +19,7 @@ import { toggleHabit, updateDay } from '../../db/repo';
 import { useKV, useSettings } from '../../hooks/useSettings';
 import { useToday } from '../../hooks/useNow';
 import { dayRing } from '../../lib/calc/ring';
-import { SESSION_LABEL, sessionLoad } from '../../lib/calc/training';
+import { SESSION_LABEL, sessionLoad, sessionTitle } from '../../lib/calc/training';
 import { addDays, formatHM, formatMonth, isoWeekNumber, isoWeekday, relativeDayName, toISODate, toTimeHM, type ISODate } from '../../lib/date';
 import { navigate } from '../../router';
 import { FrostCheck, Scale } from '../../ui/controls';
@@ -37,7 +37,7 @@ import { BackupReminder, DemoNotice } from './Reminders';
 import { useDayData } from './useDayData';
 import { ScreenSkeleton } from '../../ui/kit';
 import type { ReactNode } from 'react';
-import type { DashboardWidgetId } from '../../db/schemas';
+import type { DashboardWidgetId, GymSplit } from '../../db/schemas';
 import { normalizeDashboard, orderForDisplay } from '../../lib/calc/dashboard-layout';
 import { AbiWidget, BriefingWidget, DashboardEditor, GoalsWidget, NextMatchWidget, StudyTodayWidget } from './widgets';
 
@@ -333,7 +333,7 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
   );
 }
 
-function TrainingCard({ date, sessions, plan }: { date: ISODate; sessions: { id: string; type: keyof typeof SESSION_LABEL; durationMin: number; rpe: number }[]; plan: (keyof typeof SESSION_LABEL)[] }) {
+function TrainingCard({ date, sessions, plan }: { date: ISODate; sessions: { id: string; type: keyof typeof SESSION_LABEL; split?: GymSplit | undefined; durationMin: number; rpe: number }[]; plan: (keyof typeof SESSION_LABEL)[] }) {
   const { openSheet } = useOverlay();
   const open = useLiveQuery(() => db.sessions.count(), []);
   const pending = plan.filter((p) => !sessions.some((s) => s.type === p));
@@ -354,7 +354,7 @@ function TrainingCard({ date, sessions, plan }: { date: ISODate; sessions: { id:
                 <SessionIcon type={s.type} />
               </span>
               <span className="grow">
-                <span className="list-item__title">{SESSION_LABEL[s.type]}</span>
+                <span className="list-item__title">{sessionTitle(s)}</span>
                 <br />
                 <span className="list-item__meta mono">
                   {s.durationMin} min · RPE {s.rpe} · Load {sessionLoad(s.durationMin, s.rpe)}

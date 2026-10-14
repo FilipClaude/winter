@@ -345,7 +345,8 @@ export const zGoal = z.object({
   ...meta,
   period: z.enum(['week', 'month']),
   metric: z.enum(GOAL_METRICS),
-  target: z.number().min(0).max(100_000),
+  /** Lernzeit in Minuten, Verdienst in Cent (v3: Obergrenze 10 Mio., damit auch Monatsziele in Euro passen). */
+  target: z.number().min(0).max(10_000_000),
   archived: z.boolean(),
 });
 export type Goal = z.infer<typeof zGoal>;

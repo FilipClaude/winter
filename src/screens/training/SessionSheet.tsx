@@ -3,11 +3,11 @@ import { Plus, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { db } from '../../db/db';
 import { deleteSession, saveSession, ValidationError } from '../../db/repo';
-import { SESSION_TYPES, type GymExercise, type Match, type Session, type SessionType } from '../../db/schemas';
-import { detectPRs, normalizeExercise, SESSION_LABEL, sessionLoad } from '../../lib/calc/training';
+import { GYM_SPLITS, SESSION_TYPES, type GymExercise, type GymSplit, type Match, type Session, type SessionType } from '../../db/schemas';
+import { detectPRs, GYM_SPLIT_LABEL, normalizeExercise, SESSION_LABEL, sessionLoad, sessionTitle } from '../../lib/calc/training';
 import { toISODate, todayISO, type ISODate } from '../../lib/date';
 import { parseNumberDE } from '../../lib/number';
-import { NumberField, Scale, TextArea, TextField } from '../../ui/controls';
+import { NumberField, Scale, Segmented, TextArea, TextField } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
 import { Button, IconButton, SectionTitle } from '../../ui/primitives';
 
@@ -55,6 +55,7 @@ export function SessionSheet({ date, type: initialType, session, bfv, close }: S
   const [match, setMatch] = useState(session?.match ? { ...session.match } : bfv ? { ...emptyMatch, opponent: bfv.opponent } : emptyMatch);
   const [exercises, setExercises] = useState<ExIn[]>(session?.gym?.exercises.map((e) => ({ name: e.name, sets: e.sets.map((s) => ({ ...s })) })) ?? []);
   const [customName, setCustomName] = useState('');
+  const [split, setSplit] = useState<GymSplit | ''>(session?.split ?? '');
   const [error, setError] = useState<string>();
 
   function pickType(t: SessionType) {
@@ -107,9 +108,10 @@ export function SessionSheet({ date, type: initialType, session, bfv, close }: S
         note,
         ...(m ? { match: m } : {}),
         ...(gym ? { gym } : {}),
+        ...(type === 'gym' && split ? { split } : {}),
         ...(type === 'match' && bfvLink ? { bfv: bfvLink, bfvId: bfvLink.id } : {}),
       });
-      let msg = `${SESSION_LABEL[type]} gespeichert · Load ${sessionLoad(saved.durationMin, saved.rpe)}`;
+      let msg = `${sessionTitle(saved)} gespeichert · Load ${sessionLoad(saved.durationMin, saved.rpe)}`;
       if (saved.gym) {
         const all = await db.sessions.where('type').equals('gym').toArray();
         const prs = detectPRs(all).filter((p) => p.sessionId === saved.id);
@@ -185,6 +187,15 @@ export function SessionSheet({ date, type: initialType, session, bfv, close }: S
 
       {type === 'gym' && (
         <>
+          <div className="field" data-testid="gym-split">
+            <span className="field__label">Split (optional)</span>
+            <Segmented<GymSplit | ''>
+              label="Split"
+              value={split}
+              onChange={(v) => setSplit(v === split ? '' : v)}
+              options={GYM_SPLITS.map((x) => ({ value: x, label: GYM_SPLIT_LABEL[x] }))}
+            />
+          </div>
           <SectionTitle>Übungen</SectionTitle>
           {exercises.map((ex, i) => (
             <div key={i} className="card gym-ex" data-testid="gym-exercise">

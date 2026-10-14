@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from './fixtures';
-import { shot, SLOW_WRITE } from './helpers';
+import { berlinDate, shot, SLOW_WRITE } from './helpers';
 
 /**
  * v3: Uni und Ernährung sind aus der Oberfläche verschwunden – auch mit echten v2-Daten voller
@@ -41,6 +41,75 @@ test('kein Uni- und kein Ernährungstext in der Oberfläche – mit migrierten v
   await shot(page, 'v3-02-import-vorschau');
   await preview.getByRole('button', { name: 'Ersetzen und importieren' }).click();
   await expect(page.getByText(/importiert/).first()).toBeVisible(SLOW_WRITE);
+
+  // Review-Fund: Auch Klausuren, Aufgaben, Stunden und Lerneinheiten zum Fach „FernUni“ (in v2 normal
+  // wählbar) dürfen nirgends auftauchen – morgen, überfällig, heute im Stundenplan und im Lernplan.
+  await page.evaluate(
+    async ({ tomorrow, yesterday, today, weekday }) => {
+      const idb = await new Promise<IDBDatabase>((res, rej) => {
+        const r = indexedDB.open('winter');
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => rej(r.error);
+      });
+      const subjects = await new Promise<{ id: string; name: string }[]>((res) => {
+        const r = idb.transaction('subjects').objectStore('subjects').getAll();
+        r.onsuccess = () => res(r.result as { id: string; name: string }[]);
+      });
+      const fu = subjects.find((s) => s.name === 'FernUni');
+      if (!fu) throw new Error('Fach FernUni fehlt in der Fixture');
+      const at = new Date().toISOString();
+      const meta = { createdAt: at, updatedAt: at };
+      const tx = idb.transaction(['exams', 'todos', 'lessons', 'studyBlocks'], 'readwrite');
+      tx.objectStore('exams').put({
+        ...meta,
+        id: 'fu-exam',
+        date: tomorrow,
+        subjectId: fu.id,
+        kind: 'klausur',
+        topics: 'Modulklausur',
+        progress: 10,
+      });
+      tx.objectStore('todos').put({
+        ...meta,
+        id: 'fu-todo',
+        date: yesterday,
+        title: 'Einsendearbeit 3 abgeben',
+        subjectId: fu.id,
+        due: yesterday,
+        done: false,
+      });
+      tx.objectStore('lessons').put({
+        ...meta,
+        id: 'fu-lesson',
+        weekday,
+        period: 7,
+        subjectId: fu.id,
+        room: 'Online',
+        week: 'AB',
+      });
+      tx.objectStore('studyBlocks').put({
+        ...meta,
+        id: 'fu-block',
+        date: today,
+        subjectId: fu.id,
+        topic: 'Modul 31001 wiederholen',
+        kind: 'lernen',
+        minutes: 30,
+        done: false,
+      });
+      await new Promise((res, rej) => {
+        tx.oncomplete = res;
+        tx.onerror = () => rej(tx.error);
+      });
+      idb.close();
+    },
+    {
+      tomorrow: berlinDate(1),
+      yesterday: berlinDate(-1),
+      today: berlinDate(0),
+      weekday: Math.min(5, ((new Date().getDay() + 6) % 7) + 1),
+    },
+  );
 
   const visit = async (hash: string, name: string) => {
     await page.goto(hash);
@@ -102,7 +171,8 @@ test('kein Uni- und kein Ernährungstext in der Oberfläche – mit migrierten v
   await expectClean(page, 'Markdown Woche');
   await closeSheet(page);
 
-  // Die Daten selbst sind nicht verloren: ein neues Backup enthält sie weiterhin
+  // Die Daten selbst sind nicht verloren: alle Datensätze liegen weiter in der Datenbank (dass ein Backup
+  // sie enthält, prüft src/db/migration-v3.test.ts)
   const counts = await page.evaluate(async () => {
     const idb = await new Promise<IDBDatabase>((res, rej) => {
       const r = indexedDB.open('winter');

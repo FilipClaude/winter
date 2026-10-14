@@ -212,7 +212,9 @@ export function generateDemo(
                 },
                 { name: 'Nordic Curls', sets: Array.from({ length: 3 }, () => ({ reps: 6, weightKg: 0 })) },
               ];
-        add({ type: 'gym', durationMin: r.int(55, 75), rpe: r.int(6, 8), gym: { exercises: ex } });
+        // v3: Split – dienstags abwechselnd Push/Pull, donnerstags Legs
+        const split = wd === 4 ? 'legs' : week % 2 === 0 ? 'push' : 'pull';
+        add({ type: 'gym', durationMin: r.int(55, 75), rpe: r.int(6, 8), gym: { exercises: ex }, split });
       }
       if (wd === 6) {
         const minutes = r.pick([80, 80, 65, 72]);

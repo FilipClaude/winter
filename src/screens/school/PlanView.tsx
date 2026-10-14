@@ -19,7 +19,7 @@ import { FrostCheck, NumberField, Segmented, SelectField, TextField } from '../.
 import { ScreenSkeleton } from '../../ui/kit';
 import { useOverlay } from '../../ui/overlay-context';
 import { Badge, Button, Card, EmptyState, IconButton } from '../../ui/primitives';
-import { schoolSubjects } from '../../lib/calc/subjects';
+import { schoolSubjects, withoutUni } from '../../lib/calc/subjects';
 
 const WD = ['Mo', 'Di', 'Mi', 'Do', 'Fr'] as const;
 
@@ -37,7 +37,7 @@ export function PlanView() {
       db.lessons.toArray(),
       db.subjects.orderBy('order').toArray(),
     ]);
-    return { blocks, lessons, subjects };
+    return { blocks: withoutUni(blocks, subjects), lessons: withoutUni(lessons, subjects), subjects };
   }, [today]);
   if (!data) return <ScreenSkeleton cards={3} />;
   const names = new Map(data.subjects.map((s) => [s.id, s.name]));

@@ -41,12 +41,12 @@ export function BriefingWidget({ today }: { today: ISODate }) {
       db.habitChecks.where('date').equals(today).toArray(),
     ]);
     const sName = new Map(subjects.map((s) => [s.id, s.name]));
-    const open = blocks.filter((b) => !b.done);
+    const open = withoutUni(blocks, subjects).filter((b) => !b.done);
     const planned = (settings.weekPlan[String(isoWeekday(today))] ?? []).map((t) => SESSION_LABEL[t]);
     const active = habits.filter((h) => !h.archived);
     return buildBriefing({
       today,
-      exams: exams
+      exams: withoutUni(exams, subjects)
         .filter((e) => e.points === undefined)
         .map((e) => ({ subject: sName.get(e.subjectId) ?? 'Fach', kind: EXAM_KIND_LABEL[e.kind], date: e.date, progress: e.progress })),
       training: { planned, done: sessions.length },
@@ -95,7 +95,11 @@ export function StudyTodayWidget({ date }: { date: ISODate }) {
       db.lessons.where('weekday').equals(isoWeekday(date)).toArray(),
       db.subjects.toArray(),
     ]);
-    return { blocks, lessons, names: new Map(subjects.map((s) => [s.id, s.name])) };
+    return {
+      blocks: withoutUni(blocks, subjects),
+      lessons: withoutUni(lessons, subjects),
+      names: new Map(subjects.map((s) => [s.id, s.name])),
+    };
   }, [date]);
   if (!data) return null;
   const tt = settings.timetable;
@@ -227,7 +231,7 @@ export function GoalsWidget({ today }: { today: ISODate }) {
             examPoints: abi.examPoints,
           }).grade
         : null;
-    const review = { sessions, days, sleep, health, study: withoutUni(study, subjects), exams, habits, checks, earnings };
+    const review = { sessions, days, sleep, health, study: withoutUni(study, subjects), exams: withoutUni(exams, subjects), habits, checks, earnings };
     return goals
       .filter((g) => !g.archived && !RETIRED_GOAL_METRICS.includes(g.metric))
       .map((g) => ({ goal: g, p: goalProgress(g, review, today, abiGrade) }));
@@ -242,7 +246,7 @@ export function GoalsWidget({ today }: { today: ISODate }) {
         <div className="list">
           {data.map(({ goal, p }) => {
             const meta = GOAL_LABEL[goal.metric];
-            const fmt = (n: number | null) => (n === null ? '–' : formatDecimal(n, goal.metric === 'abiAverage' || goal.metric === 'avgSleepH' || goal.metric === 'studyMin' ? 1 : 0));
+            const fmt = (n: number | null) => (n === null ? '–' : formatDecimal(n, goal.metric === 'earnings' ? 2 : goal.metric === 'abiAverage' || goal.metric === 'avgSleepH' || goal.metric === 'studyMin' ? 1 : 0));
             return (
               <button key={goal.id} type="button" className="list-item list-row list-row--button" onClick={() => open(goal)} data-testid="goal-row">
                 <span className="grow list-row__text">
@@ -264,12 +268,15 @@ export function GoalsWidget({ today }: { today: ISODate }) {
   );
 }
 
+/** Einheit der Eingabe → Einheit in der Datenbank (Lernzeit h → min, Verdienst € → Cent). */
+const targetFactor = (m: GoalMetric) => (m === 'studyMin' ? 60 : m === 'earnings' ? 100 : 1);
+
 function GoalSheet({ goal, close }: { goal: Goal | undefined; close: () => void }) {
   const { toast } = useOverlay();
   const [metric, setMetric] = useState<GoalMetric>(goal?.metric ?? 'studyMin');
   const [period, setPeriod] = useState<Goal['period']>(goal?.period ?? 'week');
-  // Lernzeit-Ziele werden in Stunden eingegeben und in Minuten gespeichert.
-  const [target, setTarget] = useState<number | ''>(goal ? (goal.metric === 'studyMin' ? goal.target / 60 : goal.target) : 10);
+  // Lernzeit-Ziele werden in Stunden eingegeben und in Minuten gespeichert, Verdienst in Euro und in Cent.
+  const [target, setTarget] = useState<number | ''>(goal ? goal.target / targetFactor(goal.metric) : 10);
   const [error, setError] = useState('');
   const meta = GOAL_LABEL[metric];
   return (
@@ -290,7 +297,7 @@ function GoalSheet({ goal, close }: { goal: Goal | undefined; close: () => void 
         variant="primary"
         block
         onClick={() => {
-          const t = target === '' ? 0 : metric === 'studyMin' ? Math.round(target * 60) : target;
+          const t = target === '' ? 0 : targetFactor(metric) === 1 ? target : Math.round(target * targetFactor(metric));
           void saveGoal({ ...(goal ? { id: goal.id, createdAt: goal.createdAt } : {}), metric, period, target: t, archived: false })
             .then(() => {
               toast('Ziel gespeichert');

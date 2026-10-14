@@ -12,6 +12,7 @@ import {
   pointsToDecimalGrade,
   pointsToGrade,
   pomodoroState,
+  topicStatus,
   studyBySubject,
   studyMinutesInRange,
 } from '../../lib/calc/school';
@@ -152,7 +153,7 @@ function Todos() {
   const today = useToday();
   const names = useSubjectNames();
   const { openSheet } = useOverlay();
-  const todos = useLiveQuery(() => db.todos.toArray(), []);
+  const todos = useLiveQuery(async () => withoutUni(await db.todos.toArray(), await db.subjects.toArray()), []);
   if (!todos) return null;
   const prio = { hoch: 0, normal: 1, niedrig: 2 } as const;
   // Überfällige und heute fällige zuerst, dann Priorität, dann Fälligkeit.
@@ -227,7 +228,10 @@ function Todos() {
 function Exams() {
   const today = useToday();
   const { openSheet } = useOverlay();
-  const data = useLiveQuery(async () => ({ exams: await db.exams.toArray(), subjects: await db.subjects.orderBy('order').toArray(), grades: await db.grades.toArray() }), []);
+  const data = useLiveQuery(async () => {
+    const all = await db.subjects.orderBy('order').toArray();
+    return { exams: withoutUni(await db.exams.toArray(), all), subjects: all.filter((s) => !isUniSubject(s)), grades: await db.grades.toArray() };
+  }, []);
   if (!data) return null;
   const names = new Map(data.subjects.map((s) => [s.id, s.name]));
   const upcoming = upcomingExams(data.exams, today);
@@ -253,6 +257,7 @@ function Exams() {
           <div className="list">
             {upcoming.map((e) => {
               const days = diffDays(today, e.date);
+              const t = topicStatus(e.topicList);
               return (
                 <button key={e.id} type="button" className="list-item" onClick={() => openSheet({ title: 'Klausur', render: (close) => <ExamSheet close={close} exam={e} /> })}>
                   <span className="grow" style={{ minWidth: 0 }}>
@@ -260,14 +265,20 @@ function Exams() {
                       {names.get(e.subjectId) ?? 'Fach'} <span className="faint small">· {EXAM_KIND_LABEL[e.kind]}</span>
                     </span>
                     <span className="list-item__meta truncate" style={{ display: 'block', margin: '2px 0 6px' }}>
-                      {formatExamDay(e.date)} {e.topics && `· ${e.topics}`}
+                      {formatExamDay(e.date)} · {t ? `${t.done}/${t.total} Themen` : `${e.progress} %`} {e.topics && `· ${e.topics}`}
                     </span>
-                    <ProgressBar value={e.progress / 100} label="Lernstand" warn={days <= 3 && e.progress < 60} />
+                    <ProgressBar value={t ? t.done / t.total : e.progress / 100} label="Lernstand" decorative warn={days <= 3 && (t ? t.done < t.total : e.progress < 60)} />
                   </span>
                   <span style={{ textAlign: 'right', flex: 'none', minWidth: 52 }}>
-                    <span className={`big big--s num ${days <= 2 ? 'warn' : ''}`}>{days}</span>
-                    <br />
-                    <span className="xsmall faint">{days === 1 ? 'Tag' : 'Tage'}</span>
+                    {days === 0 ? (
+                      <span className="big big--s warn">heute</span>
+                    ) : (
+                      <>
+                        <span className={`big big--s num ${days <= 2 ? 'warn' : ''}`}>{days}</span>
+                        <br />
+                        <span className="xsmall faint">{days === 1 ? 'Tag' : 'Tage'}</span>
+                      </>
+                    )}
                   </span>
                 </button>
               );

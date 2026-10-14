@@ -13,6 +13,7 @@ import {
   pickNextExams,
   upcomingExams,
 } from './exams';
+import { sessionTitle, splitCounts, splitSummary } from './training';
 
 const at = '2026-10-01T00:00:00.000Z';
 
@@ -200,5 +201,27 @@ describe('Verdienst', () => {
       [53, 900],
       [1, 100],
     ]);
+  });
+});
+
+describe('Gym-Split', () => {
+  it('Titel mit Split, alte Einheiten bleiben „Gym“', () => {
+    expect(sessionTitle({ type: 'gym', split: 'push' })).toBe('Gym · Push');
+    expect(sessionTitle({ type: 'gym' })).toBe('Gym');
+    expect(sessionTitle({ type: 'football' })).toBe('Fußball-Training');
+  });
+
+  it('Verteilung pro Zeitraum', () => {
+    const c = splitCounts([
+      { type: 'gym', split: 'push' },
+      { type: 'gym', split: 'push' },
+      { type: 'gym', split: 'pull' },
+      { type: 'gym', split: 'legs' },
+      { type: 'gym' },
+      { type: 'football' },
+    ]);
+    expect(c).toEqual({ push: 2, pull: 1, legs: 1, none: 1 });
+    expect(splitSummary(c)).toBe('2× Push, 1× Pull, 1× Legs, 1× Gym');
+    expect(splitSummary(splitCounts([{ type: 'run' }]))).toBe('');
   });
 });

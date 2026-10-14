@@ -1,5 +1,5 @@
 import { addDays, diffDays, type ISODate } from '../date';
-import type { GymSet, Session, SessionType } from '../../db/schemas';
+import type { GymSet, GymSplit, Session, SessionType } from '../../db/schemas';
 
 export const SESSION_LABEL: Record<SessionType, string> = {
   football: 'Fußball-Training',
@@ -9,6 +9,28 @@ export const SESSION_LABEL: Record<SessionType, string> = {
   recovery: 'Regeneration',
   other: 'Sonstiges',
 };
+
+export const GYM_SPLIT_LABEL: Record<GymSplit, string> = { push: 'Push', pull: 'Pull', legs: 'Legs' };
+
+/** Anzeige-Titel einer Einheit: „Gym · Push“ mit Split, sonst die Art („Gym“ für alte Einheiten). */
+export function sessionTitle(s: Pick<Session, 'type' | 'split'>): string {
+  return s.type === 'gym' && s.split ? `Gym · ${GYM_SPLIT_LABEL[s.split]}` : SESSION_LABEL[s.type];
+}
+
+/** Verteilung der Gym-Einheiten auf die Splits (ohne Split = „Gym“). */
+export function splitCounts(sessions: Pick<Session, 'type' | 'split'>[]): Record<GymSplit | 'none', number> {
+  const out = { push: 0, pull: 0, legs: 0, none: 0 };
+  for (const s of sessions) if (s.type === 'gym') out[s.split ?? 'none']++;
+  return out;
+}
+
+/** „2× Push, 1× Pull, 1× Legs“ (plus „1× Gym“ ohne Split); leer, wenn keine Gym-Einheit. */
+export function splitSummary(counts: Record<GymSplit | 'none', number>): string {
+  return (['push', 'pull', 'legs', 'none'] as const)
+    .filter((k) => counts[k] > 0)
+    .map((k) => `${counts[k]}× ${k === 'none' ? 'Gym' : GYM_SPLIT_LABEL[k]}`)
+    .join(', ');
+}
 
 /** Session-Load nach Foster: Dauer (min) × RPE (1–10), in AU (arbitrary units). */
 export function sessionLoad(durationMin: number, rpe: number): number {

@@ -7,7 +7,7 @@ import { useSettings } from '../../hooks/useSettings';
 import { useToday } from '../../hooks/useNow';
 import { formatDecimal } from '../../lib/calc/insights';
 import { buildInsights, dailySeries, periodSummary, type PeriodSummary, type ReviewData } from '../../lib/calc/review';
-import { seasonOf, seasonRange, seasonStats } from '../../lib/calc/training';
+import { seasonOf, seasonRange, seasonStats, splitCounts, splitSummary } from '../../lib/calc/training';
 import { metricValue, movingAverage, previousRange, TREND_LABEL, yearHeatmap, type TrendMetric } from '../../lib/calc/trends';
 import { weeklyFileName, weeklyMarkdown, weeklyReport, type Kpi } from '../../lib/calc/weekly';
 import {
@@ -60,7 +60,7 @@ export default function ReviewScreen() {
   const [offset, setOffset] = useState(0);
   const [custom, setCustom] = useState({ from: addDays(today, -29), to: today });
   const data = useLiveQuery(async () => {
-    const [sessions, days, sleep, health, allStudy, exams, habits, checks, goals, earnings, subjects] = await Promise.all([
+    const [sessions, days, sleep, health, allStudy, allExams, habits, checks, goals, earnings, subjects] = await Promise.all([
       db.sessions.toArray(),
       db.days.toArray(),
       db.sleep.toArray(),
@@ -74,7 +74,7 @@ export default function ReviewScreen() {
       db.subjects.toArray(),
     ]);
     const study = withoutUni(allStudy, subjects);
-    return { review: { sessions, days, sleep, health, study, exams, habits, checks, earnings } satisfies ReviewData, goals };
+    return { review: { sessions, days, sleep, health, study, exams: withoutUni(allExams, subjects), habits, checks, earnings } satisfies ReviewData, goals };
   }, []);
 
   const r =
@@ -178,6 +178,7 @@ function PeriodView({
   const series = dailySeries(data, from, to);
   const long = diffDays(from, to) > 31;
   const label = (d: ISODate) => (labelMode === 'weekday' && !long ? formatWeekdayShort(d) : formatDayMonth(d).slice(0, long ? 5 : 2));
+  const splits = splitSummary(splitCounts(data.sessions.filter((x) => x.date >= from && x.date <= to)));
   const hasAny = series.some((d) => d.studyMin > 0 || d.load > 0 || d.sleepMin !== null || d.mood !== null);
 
   return (
@@ -222,6 +223,11 @@ function PeriodView({
           </Card>
           <Card label="Trainingslast" ariaLabel="Trainingslast-Verlauf">
             <BarChart label="Load pro Tag" data={series.map((d) => ({ label: label(d.date), value: d.load }))} height={90} />
+            {splits && (
+              <p className="xsmall faint" style={{ marginTop: 6 }} data-testid="review-splits">
+                Gym: {splits}
+              </p>
+            )}
           </Card>
           <Card label="Schlaf" ariaLabel="Schlaf-Verlauf">
             <BarChart
