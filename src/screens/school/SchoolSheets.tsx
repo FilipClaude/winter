@@ -25,6 +25,7 @@ import { formatHM, todayISO, type ISODate } from '../../lib/date';
 import { NumberField, Segmented, SelectField, TextArea, TextField } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
 import { Button, IconButton, SectionTitle } from '../../ui/primitives';
+import { MockSection } from './MockExams';
 import { EXAM_KIND_LABEL, formatClock, useTimer } from './school-utils';
 
 function useSubjects() {
@@ -314,6 +315,7 @@ export function ExamSheet({ close, exam }: { close: () => void; exam?: Exam }) {
         </div>
       )}
       <NumberField label="Punkte (0–15, nach Rückgabe)" value={points} onValue={setPoints} min={0} max={15} hint={points !== '' ? `Note ${pointsToGrade(points)} – wird als Note im Fach übernommen` : 'leer lassen, solange nicht bewertet'} />
+      <MockSection examId={stored?.id} subjectId={chosen} realPoints={points} />
       {returned && (
         <TextArea label="Reflexion: Was war schwer, was mache ich nächstes Mal anders?" value={reflection} onValue={setReflection} rows={3} maxLength={4000} />
       )}

@@ -24,6 +24,7 @@ import { EXAM_KIND_LABEL, formatClock, useTimer } from './school-utils';
 import { AbiView } from './AbiView';
 import { GradesView } from './GradesView';
 import { PlanView } from './PlanView';
+import { SubjectMockTrends } from './MockExams';
 import { NextExamCard } from './NextExamCard';
 import { ExamSheet, StudySheet, TodoSheet } from './SchoolSheets';
 import { isUniSubject, withoutUni } from '../../lib/calc/subjects';
@@ -308,6 +309,8 @@ function Exams() {
           </Card>
         </details>
       )}
+
+      <SubjectMockTrends />
 
       <SectionTitle>Notenschnitt</SectionTitle>
       <Card ariaLabel="Notenschnitt" testId="grades-card">

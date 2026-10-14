@@ -9,6 +9,7 @@ import { db } from './db';
 import {
   DEFAULT_SETTINGS,
   zDay,
+  zEarning,
   zExam,
   zExerciseTemplate,
   zGoal,
@@ -17,6 +18,7 @@ import {
   zHabitCheck,
   zHealthDay,
   zLesson,
+  zMockExam,
   zSemesterResult,
   zSession,
   zSettings,
@@ -27,12 +29,14 @@ import {
   zTimer,
   zTodo,
   type Day,
+  type Earning,
   type Exam,
   type Goal,
   type Grade,
   type GymSet,
   type Habit,
   type Lesson,
+  type MockExam,
   type Semester,
   type StudyBlock,
   type HealthDay,
@@ -204,7 +208,10 @@ export async function updateDay(
 export async function saveSession(input: WithOptionalMeta<Session>): Promise<Session> {
   const s = validate(zSession, stamp(input));
   if (s.type !== 'match') delete s.match;
-  if (s.type !== 'gym') delete s.gym;
+  if (s.type !== 'gym') {
+    delete s.gym;
+    delete s.split;
+  }
   await db.transaction('rw', db.sessions, db.exerciseTemplates, async () => {
     await db.sessions.put(s);
     for (const ex of s.gym?.exercises ?? []) await rememberExercise(ex.name, ex.sets);
@@ -419,9 +426,10 @@ export async function saveExam(input: WithOptionalMeta<Exam>): Promise<Exam> {
 }
 
 export async function deleteExam(id: string): Promise<void> {
-  await db.transaction('rw', db.exams, db.grades, db.studyBlocks, async () => {
+  await db.transaction('rw', [db.exams, db.grades, db.studyBlocks, db.mockExams], async () => {
     await db.exams.delete(id);
     await db.grades.filter((g) => g.examId === id).delete();
+    await db.mockExams.where('examId').equals(id).delete();
     // Offene Lerneinheiten der Klausur entfallen, erledigte bleiben als Verlauf.
     await db.studyBlocks
       .where('examId')
@@ -467,6 +475,38 @@ export async function saveExamWithGrade(input: WithOptionalMeta<Exam>): Promise<
     await syncExamGrade(saved);
     return saved;
   });
+}
+
+// ---------- v3: Probe-Klausuren, Verdienst ----------
+
+export async function saveMockExam(input: WithOptionalMeta<MockExam>): Promise<MockExam> {
+  const m = validate(zMockExam, stamp(input));
+  await db.mockExams.put(m);
+  return m;
+}
+
+export async function deleteMockExam(id: string): Promise<MockExam | undefined> {
+  const m = await db.mockExams.get(id);
+  await db.mockExams.delete(id);
+  return m;
+}
+
+export async function saveEarning(input: WithOptionalMeta<Earning>): Promise<Earning> {
+  const e = validate(zEarning, stamp(input));
+  await db.earnings.put(e);
+  return e;
+}
+
+/** Löscht einen Eintrag und gibt ihn zurück (für „Rückgängig“). */
+export async function deleteEarning(id: string): Promise<Earning | undefined> {
+  const e = await db.earnings.get(id);
+  await db.earnings.delete(id);
+  return e;
+}
+
+/** Stellt einen gelöschten Eintrag unverändert wieder her (Rückgängig). */
+export async function restoreRow(table: 'earnings' | 'mockExams', row: Earning | MockExam): Promise<void> {
+  await db.table(table).put(row);
 }
 
 // ---------- v2: Noten, Halbjahre, Lernplan, Stundenplan, Ziele ----------

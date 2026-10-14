@@ -7,6 +7,7 @@ import type {
   Habit,
   HabitCheck,
   HealthDay,
+  MockExam,
   Session,
   Sleep,
   StudySession,
@@ -45,6 +46,7 @@ export interface DemoSet {
   studySessions: StudySession[];
   todos: Todo[];
   exams: Exam[];
+  mockExams: MockExam[];
   habits: Habit[];
   habitChecks: HabitCheck[];
   grades: Grade[];
@@ -77,6 +79,7 @@ export function generateDemo(
     studySessions: [],
     todos: [],
     exams: [],
+    mockExams: [],
     grades: [],
     habits: [],
     habitChecks: [],
@@ -296,6 +299,28 @@ export function generateDemo(
   exam('Bio', -5, 'ex', 100, 8, 'Genetik');
   exam('Mathe', 4, 'klausur', 55, undefined, 'Analysis: Kurvendiskussion, Integrale');
   exam('Geschichte', 15, 'klausur', 20, undefined, 'Weimarer Republik');
+
+  // v3: Probe-Klausuren mit Trend (Mathe anstehend, PuG schon bewertet)
+  const mock = (name: string, offset: number, points: number, maxPoints: number, durationMin?: number) => {
+    const e = set.exams.find(
+      (x) => x.subjectId === subjectId(name) && (name !== 'Mathe' || x.points === undefined),
+    );
+    if (!e) return;
+    set.mockExams.push({
+      ...meta(),
+      date: addDays(today, offset),
+      examId: e.id,
+      subjectId: e.subjectId,
+      points,
+      maxPoints,
+      ...(durationMin ? { durationMin } : {}),
+    });
+  };
+  mock('Mathe', -10, 12, 25, 60);
+  mock('Mathe', -6, 15, 25, 55);
+  mock('Mathe', -2, 17.5, 25, 50);
+  mock('PuG', -16, 22, 30);
+  mock('PuG', -12, 25.5, 30);
 
   // v2: Noten – bewertete Klausuren als verknüpfte Noten plus kleine Leistungsnachweise
   for (const e of set.exams) {

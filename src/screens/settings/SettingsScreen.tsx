@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import {
   ArrowDown,
   ArrowUp,
+  Calculator,
   Database,
   FileDown,
   FileText,
@@ -21,7 +22,8 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { db, SCHEMA_VERSION } from '../../db/db';
 import { saveSettings, saveSubject } from '../../db/repo';
-import type { Settings, Subject } from '../../db/schemas';
+import { DEFAULT_NP_SCALE, type Settings, type Subject } from '../../db/schemas';
+import { NP_NOTE } from '../school/MockExams';
 import { useKV, useKVState, useSettings } from '../../hooks/useSettings';
 import { useToday } from '../../hooks/useNow';
 import {
@@ -60,6 +62,7 @@ export default function SettingsScreen() {
       <h1 className="screen-title">Einstellungen</h1>
       <GoalsCard settings={settings} />
       <SubjectsCard />
+      <NpScaleCard settings={settings} />
       <HealthCard settings={settings} />
       <BackupCard />
       <SnapshotsCard />
@@ -299,6 +302,70 @@ function SubjectRow({ subject, first, last, onMove }: { subject: Subject; first:
       <IconButton icon={ArrowDown} label={`${subject.name} nach unten`} disabled={last} onClick={() => onMove(1)} />
       <Button variant="ghost" size="s" onClick={() => void saveSubject({ ...subject, archived: !subject.archived })}>
         {subject.archived ? 'Aktiv' : 'Archiv'}
+      </Button>
+    </div>
+  );
+}
+
+// ---------- Notenschlüssel (Probe-Klausuren) ----------
+
+function NpScaleCard({ settings }: { settings: Settings }) {
+  const { openSheet } = useOverlay();
+  const custom = settings.npScale.some((v, i) => v !== DEFAULT_NP_SCALE[i]);
+  return (
+    <Card
+      label="Notenschlüssel"
+      icon={Calculator}
+      ariaLabel="Notenschlüssel"
+      testId="np-scale-card"
+      action={<Button variant="ghost" size="s" onClick={() => openSheet({ title: 'Notenschlüssel', render: (close) => <NpScaleSheet settings={settings} close={close} /> })}>Ändern</Button>}
+    >
+      <p className="small muted">
+        Probe-Klausuren: Prozent → geschätzte Punkte ({custom ? 'eigene Tabelle' : 'Standard: 15 P ab 95 %, 10 P ab 70 %, 5 P ab 45 %'}). {NP_NOTE}.
+      </p>
+    </Card>
+  );
+}
+
+function NpScaleSheet({ settings, close }: { settings: Settings; close: () => void }) {
+  const { toast } = useOverlay();
+  const [scale, setScale] = useState<(number | '')[]>(settings.npScale);
+  const values = scale.filter((v): v is number => v !== '');
+  const falling = values.length === 15 && values.every((v, i) => i === 0 || v < (values[i - 1] ?? 101));
+  return (
+    <div className="form" data-testid="np-scale-sheet">
+      <p className="small muted">Mindestprozent je Notenpunkt. Darunter gibt es 0 Punkte. Am besten den Schlüssel der Schule übernehmen.</p>
+      <div className="np-grid">
+        {scale.map((v, i) => (
+          <NumberField
+            key={i}
+            label={`${15 - i} P ab %`}
+            value={v}
+            onValue={(n) => setScale(scale.map((x, j) => (j === i ? n : x)))}
+            min={0}
+            max={100}
+            decimal
+          />
+        ))}
+      </div>
+      {!falling && <p className="field__error">Alle 15 Werte ausfüllen, von 15 nach 1 Punkt fallend.</p>}
+      <Button
+        variant="primary"
+        block
+        disabled={!falling}
+        onClick={() =>
+          void saveSettings({ npScale: values })
+            .then(() => {
+              toast('Notenschlüssel gespeichert');
+              close();
+            })
+            .catch((e: unknown) => toast(e instanceof Error ? e.message : 'Ungültige Werte', { tone: 'warn' }))
+        }
+      >
+        Speichern
+      </Button>
+      <Button variant="ghost" block onClick={() => setScale(DEFAULT_NP_SCALE)}>
+        Standard (EPA) wiederherstellen
       </Button>
     </div>
   );
