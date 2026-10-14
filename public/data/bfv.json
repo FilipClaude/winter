@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "fetchedAt": "2026-10-12T21:28:36.608Z",
+  "fetchedAt": "2026-10-14T05:23:56.967Z",
   "team": {
     "name": "SV Planegg-Krailling",
     "url": "https://www.bfv.de/mannschaften/sv-planegg-krailling/016PAD8FHK000000VV0AG811VTE5EA5R",
@@ -96,6 +96,16 @@
       "competition": "Meisterschaften",
       "league": "U 17 (B-Jun.) Landesliga Bayern Süd",
       "location": "Georg Heide Stadion Planegg, Hofmarkstr. 51, 82152 Planegg",
+      "status": "geplant"
+    },
+    {
+      "id": "032CKJV3H8000000VS5489BUVV5V31CI",
+      "kickoff": "2027-02-14T15:00:00Z",
+      "home": false,
+      "opponent": "SV Heimstetten U17",
+      "competition": "Freundschaftsspiele",
+      "league": "FS/BJ/L-FS/BAY/1",
+      "location": "ATS Sportpark Heimstetten, Kunstrasen, Am Sportpark 2, 85551 Kirchheim b. München",
       "status": "geplant"
     },
     {
