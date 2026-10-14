@@ -38,6 +38,11 @@ export function parseEuroToCents(raw: string): number | null {
   return Number.isSafeInteger(cents) ? cents : null;
 }
 
+/** Cent → Eingabetext „12,5“ bzw. „12“ (ohne Euro-Zeichen, ohne Tausenderpunkte). */
+export function centsToInput(cents: number): string {
+  return (cents / 100).toLocaleString('de-DE', { maximumFractionDigits: 2, useGrouping: false });
+}
+
 /** Montag–Sonntag der Woche, in der `date` liegt (Berliner Kalendertage). */
 export function weekOf(date: ISODate): { from: ISODate; to: ISODate } {
   const from = startOfWeek(date);

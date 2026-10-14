@@ -396,3 +396,8 @@ Vier unabhängige Reviews mit zusammen 54 Funden; alle behoben oder begründet a
 
 ## v3 · Review 1 (nach Phase 3) ✓
 Unabhängiger Reviewer über `1500963..d882f1a`: keine Datenverlust-Risiken; 8 Funde, davon 1 kritisch (Verdienst-Ziel € vs. Cent) und 1 wichtig (Uni-Klausuren, -Aufgaben, -Stunden noch sichtbar). Alle behoben oder begründet (DECISIONS #92). Der Textsuch-Test legt jetzt Uni-Einträge an; Gegenprobe ohne Filter schlägt fehl.
+
+## v3 · Phase 6 – Verdienst ✓
+- Tabelle `earnings` (Cent), Widget „Verdienst“ (Wochensumme groß in Euro, Balken zum Wochenziel, Einträge bearbeiten/löschen mit Rückgängig), Sheet mit Komma-Eingabe und Vorschau, Schnellerfassung „Verdienst“, Wochenziel in den Tageszielen (0 = aus), Ziel-Metrik Verdienst (Woche/Monat, Euro ↔ Cent), Wochenbericht (Kennzahl + Satz mit Vorwoche und Ziel), Rückblick „Verdienst · 8 Wochen“, Markdown, Demo-Daten (Nachhilfe, Babysitten, Trainer-Aushilfe). Backup/Import/Rettungs-Export/Snapshots enthalten die Tabelle (Phase 1).
+- **Geprüft:** Unit (Komma, Tausender, Rundung ohne Gleitkomma, Anzeige, Wochengrenzen So 23:59/Mo 00:00, Woche der Zeitumstellung, KW 53/KW 1, Ziel in Cent, Bericht, Export, Bearbeiten/Löschen/Rückgängig); E2E (Schnellerfassung 12,5 → 12,50 €, ungültiger Betrag, Bearbeiten, Löschen + Rückgängig, Wochenziel → Balken 50 % und Ring-Segment, Ziel „40,00 / 50,00 €“, Rückblick und Wochenbericht); Screenshot Heute angesehen.
+- **Gefunden & behoben:** Einträge in der kleinen Variante nicht erreichbar → „n Einträge“ öffnet die Liste; Ring-Text abgeschnitten; Bericht versteckte eine Woche nur mit Verdienst als „leer“; „Nächstes Spiel“ ohne kleine Variante; Prüftest wartete auf einen Text, der schon in der Vorschau stand (Zusatzdaten vor dem Import geschrieben).

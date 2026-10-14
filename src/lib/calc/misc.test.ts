@@ -218,7 +218,7 @@ describe('Tagesring (v3)', () => {
     expect(r.parts.map((p) => p.key)).toEqual(['habits', 'study', 'sleep', 'training', 'earnings']);
     // 0,5 · 0,5 · 1 (gedeckelt) · 1 · 0,5
     expect(r.total).toBeCloseTo(0.7);
-    expect(r.parts.find((p) => p.key === 'earnings')?.detail).toBe('15,00 € / 30,00 €');
+    expect(r.parts.find((p) => p.key === 'earnings')?.detail).toBe('15 / 30 €');
   });
 
   it('Ruhetag und fehlendes Wochenziel fallen heraus statt als verfehlt zu zählen', () => {

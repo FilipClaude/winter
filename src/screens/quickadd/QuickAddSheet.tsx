@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { LucideIcon } from 'lucide-react';
-import { BookOpenCheck, Dumbbell, GraduationCap, HeartPulse, ListTodo, Moon, NotebookPen, Smile, Timer } from 'lucide-react';
+import { BookOpenCheck, Dumbbell, GraduationCap, HeartPulse, ListTodo, Moon, NotebookPen, Smile, Timer, Wallet } from 'lucide-react';
 import { db } from '../../db/db';
 import { emptyDay, updateDay } from '../../db/repo';
 import { useSettings } from '../../hooks/useSettings';
@@ -11,6 +11,7 @@ import { Button } from '../../ui/primitives';
 import { SleepSheet } from '../body/SleepSheet';
 import { openHealthSheet } from '../health/openHealth';
 import { ExamSheet, StudySheet, TodoSheet } from '../school/SchoolSheets';
+import { openEarningSheet } from '../today/openEarning';
 import { JournalSheet } from '../today/JournalSheet';
 import { openSessionSheet } from '../training/openSession';
 
@@ -23,6 +24,7 @@ interface Entry {
 
 const ENTRIES: Entry[] = [
   { id: 'training', label: 'Training', icon: Dumbbell, run: (api) => openSessionSheet(api.openSheet, { date: todayISO() }) },
+  { id: 'verdienst', label: 'Verdienst', icon: Wallet, run: (api) => openEarningSheet(api.openSheet, { date: todayISO() }) },
   { id: 'schlaf', label: 'Schlaf', icon: Moon, run: (api) => api.openSheet({ title: 'Schlaf', render: (close) => <SleepSheet date={todayISO()} close={close} /> }) },
   { id: 'lernen', label: 'Lernzeit', icon: Timer, run: (api) => api.openSheet({ title: 'Lernzeit', render: (close) => <StudySheet close={close} /> }) },
   { id: 'aufgabe', label: 'Aufgabe', icon: ListTodo, run: (api) => api.openSheet({ title: 'Aufgabe', render: (close) => <TodoSheet close={close} /> }) },

@@ -19,4 +19,4 @@ export const WIDGET_LABEL: Record<DashboardWidgetId, string> = {
 };
 
 /** Widgets mit kompakter Variante (Größe „klein“ = halbe Breite). */
-export const HAS_SMALL = new Set<DashboardWidgetId>(['ring', 'steps', 'sleep', 'abi', 'earnings']);
+export const HAS_SMALL = new Set<DashboardWidgetId>(['ring', 'nextMatch', 'steps', 'sleep', 'abi', 'earnings']);

@@ -1,5 +1,4 @@
 import type { Goals, Settings } from '../../db/schemas';
-import { formatEuro } from './earnings';
 
 export interface RingInput {
   habitsDone: number;
@@ -76,7 +75,8 @@ export function dayRing(
       key: 'earnings',
       label: 'Verdienst',
       value: clamp01(e.weekCents / due),
-      detail: `${formatEuro(e.weekCents)} / ${formatEuro(Math.round(due))}`,
+      // ganze Euro: Die Zeile im Ring ist schmal (Fund im Screenshot: „40,00 € / 34,29 €“ abgeschnitten)
+      detail: `${Math.round(e.weekCents / 100)} / ${Math.round(due / 100)} €`,
     });
   }
   const total = parts.length === 0 ? 0 : parts.reduce((a, p) => a + p.value, 0) / parts.length;

@@ -1,4 +1,5 @@
-import type { Day, Session, Sleep, StudySession, Subject, Todo, HealthDay } from '../db/schemas';
+import type { Day, Earning, Session, Sleep, StudySession, Subject, Todo, HealthDay } from '../db/schemas';
+import { formatEuro, sumCents } from './calc/earnings';
 import { effectiveSleep } from './calc/sleep';
 import { withoutUni } from './calc/subjects';
 import { sessionLoad, sessionTitle } from './calc/training';
@@ -25,6 +26,8 @@ export interface MarkdownData {
   subjects: Subject[];
   study: StudySession[];
   sleep: Sleep[];
+  /** v3 */
+  earnings: Earning[];
   health: HealthDay[];
 }
 
@@ -187,7 +190,10 @@ export function weekMarkdown(data: MarkdownData, weekStart: ISODate): string {
     lines.push(`### ${weekdayName(d)}`, ...ds.flatMap(sessionLines), '');
   }
   const study = studyLine(data, weekStart, to);
-  if (study) lines.push('', '## Zahlen', `- Lernen: ${study}`);
+  const earned = sumCents(data.earnings, weekStart, to);
+  if (study || earned > 0) lines.push('', '## Zahlen');
+  if (study) lines.push(`- Lernen: ${study}`);
+  if (earned > 0) lines.push(`- Verdienst: ${formatEuro(earned)}`);
   return `${lines
     .join('\n')
     .replace(/\n{3,}/g, '\n\n')

@@ -40,7 +40,9 @@ test('kein Uni- und kein Ernährungstext in der Oberfläche – mit migrierten v
   await expectClean(page, 'Import-Vorschau');
   await shot(page, 'v3-02-import-vorschau');
   await preview.getByRole('button', { name: 'Ersetzen und importieren' }).click();
-  await expect(page.getByText(/importiert/).first()).toBeVisible(SLOW_WRITE);
+  // Erst warten, bis der Import geschrieben ist (der Vorschau-Text enthält „importiert“ schon vorher)
+  await expect(preview).toBeHidden(SLOW_WRITE);
+  await expect(page.getByText(/Einträge wiederhergestellt/)).toBeVisible(SLOW_WRITE);
 
   // Review-Fund: Auch Klausuren, Aufgaben, Stunden und Lerneinheiten zum Fach „FernUni“ (in v2 normal
   // wählbar) dürfen nirgends auftauchen – morgen, überfällig, heute im Stundenplan und im Lernplan.

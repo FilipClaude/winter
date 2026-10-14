@@ -6,6 +6,7 @@ import type {
   GymExercise,
   Habit,
   HabitCheck,
+  Earning,
   HealthDay,
   MockExam,
   Session,
@@ -47,6 +48,7 @@ export interface DemoSet {
   todos: Todo[];
   exams: Exam[];
   mockExams: MockExam[];
+  earnings: Earning[];
   habits: Habit[];
   habitChecks: HabitCheck[];
   grades: Grade[];
@@ -80,6 +82,7 @@ export function generateDemo(
     todos: [],
     exams: [],
     mockExams: [],
+    earnings: [],
     grades: [],
     habits: [],
     habitChecks: [],
@@ -268,6 +271,15 @@ export function generateDemo(
           });
         cursor += (minutes + 20) * 60_000;
       }
+    }
+
+    // v3: Verdienst – Nachhilfe dienstags, Babysitten am Wochenende, ab und zu Trainer-Aushilfe
+    if (!isToday) {
+      const earn = (amountCents: number, note: string) =>
+        set.earnings.push({ ...meta(), date, amountCents, note });
+      if (wd === 2 && r.chance(0.85)) earn(r.pick([1500, 2000, 2250]), 'Nachhilfe Mathe');
+      if (wd === 6 && r.chance(0.6)) earn(r.int(2, 4) * 1000, 'Babysitten');
+      if (wd === 4 && r.chance(0.3)) earn(1250, 'Trainer-Aushilfe E-Jugend');
     }
 
     // Habits

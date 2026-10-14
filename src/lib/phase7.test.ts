@@ -216,6 +216,7 @@ describe('Markdown-Export (Obsidian)', () => {
     subjects: [],
     study: [],
     sleep: [],
+    earnings: [],
     health: [],
   });
   const meta = { id: 'x', createdAt: '2026-10-11T08:00:00.000Z', updatedAt: '2026-10-11T08:00:00.000Z' };

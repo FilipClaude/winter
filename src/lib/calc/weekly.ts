@@ -1,6 +1,7 @@
 import type { Goal } from '../../db/schemas';
 import { addDays, formatDE, formatWeekdayShort, isoWeekNumber, startOfWeek, type ISODate } from '../date';
 import { GOAL_LABEL, goalProgress } from './goals';
+import { formatEuro, formatEuroShort, sumCents } from './earnings';
 import { formatDecimal } from './insights';
 import { splitCounts, splitSummary } from './training';
 import { dailySeries, periodSummary, type ReviewData } from './review';
@@ -42,6 +43,8 @@ export function weeklyReport(
   today: ISODate,
   goals: Pick<Goal, 'metric' | 'period' | 'target' | 'archived'>[] = [],
   abiAverage: number | null = null,
+  /** v3: Wochenziel Verdienst in Cent (0 = aus). */
+  earningsGoalCents = 0,
 ): WeeklyReport {
   const weekStart = startOfWeek(anyDay);
   const weekEnd = addDays(weekStart, 6);
@@ -92,6 +95,7 @@ export function weeklyReport(
       0,
     ),
     kpi('mood', 'Ø Stimmung', '', s.moodAvg, p.moodAvg),
+    kpi('earnings', 'Verdienst', '€', s.earningsCents / 100, p.earningsCents / 100, true, 2),
   ];
 
   const series = dailySeries(data, weekStart, weekEnd > today ? today : weekEnd);
@@ -111,6 +115,12 @@ export function weeklyReport(
       `Spiel gegen ${mm.opponent} ${mm.goalsFor}:${mm.goalsAgainst}${mm.goals > 0 ? `, ${mm.goals} ${mm.goals === 1 ? 'Tor' : 'Tore'}` : ''}${mm.assists > 0 ? `, ${mm.assists} Assist${mm.assists === 1 ? '' : 's'}` : ''}.`,
     );
   }
+  const earned = sumCents(data.earnings, weekStart, weekEnd);
+  const prevEarned = sumCents(data.earnings, prevStart, addDays(prevStart, 6));
+  if (earned > 0 || earningsGoalCents > 0)
+    highlights.push(
+      `Verdienst ${formatEuro(earned)}${earningsGoalCents > 0 ? ` von ${formatEuroShort(earningsGoalCents)} (${earned >= earningsGoalCents ? 'Ziel erreicht' : `noch ${formatEuro(earningsGoalCents - earned)}`})` : ''}, Vorwoche ${formatEuro(prevEarned)}.`,
+    );
   const splits = splitSummary(
     splitCounts(data.sessions.filter((x) => x.date >= weekStart && x.date <= weekEnd)),
   );
@@ -154,7 +164,11 @@ export function weeklyReport(
       const pr = goalProgress(g, data, weekEnd > today ? today : weekEnd, abiAverage);
       const meta = GOAL_LABEL[g.metric];
       const d =
-        g.metric === 'avgSteps' || g.metric === 'gymSessions' || g.metric === 'trainingSessions' ? 0 : 1;
+        g.metric === 'earnings'
+          ? 2
+          : g.metric === 'avgSteps' || g.metric === 'gymSessions' || g.metric === 'trainingSessions'
+            ? 0
+            : 1;
       return {
         label: meta.label,
         reached: pr.reached,
@@ -163,9 +177,11 @@ export function weeklyReport(
       };
     });
 
-  const empty = series.every(
-    (d) => d.studyMin === 0 && d.load === 0 && d.sleepMin === null && d.mood === null && d.steps === null,
-  );
+  const empty =
+    earned === 0 &&
+    series.every(
+      (d) => d.studyMin === 0 && d.load === 0 && d.sleepMin === null && d.mood === null && d.steps === null,
+    );
   return {
     weekStart,
     weekEnd,

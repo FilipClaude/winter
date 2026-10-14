@@ -13,7 +13,11 @@ import {
   pickNextExams,
   upcomingExams,
 } from './exams';
+import { weekMarkdown } from '../markdown';
+import { goalProgress } from './goals';
+import type { ReviewData } from './review';
 import { sessionTitle, splitCounts, splitSummary } from './training';
+import { weeklyMarkdown, weeklyReport } from './weekly';
 
 const at = '2026-10-01T00:00:00.000Z';
 
@@ -223,5 +227,74 @@ describe('Gym-Split', () => {
     expect(c).toEqual({ push: 2, pull: 1, legs: 1, none: 1 });
     expect(splitSummary(c)).toBe('2× Push, 1× Pull, 1× Legs, 1× Gym');
     expect(splitSummary(splitCounts([{ type: 'run' }]))).toBe('');
+  });
+});
+
+describe('Verdienst in Zielen, Wochenbericht und Export', () => {
+  const empty = (): ReviewData => ({
+    sessions: [],
+    days: [],
+    sleep: [],
+    health: [],
+    study: [],
+    exams: [],
+    habits: [],
+    checks: [],
+    earnings: [],
+  });
+  const e = (date: string, amountCents: number) => ({
+    id: `${date}-${amountCents}`,
+    createdAt: at,
+    updatedAt: at,
+    date,
+    amountCents,
+  });
+
+  it('Ziel-Metrik: Cent in der Datenbank, Euro in der Anzeige (Review-Fund: 50 € galt schon bei 0,50 € als erreicht)', () => {
+    const d = empty();
+    d.earnings = [e('2026-10-12', 50), e('2026-10-13', 2000), e('2026-10-05', 9999)];
+    const week = goalProgress({ metric: 'earnings', period: 'week', target: 5000 }, d, '2026-10-14', null);
+    expect(week.value).toBe(2050);
+    expect(week.valueShown).toBe(20.5);
+    expect(week.targetShown).toBe(50);
+    expect(week.reached).toBe(false);
+    expect(week.ratio).toBeCloseTo(0.41);
+    const month = goalProgress({ metric: 'earnings', period: 'month', target: 10000 }, d, '2026-10-14', null);
+    expect(month.value).toBe(12049);
+    expect(month.reached).toBe(true);
+  });
+
+  it('Wochenbericht: Verdienst gegen Vorwoche und Wochenziel', () => {
+    const d = empty();
+    d.earnings = [e('2026-10-06', 1500), e('2026-10-13', 2000), e('2026-10-18', 2750)];
+    const r = weeklyReport(d, '2026-10-12', '2026-10-19', [], null, 6000);
+    expect(r.kpis.find((k) => k.key === 'earnings')).toMatchObject({
+      value: 47.5,
+      prev: 15,
+      delta: 32.5,
+      unit: '€',
+    });
+    expect(r.highlights).toContain('Verdienst 47,50 € von 60 € (noch 12,50 €), Vorwoche 15,00 €.');
+    expect(r.empty).toBe(false); // eine Woche nur mit Verdienst ist nicht leer
+    const reached = weeklyReport(d, '2026-10-12', '2026-10-19', [], null, 4000);
+    expect(reached.highlights.some((h) => h.includes('Ziel erreicht'))).toBe(true);
+    expect(weeklyMarkdown(r)).toContain('| Verdienst | 47,50 € | 15,00 € | ↑ |');
+  });
+
+  it('Wochen-Markdown nennt den Verdienst', () => {
+    const md = weekMarkdown(
+      {
+        days: [],
+        sessions: [],
+        todos: [],
+        subjects: [],
+        study: [],
+        sleep: [],
+        health: [],
+        earnings: [e('2026-10-14', 1250)],
+      },
+      '2026-10-12',
+    );
+    expect(md).toContain('- Verdienst: 12,50 €');
   });
 });

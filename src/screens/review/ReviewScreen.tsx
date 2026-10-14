@@ -1,10 +1,11 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { CalendarRange, ChevronLeft, ChevronRight, ClipboardCopy, FileText, Lightbulb, Share2, TrendingUp, Trophy } from 'lucide-react';
+import { CalendarRange, ChevronLeft, ChevronRight, ClipboardCopy, FileText, Lightbulb, Share2, TrendingUp, Trophy, Wallet } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { db } from '../../db/db';
 import type { Goal } from '../../db/schemas';
 import { useSettings } from '../../hooks/useSettings';
 import { useToday } from '../../hooks/useNow';
+import { formatEuro, formatEuroShort, weeklyTotals } from '../../lib/calc/earnings';
 import { formatDecimal } from '../../lib/calc/insights';
 import { buildInsights, dailySeries, periodSummary, type PeriodSummary, type ReviewData } from '../../lib/calc/review';
 import { seasonOf, seasonRange, seasonStats, splitCounts, splitSummary } from '../../lib/calc/training';
@@ -115,7 +116,10 @@ export default function ReviewScreen() {
       {data && r.from <= today ? (
         <PeriodView data={data.review} from={r.from} to={to} label={period === 'monat' ? 'day' : 'weekday'} sleepGoal={settings.goals.sleepH} period={period} />
       ) : null}
-      {data && period === 'woche' && r.from <= today && <WeekReportCard data={data.review} goals={data.goals} weekStart={r.from} today={today} />}
+      {data && period === 'woche' && r.from <= today && (
+        <WeekReportCard data={data.review} goals={data.goals} weekStart={r.from} today={today} earningsGoal={settings.earnings.weeklyGoalCents} />
+      )}
+      {data && <EarningsWeeks data={data.review} today={today} goal={settings.earnings.weeklyGoalCents} />}
       {data && <Trends data={data.review} today={today} />}
       {data && <Insights data={data.review} today={today} />}
       {data && <Season data={data.review} today={today} />}
@@ -247,9 +251,21 @@ function PeriodView({
 
 // ---------- Wochenbericht ----------
 
-function WeekReportCard({ data, goals, weekStart, today }: { data: ReviewData; goals: Goal[]; weekStart: ISODate; today: ISODate }) {
+function WeekReportCard({
+  data,
+  goals,
+  weekStart,
+  today,
+  earningsGoal,
+}: {
+  data: ReviewData;
+  goals: Goal[];
+  weekStart: ISODate;
+  today: ISODate;
+  earningsGoal: number;
+}) {
   const { toast } = useOverlay();
-  const r = weeklyReport(data, weekStart, today, goals);
+  const r = weeklyReport(data, weekStart, today, goals, null, earningsGoal);
   const md = weeklyMarkdown(r);
   const tile = (k: Kpi) => (
     <StatTile
@@ -323,6 +339,28 @@ function WeekReportCard({ data, goals, weekStart, today }: { data: ReviewData; g
           </div>
         </div>
       )}
+    </Card>
+  );
+}
+
+// ---------- Verdienst: letzte 8 Wochen ----------
+
+function EarningsWeeks({ data, today, goal }: { data: ReviewData; today: ISODate; goal: number }) {
+  if (data.earnings.length === 0) return null;
+  const weeks = weeklyTotals(data.earnings, today, 8);
+  const total = weeks.reduce((a, w) => a + w.cents, 0);
+  return (
+    <Card label="Verdienst · 8 Wochen" icon={Wallet} ariaLabel="Verdienst der letzten 8 Wochen" testId="earnings-weeks">
+      <BarChart
+        label="Verdienst pro Woche in Euro"
+        data={weeks.map((w, i) => ({ label: `KW ${w.kw}`, value: w.cents / 100, highlight: i === weeks.length - 1 }))}
+        {...(goal > 0 ? { goal: goal / 100, goalLabel: `Ziel ${formatEuroShort(goal)}` } : {})}
+        format={(n) => formatEuroShort(Math.round(n * 100))}
+        height={90}
+      />
+      <p className="xsmall faint" style={{ marginTop: 6 }}>
+        Zusammen {formatEuro(total)} · Ø {formatEuro(Math.round(total / weeks.length))} pro Woche
+      </p>
     </Card>
   );
 }

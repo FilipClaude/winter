@@ -41,7 +41,7 @@ import {
   type BackupPreview,
   type SnapshotMeta,
 } from '../../lib/backup';
-import { formatEuroShort, parseEuroToCents } from '../../lib/calc/earnings';
+import { centsToInput, formatEuroShort, parseEuroToCents } from '../../lib/calc/earnings';
 import { formatDecimal } from '../../lib/calc/insights';
 import { diffDays, formatDE, startOfWeek, toISODate, toTimeHM } from '../../lib/date';
 import { insertDemo, removeDemo } from '../../lib/demo';
@@ -181,14 +181,12 @@ const RING_HINT: Partial<Record<(typeof RING_KEYS)[number], string>> = {
   training: 'Erfüllt, sobald eine Einheit eingetragen ist. Ruhetage laut Wochenplan zählen nicht.',
   earnings: 'Wochenziel anteilig bis heute (Mittwoch = 3/7). Nur mit Wochenziel.',
 };
-/** Cent → Eingabetext „42,5“ (ohne Euro-Zeichen). */
-const formatCentsInput = (cents: number) => (cents / 100).toLocaleString('de-DE', { maximumFractionDigits: 2, useGrouping: false });
 
 function GoalsSheet({ settings, close }: { settings: Settings; close: () => void }) {
   const { toast } = useOverlay();
   const [g, setG] = useState(settings.goals);
   const [ring, setRing] = useState(settings.ring);
-  const [earn, setEarn] = useState(settings.earnings.weeklyGoalCents > 0 ? formatCentsInput(settings.earnings.weeklyGoalCents) : '');
+  const [earn, setEarn] = useState(settings.earnings.weeklyGoalCents > 0 ? centsToInput(settings.earnings.weeklyGoalCents) : '');
   const earnCents = earn.trim() === '' ? 0 : parseEuroToCents(earn);
   const num = (k: keyof typeof g) => (v: number | '') => setG({ ...g, [k]: v === '' ? 0 : v });
   return (
@@ -604,7 +602,7 @@ function SnapshotsCard() {
 // ---------- Markdown ----------
 
 async function loadMarkdownData(): Promise<MarkdownData> {
-  const [days, sessions, todos, subjects, study, sleep, health] = await Promise.all([
+  const [days, sessions, todos, subjects, study, sleep, health, earnings] = await Promise.all([
     db.days.toArray(),
     db.sessions.toArray(),
     db.todos.toArray(),
@@ -612,8 +610,9 @@ async function loadMarkdownData(): Promise<MarkdownData> {
     db.studySessions.toArray(),
     db.sleep.toArray(),
     db.health.toArray(),
+    db.earnings.toArray(),
   ]);
-  return { days, sessions, todos, subjects, study, sleep, health };
+  return { days, sessions, todos, subjects, study, sleep, health, earnings };
 }
 
 function MarkdownCard() {

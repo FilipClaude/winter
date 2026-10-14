@@ -79,6 +79,8 @@ export interface PeriodSummary {
   moodAvg: number | null;
   energyAvg: number | null;
   stepsAvg: number | null;
+  /** v3: Verdienst im Zeitraum (Cent). */
+  earningsCents: number;
 }
 
 export function periodSummary(data: ReviewData, from: ISODate, to: ISODate): PeriodSummary {
@@ -97,6 +99,9 @@ export function periodSummary(data: ReviewData, from: ISODate, to: ISODate): Per
     moodAvg: avg(series.map((d) => d.mood)),
     energyAvg: avg(series.map((d) => d.energy)),
     stepsAvg: avg(series.map((d) => d.steps)),
+    earningsCents: data.earnings
+      .filter((e) => e.date >= from && e.date <= to)
+      .reduce((a, e) => a + e.amountCents, 0),
   };
 }
 

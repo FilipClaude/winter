@@ -32,6 +32,7 @@ import { SchoolAlerts } from '../school/SchoolAlerts';
 import { PendingMatchBanners } from '../training/BfvCard';
 import { openSessionSheet } from '../training/openSession';
 import { SESSION_ICON } from '../training/session-icons';
+import { EarningsWidget } from './Earnings';
 import { JournalSheet } from './JournalSheet';
 import { BackupReminder, DemoNotice } from './Reminders';
 import { useDayData } from './useDayData';
@@ -238,10 +239,10 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
         }
       : null,
     nextExam: { l: <NextExamCard today={date < today ? today : date} /> },
-    earnings: null,
+    earnings: { l: <EarningsWidget date={date} />, s: <EarningsWidget date={date} compact /> },
     studyToday: { l: <StudyTodayWidget date={date} /> },
     training: { l: <TrainingCard date={date} sessions={data.sessions} plan={plan} /> },
-    nextMatch: { l: <NextMatchWidget today={today} /> },
+    nextMatch: { l: <NextMatchWidget today={today} />, s: <NextMatchWidget today={today} /> },
     steps: { l: steps, s: steps },
     sleep: { l: sleep, s: sleep },
     habits: {

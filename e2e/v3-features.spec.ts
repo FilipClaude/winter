@@ -120,3 +120,83 @@ test('Gym-Split: Push wählen, überall sichtbar, Verteilung im Rückblick @scre
   await dialog.getByRole('button', { name: 'Speichern' }).click();
   await expect(page.getByTestId('session-row').filter({ hasText: 'Gym · Push' })).toHaveCount(0);
 });
+
+test('Verdienst: Komma-Eingabe, Wochenziel, Ring, Bearbeiten, Löschen mit Rückgängig, Ziel und Rückblick @screens', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.goto('./#/heute');
+  const widget = page.getByTestId('earnings-widget');
+  await expect(widget.getByTestId('earnings-sum')).toHaveText('0,00 €');
+  await expect(widget.getByRole('progressbar')).toHaveCount(0); // ohne Ziel kein leerer Balken
+
+  // Schnellerfassung → 12,5 → 12,50 €
+  await page.getByTestId('fab').click();
+  await page.getByTestId('qa-verdienst').click();
+  const sheet = page.getByTestId('earning-sheet');
+  await sheet.getByLabel('Betrag (€)').fill('12,5');
+  await expect(sheet.getByTestId('earning-preview')).toHaveText('= 12,50 €');
+  await sheet.getByLabel('Notiz (optional)').fill('Nachhilfe');
+  await sheet.getByRole('button', { name: 'Speichern' }).click();
+  await expect(widget.getByTestId('earnings-sum')).toHaveText('12,50 €');
+  // klein (Standard): Einträge im Sheet
+  await widget.getByTestId('earnings-more').click();
+  await expect(page.getByTestId('earnings-week-sheet').getByTestId('earnings-list')).toContainText(
+    'Nachhilfe',
+  );
+  await page.keyboard.press('Escape');
+
+  // ungültiger Betrag
+  await widget.getByRole('button', { name: 'Verdienst eintragen' }).click();
+  await sheet.getByLabel('Betrag (€)').fill('-3');
+  await expect(sheet.getByRole('button', { name: 'Speichern' })).toBeDisabled();
+  await sheet.getByLabel('Betrag (€)').fill('7');
+  await sheet.getByRole('button', { name: 'Speichern' }).click();
+  await expect(widget.getByTestId('earnings-sum')).toHaveText('19,50 €');
+
+  // Bearbeiten: 7 → 27,50
+  await widget.getByTestId('earnings-more').click();
+  const list = page.getByTestId('earnings-week-sheet').getByTestId('earnings-list');
+  await list.getByRole('button', { name: /^7,00 €(?!.*löschen)/ }).click();
+  await page.getByTestId('earning-sheet').getByLabel('Betrag (€)').fill('27,50');
+  await page.getByTestId('earning-sheet').getByRole('button', { name: 'Speichern' }).click();
+  await expect(widget.getByTestId('earnings-sum')).toHaveText('40,00 €');
+
+  // Löschen mit Rückgängig
+  await widget.getByTestId('earnings-more').click();
+  await list.getByRole('button', { name: /^12,50 € vom .* löschen$/ }).click();
+  await expect(page.getByTestId('earnings-week-sheet')).toContainText('27,50 €');
+  await page.getByRole('button', { name: 'Rückgängig' }).click();
+  await expect(page.getByTestId('earnings-week-sheet')).toContainText('40,00 €');
+  await page.keyboard.press('Escape');
+  await expect(widget.getByTestId('earnings-sum')).toHaveText('40,00 €');
+
+  // Wochenziel 80 € → Balken, Ring-Segment
+  await page.goto('./#/einstellungen');
+  await page.getByRole('region', { name: 'Tagesziele' }).getByRole('button', { name: 'Ändern' }).click();
+  await page.getByTestId('earnings-goal').fill('80');
+  await page.getByRole('dialog').getByRole('button', { name: 'Speichern' }).click();
+  await expect(page.getByRole('region', { name: 'Tagesziele' })).toContainText('Verdienst 80 € pro Woche');
+  await page.goto('./#/heute');
+  await expect(widget).toContainText('von 80 €');
+  await expect(widget.getByRole('progressbar', { name: 'Wochenziel Verdienst' })).toHaveAttribute(
+    'aria-valuenow',
+    '50',
+  );
+  await expect(page.getByTestId('ring-card')).toContainText('Verdienst');
+  await shot(page, 'v3-06-verdienst-heute', true);
+
+  // Ziel-Metrik in Euro
+  await page.getByTestId('goals-widget').getByRole('button', { name: 'Ziel anlegen' }).click();
+  const g = page.getByRole('dialog', { name: 'Neues Ziel' });
+  await g.getByLabel('Kennzahl').selectOption({ label: 'Verdienst' });
+  await g.getByLabel(/^Ziel/).fill('50');
+  await g.getByRole('button', { name: 'Speichern' }).click();
+  await expect(page.getByTestId('goal-row')).toContainText('Verdienst diese Woche');
+  await expect(page.getByTestId('goal-row')).toContainText('40,00 / 50,00 €');
+
+  // Rückblick: 8 Wochen und Wochenbericht
+  await page.goto('./#/rueckblick');
+  await expect(page.getByTestId('earnings-weeks')).toContainText('Zusammen 40,00 €');
+  await expect(page.getByTestId('week-report')).toContainText('Verdienst 40,00 € von 80 €');
+});
