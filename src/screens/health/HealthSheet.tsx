@@ -1,7 +1,8 @@
 import { AlertTriangle, ClipboardPaste, FileUp, HeartPulse, Play } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { moveHealthDay } from '../../db/repo';
 import type { HealthDay } from '../../db/schemas';
-import { formatDE, formatHM, minutesBetween } from '../../lib/date';
+import { formatDE, formatHM, minutesBetween, relativeDayName } from '../../lib/date';
 import { ClipboardSource, FileSource, importFrom, shortcutUrl, TextSource, type HealthImportResult, type HealthSource } from '../../lib/health/source';
 import { TextArea } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
@@ -31,7 +32,22 @@ export function HealthSheet({ shortcutName }: { shortcutName: string }) {
     const r = await importFrom(source);
     setBusy(false);
     setResult(r);
-    if (r.ok) toast(r.saved.length === 1 ? 'Health-Werte übernommen' : `${r.saved.length} Tage übernommen`);
+    if (r.ok && !r.stale) toast(r.saved.length === 1 ? 'Health-Werte übernommen' : `${r.saved.length} Tage übernommen`);
+  }
+
+  async function saveForToday() {
+    if (!result?.ok || !result.stale || !result.saved[0]) return;
+    const { today, previous } = result.stale;
+    setBusy(true);
+    try {
+      const row = await moveHealthDay(result.saved[0], today, previous);
+      setResult({ ok: true, saved: [row], warnings: [] });
+      toast('Für heute gespeichert');
+    } catch (e) {
+      setResult({ ok: false, error: e instanceof Error ? e.message : 'Speichern fehlgeschlagen' });
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -56,7 +72,7 @@ export function HealthSheet({ shortcutName }: { shortcutName: string }) {
         2 · Werte einfügen
       </Button>
 
-      {result && <ImportResult result={result} />}
+      {result && <ImportResult result={result} busy={busy} onSaveForToday={() => void saveForToday()} />}
 
       <SectionTitle>Alternativen</SectionTitle>
       {showManual ? (
@@ -91,7 +107,7 @@ export function HealthSheet({ shortcutName }: { shortcutName: string }) {
   );
 }
 
-function ImportResult({ result }: { result: HealthImportResult }) {
+function ImportResult({ result, busy, onSaveForToday }: { result: HealthImportResult; busy: boolean; onSaveForToday: () => void }) {
   if (!result.ok) {
     return (
       <Banner icon={AlertTriangle} tone="warn" testId="health-error">
@@ -99,8 +115,25 @@ function ImportResult({ result }: { result: HealthImportResult }) {
       </Banner>
     );
   }
+  const stale = result.stale;
   return (
     <div className="stack stack--s" data-testid="health-result">
+      {stale && (
+        <Banner icon={AlertTriangle} tone="warn" testId="health-stale">
+          <strong>Nicht von heute:</strong> Die Werte sind vom {relativeDayName(stale.date, stale.today) ?? formatDE(stale.date)} und stehen deshalb dort, nicht bei heute.
+          <br />
+          <span className="small">
+            {stale.fixedDate
+              ? 'Der Kurzbefehl schickt seit Tagen dasselbe Datum. In „Datum formatieren“ muss „Aktuelles Datum“ stehen, kein fest gewähltes Datum.'
+              : 'Meist lag noch der alte Inhalt in der Zwischenablage: erst „1 · Kurzbefehl starten“, dann einfügen. Oder im Kurzbefehl ist bei „Datum formatieren“ ein festes Datum eingestellt.'}
+          </span>
+          <div style={{ marginTop: 'var(--space-2)' }}>
+            <Button variant="secondary" size="s" disabled={busy} onClick={onSaveForToday} data-testid="health-move-today">
+              Für heute speichern
+            </Button>
+          </div>
+        </Banner>
+      )}
       {result.saved.slice(-3).map((d) => (
         <Banner key={d.date} icon={HeartPulse} tone="accent">
           <strong>{formatDE(d.date)}</strong>

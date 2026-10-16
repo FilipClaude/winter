@@ -324,3 +324,48 @@ test('Schritte: ohne Import für heute zeigt Heute den letzten Stand mit Datum',
   await expect(card).toContainText('4.321');
   await expect(card.getByTestId('steps-last')).toHaveCount(0);
 });
+
+test('Health: Import mit altem Datum wird erkannt – Hinweis bleibt, „Für heute speichern“ korrigiert (v3.3)', async ({
+  page,
+}) => {
+  await page.goto('./#/heute');
+  const dialog = page.getByRole('dialog');
+  const paste = async (json: string) => {
+    await page.getByTestId('fab').click();
+    await page.getByTestId('qa-health').click();
+    await dialog.getByRole('button', { name: 'JSON von Hand einfügen' }).click();
+    await dialog.getByTestId('health-text').fill(json);
+    await dialog.getByRole('button', { name: 'Text importieren' }).click();
+  };
+  const old = JSON.stringify({ v: 1, date: berlinDate(-2), steps: 7300, distanceKm: 5.2 });
+
+  await paste(old);
+  await expect(dialog.getByTestId('health-stale')).toContainText('Nicht von heute');
+  await shot(page, 'v33-health-stale');
+  await page.keyboard.press('Escape');
+  // Früher versteckte der Import (egal welcher Tag) den Hinweis – jetzt bleibt er, solange heute nichts da ist
+  await expect(page.getByTestId('health-hint')).toBeVisible();
+
+  // Dieselbe alte Zwischenablage noch einmal → klare Fehlermeldung statt „übernommen“
+  await paste(old);
+  await expect(dialog.getByTestId('health-error')).toContainText('alte Inhalt');
+  await page.keyboard.press('Escape');
+
+  // Neue Werte mit festem altem Datum → mit einem Tap für heute speichern
+  await paste(JSON.stringify({ v: 1, date: berlinDate(-2), steps: 9876, distanceKm: 7.1 }));
+  await dialog.getByTestId('health-move-today').click();
+  await expect(dialog.getByTestId('health-stale')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  const card = page.getByRole('region', { name: 'Schritte' });
+  await expect(card).toContainText('9.876');
+  await expect(card.getByTestId('steps-last')).toHaveCount(0);
+  await expect(page.getByTestId('health-hint')).toHaveCount(0);
+
+  // Verlauf: heute mit den neuen Werten, der alte Tag wieder mit seinem alten Stand
+  await page.goto('./#/alltag/health');
+  const history = page.getByRole('region', { name: 'Health-Verlauf' });
+  await expect(history).toContainText('9.876');
+  await expect(history).toContainText('7.300');
+  await expect(page.getByTestId('health-latest-day')).toHaveCount(0);
+  await shot(page, 'v33-health-verlauf');
+});

@@ -471,3 +471,10 @@ Drei unabhängige Reviews mit zusammen 26 Funden, keiner davon Datenverlust; all
 - **CI-Fund behoben:** 6 px Überlauf bei 320 px im kleinen Verdienst-Widget (#106) – der v3.1-Push war daran gescheitert und nicht live gegangen.
 - **Geprüft:** 1091 Unit-Tests, 157 E2E (Chromium, WebKit, Offline, visuell, axe) grün; neue E2E für Automatik, Überschreiben, Schritte-Rückfall, Startseite ohne Habits/Abi.
 - **Offen:** Ursache der fehlenden Schritte auf „Heute“ am iPhone klären (Datum des Imports).
+
+## v3.3 – Health bleibt nicht mehr still hängen ✓ (16.10.2026)
+**Fertig:** Erkennung „Werte nicht von heute“ im Health-Import (alte Zwischenablage → Fehlermeldung, neue Werte mit altem Datum → Warnung + „Für heute speichern“, festes Datum im Kurzbefehl → eigener Hinweis). Heute-Hinweis prüft den Tag statt des Import-Zeitpunkts. Alltag → Health zeigt „Werte vom …“ und „Für heute noch kein Import“. Doku in `HEALTH-SHORTCUT.md` (Datumsfeld, zwei neue Fehlerbilder). DECISIONS #107.
+
+**Geprüft:** typecheck ✓ · lint ✓ · Unit ✓ (7 neue Tests in `src/lib/health/source.test.ts`) · E2E Health/Schritte in iPhone-Chromium und WebKit ✓ (neuer Test „Import mit altem Datum“) · Screenshots `v33-health-stale`, `v33-health-verlauf` angesehen.
+
+**Offen:** Am iPhone den Kurzbefehl prüfen (Datumsfeld in „Datum formatieren“). Der Tag, unter dem bisher alle Werte landeten, enthält den Stand des letzten Imports – frühere Tage sind in Winter nicht mehr da, in Apple Health schon.

@@ -15,12 +15,12 @@ import {
 import { motion, useReducedMotion } from 'motion/react';
 import { db } from '../../db/db';
 import { updateDay } from '../../db/repo';
-import { useKV, useSettings } from '../../hooks/useSettings';
+import { useSettings } from '../../hooks/useSettings';
 import { useToday } from '../../hooks/useNow';
 import { isSchoolDay } from '../../lib/calc/calendar-by';
 import { dayRing } from '../../lib/calc/ring';
 import { SESSION_LABEL, sessionLoad, sessionTitle } from '../../lib/calc/training';
-import { addDays, formatHM, formatMonth, formatShort, isoWeekNumber, isoWeekday, relativeDayName, toISODate, toTimeHM, type ISODate } from '../../lib/date';
+import { addDays, formatHM, formatMonth, formatShort, isoWeekNumber, isoWeekday, relativeDayName, toTimeHM, type ISODate } from '../../lib/date';
 import { navigate } from '../../router';
 import { FrostCheck, Scale } from '../../ui/controls';
 import { useOverlay } from '../../ui/overlay-context';
@@ -112,7 +112,6 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
   const data = useDayData(date);
   const settings = useSettings();
   const { openSheet } = useOverlay();
-  const lastImport = useKV<string>('lastHealthImport');
   if (!data) return <ScreenSkeleton cards={5} />;
 
   const plan = settings.weekPlan[String(isoWeekday(date))] ?? [];
@@ -133,7 +132,6 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
     settings.goals,
     settings.ring,
   );
-  const importedToday = lastImport !== undefined && toISODate(lastImport) === today;
   const g = settings.goals;
   const isToday = date === today;
 
@@ -250,7 +248,8 @@ function TodayContent({ date, today }: { date: ISODate; today: ISODate }) {
               <PendingMatchBanners />
               <BackupReminder today={today} />
               <DemoNotice />
-              {!data.health && !importedToday && (
+              {/* Nur der Tag zählt, nicht der Zeitpunkt: Ein Import mit altem Datum ist kein Import für heute (bis v3.2 versteckte er den Hinweis). */}
+              {!data.health && (
                 <Banner
                   icon={HeartPulse}
                   tone="accent"

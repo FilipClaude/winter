@@ -142,6 +142,8 @@ function HealthPanel() {
   const byDay = new Map(rows.map((r) => [r.date, r]));
   const withSteps = rows.filter((r) => r.steps !== undefined);
   const avgSteps = withSteps.length > 0 ? withSteps.reduce((a, r) => a + (r.steps ?? 0), 0) / withSteps.length : null;
+  // Zuletzt importierter Tag: zeigt, wenn der letzte Import gar nicht für heute war (alte Zwischenablage, festes Datum).
+  const latest = [...rows].sort((a, b) => b.importedAt.localeCompare(a.importedAt))[0];
 
   return (
     <>
@@ -157,7 +159,9 @@ function HealthPanel() {
       >
         <p className="small muted">
           Letzter Import: {lastImport ? `${formatDE(toISODate(lastImport))}, ${toTimeHM(lastImport)} Uhr` : 'noch nie'}
+          {latest && latest.date !== today && <span data-testid="health-latest-day"> · Werte vom {formatShort(latest.date)}</span>}
         </p>
+        {!byDay.has(today) && <p className="xsmall faint">Für heute noch kein Import.</p>}
       </Card>
       <Card label="Schritte · 14 Tage" icon={Footprints} ariaLabel="Schritte der letzten 14 Tage">
         <BarChart

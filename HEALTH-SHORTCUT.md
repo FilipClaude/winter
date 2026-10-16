@@ -10,7 +10,7 @@ Mit Filip Schritt für Schritt gebaut, iOS-Namen wie sie bei ihm heißen:
 
 1. **„Health-Messungen suchen“**: Typ ist *Schritte* (Pflichtfilter, nicht löschbar) + Filter **Startdatum ist heute**.
 2. **„Statistik berechnen“** → **Summe**. Die Ergebnis-Variable heißt **„Summe“** (nicht „Statistik“).
-3. **„Datum formatieren“** → Aktuelles Datum, Eigenes Format `yyyy-MM-dd`.
+3. **„Datum formatieren“** → Aktuelles Datum, Eigenes Format `yyyy-MM-dd`. Im Datumsfeld muss das blaue Kästchen **„Aktuelles Datum“** stehen. Steht dort ein Datum wie „12.10.2026“, ist es **fest** eingestellt. Dann schickt der Kurzbefehl jeden Tag dasselbe Datum, Winter überschreibt immer denselben Tag, und „Heute“ und der Verlauf bleiben hängen.
 4. **„Text“** als JSON-Vorlage statt Wörterbuch (robuster):
    `{"v":1,"date":"[Formatiertes Datum]","steps":"[Summe]"}`
    Die Werte in eckigen Klammern müssen **Variablen-Kästchen** sein, kein getippter Text. Sonst meldet Winter z. B. „Datum … nicht lesbar“.
@@ -117,6 +117,8 @@ Den Kurzbefehl **nicht** so bauen, dass er am Ende eine URL wie `https://…/#/h
 | „Zugriff auf die Zwischenablage verweigert“ | „Einfügen“ abgelehnt | Erneut tippen und „Einfügen“ wählen, oder „JSON von Hand einfügen“ |
 | „distanceKm = 6100 ist unplausibel“ | Distanz kommt in Metern | Schlüssel in `distanceM` umbenennen |
 | „Schlafzeiten nicht lesbar“ | Datumsformat | In Teil B „ISO 8601“ wählen |
+| „Nicht von heute: Die Werte sind vom …“ | Alte Zwischenablage (Kurzbefehl nicht gelaufen) oder festes Datum im Kurzbefehl | Erst „1 · Kurzbefehl starten“, dann einfügen. Kommt jeden Tag dasselbe Datum: in „Datum formatieren“ „Aktuelles Datum“ wählen. Für den Moment hilft **„Für heute speichern“**. |
+| „Das sind noch die Werte vom …“ | Dieselben Werte wie beim letzten Import, altes Datum | Kurzbefehl lief nicht neu. Erst starten, durchlaufen lassen, dann einfügen |
 
 ## Erweiterung später
 
