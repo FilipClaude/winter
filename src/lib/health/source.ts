@@ -73,7 +73,10 @@ function sameValues(a: HealthDay, b: HealthPayload): boolean {
 }
 
 /** Liest aus einer Quelle, validiert und speichert. Wirft nie – Fehler kommen als Ergebnis zurück. */
-export async function importFrom(source: HealthSource, today: ISODate = todayISO()): Promise<HealthImportResult> {
+export async function importFrom(
+  source: HealthSource,
+  today: ISODate = todayISO(),
+): Promise<HealthImportResult> {
   let text: string;
   try {
     text = await source.read();
@@ -111,7 +114,9 @@ export async function importFrom(source: HealthSource, today: ISODate = todayISO
     }
     const saved: HealthDay[] = [];
     for (const d of parsed.days) saved.push(await upsertHealthDay({ ...d, source: source.id }));
-    return stale ? { ok: true, saved, warnings: parsed.warnings, stale } : { ok: true, saved, warnings: parsed.warnings };
+    return stale
+      ? { ok: true, saved, warnings: parsed.warnings, stale }
+      : { ok: true, saved, warnings: parsed.warnings };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'Speichern fehlgeschlagen' };
   }

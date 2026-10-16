@@ -289,11 +289,21 @@ export async function getHealthDay(date: ISODate): Promise<HealthDay | undefined
  * „Für heute speichern“: Ein Import landete unter einem alten Datum (Datum im Kurzbefehl fest eingestellt).
  * Legt die Werte unter `to` ab und stellt den alten Tag so her, wie er vor dem Import war.
  */
-export async function moveHealthDay(row: HealthDay, to: ISODate, previous: HealthDay | undefined): Promise<HealthDay> {
+export async function moveHealthDay(
+  row: HealthDay,
+  to: ISODate,
+  previous: HealthDay | undefined,
+): Promise<HealthDay> {
   return db.transaction('rw', db.health, db.kv, async () => {
     if (previous) await db.health.put(previous);
     else await db.health.delete(row.id);
-    const values = { steps: row.steps, distanceKm: row.distanceKm, flights: row.flights, sleepStart: row.sleepStart, sleepEnd: row.sleepEnd };
+    const values = {
+      steps: row.steps,
+      distanceKm: row.distanceKm,
+      flights: row.flights,
+      sleepStart: row.sleepStart,
+      sleepEnd: row.sleepEnd,
+    };
     const defined = Object.fromEntries(Object.entries(values).filter(([, v]) => v !== undefined));
     return upsertHealthDay({ ...defined, date: to, source: row.source });
   });

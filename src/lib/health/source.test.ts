@@ -71,7 +71,10 @@ describe('Health-Import: Werte nicht von heute (v3.3)', () => {
   });
 
   it('mehrere Tage auf einmal (Nachtragen) bleiben ohne Warnung', async () => {
-    const r = await importOn('2026-10-16', '[{"v":1,"date":"2026-10-14","steps":1},{"v":1,"date":"2026-10-15","steps":2}]');
+    const r = await importOn(
+      '2026-10-16',
+      '[{"v":1,"date":"2026-10-14","steps":1},{"v":1,"date":"2026-10-15","steps":2}]',
+    );
     expect(r.ok && r.stale).toBeUndefined();
     expect(await db.health.count()).toBe(2);
   });
