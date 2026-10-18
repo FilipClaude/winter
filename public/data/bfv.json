@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "fetchedAt": "2026-10-18T05:19:57.881Z",
+  "fetchedAt": "2026-10-18T19:11:11.773Z",
   "team": {
     "name": "SV Planegg-Krailling",
     "url": "https://www.bfv.de/mannschaften/sv-planegg-krailling/016PAD8FHK000000VV0AG811VTE5EA5R",
@@ -26,7 +26,7 @@
       "competition": "Meisterschaften",
       "league": "U 17 (B-Jun.) Landesliga Bayern Süd",
       "location": "Hauptplatz, Kappenberger Sportzentrum ASV Cham, Im Quader 5, 93413 Cham",
-      "status": "geplant"
+      "status": "vorbei"
     },
     {
       "id": "031HDE9LFG000000VS5489BUVSJ4CRAP",
@@ -245,41 +245,53 @@
     {
       "position": 2,
       "team": "Kirchheimer SC",
-      "played": 7,
+      "played": 8,
       "won": 7,
       "drawn": 0,
-      "lost": 0,
-      "goals": "20:3",
-      "diff": 17,
+      "lost": 1,
+      "goals": "20:5",
+      "diff": 15,
       "points": 21,
       "own": false
     },
     {
       "position": 3,
       "team": "SpVgg Landshut",
-      "played": 7,
-      "won": 4,
+      "played": 8,
+      "won": 5,
       "drawn": 2,
       "lost": 1,
-      "goals": "18:8",
-      "diff": 10,
-      "points": 14,
+      "goals": "20:8",
+      "diff": 12,
+      "points": 17,
+      "own": false
+    },
+    {
+      "position": 4,
+      "team": "FV Illertissen",
+      "played": 8,
+      "won": 5,
+      "drawn": 0,
+      "lost": 3,
+      "goals": "17:11",
+      "diff": 6,
+      "points": 15,
       "own": false
     },
     {
       "position": 4,
       "team": "SV Planegg-Krailling",
-      "played": 7,
+      "played": 8,
       "won": 4,
-      "drawn": 2,
+      "drawn": 3,
       "lost": 1,
       "goals": "17:11",
       "diff": 6,
-      "points": 14,
+      "points": 15,
       "own": true
     },
     {
-      "position": 5,
+      "position": 6,
       "team": "SV Olympiadorf München",
       "played": 8,
       "won": 4,
@@ -287,18 +299,6 @@
       "lost": 4,
       "goals": "8:18",
       "diff": -10,
-      "points": 12,
-      "own": false
-    },
-    {
-      "position": 6,
-      "team": "FV Illertissen",
-      "played": 7,
-      "won": 4,
-      "drawn": 0,
-      "lost": 3,
-      "goals": "15:11",
-      "diff": 4,
       "points": 12,
       "own": false
     },
@@ -341,17 +341,29 @@
     {
       "position": 10,
       "team": "SpVgg Ansbach",
-      "played": 7,
+      "played": 8,
       "won": 2,
       "drawn": 2,
-      "lost": 3,
-      "goals": "13:14",
-      "diff": -1,
+      "lost": 4,
+      "goals": "13:16",
+      "diff": -3,
       "points": 8,
       "own": false
     },
     {
       "position": 11,
+      "team": "ASV Cham",
+      "played": 8,
+      "won": 1,
+      "drawn": 3,
+      "lost": 4,
+      "goals": "12:18",
+      "diff": -6,
+      "points": 6,
+      "own": false
+    },
+    {
+      "position": 12,
       "team": "JFG Straubing-Bogen",
       "played": 8,
       "won": 1,
@@ -363,7 +375,7 @@
       "own": false
     },
     {
-      "position": 12,
+      "position": 13,
       "team": "TSV 1860 Rosenheim 3",
       "played": 8,
       "won": 1,
@@ -371,18 +383,6 @@
       "lost": 5,
       "goals": "7:24",
       "diff": -17,
-      "points": 5,
-      "own": false
-    },
-    {
-      "position": 13,
-      "team": "ASV Cham",
-      "played": 7,
-      "won": 1,
-      "drawn": 2,
-      "lost": 4,
-      "goals": "12:18",
-      "diff": -6,
       "points": 5,
       "own": false
     },
