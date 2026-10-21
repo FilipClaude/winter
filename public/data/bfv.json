@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "fetchedAt": "2026-10-18T19:11:11.773Z",
+  "fetchedAt": "2026-10-21T05:24:29.163Z",
   "team": {
     "name": "SV Planegg-Krailling",
     "url": "https://www.bfv.de/mannschaften/sv-planegg-krailling/016PAD8FHK000000VV0AG811VTE5EA5R",
@@ -96,6 +96,16 @@
       "competition": "Meisterschaften",
       "league": "U 17 (B-Jun.) Landesliga Bayern Süd",
       "location": "Georg Heide Stadion Planegg, Hofmarkstr. 51, 82152 Planegg",
+      "status": "geplant"
+    },
+    {
+      "id": "032EUEA3IG000000VS5489BUVSGKI48U",
+      "kickoff": "2027-02-06T10:30:00Z",
+      "home": true,
+      "opponent": "DJK Ingolstadt U17",
+      "competition": "Freundschaftsspiele",
+      "league": "FS/BJ/L-FS/BAY/1",
+      "location": "Sportanlage Planegg, Kunstrasen, Hofmarkstr. 51, 82152 Planegg",
       "status": "geplant"
     },
     {
