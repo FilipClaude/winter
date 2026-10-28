@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "fetchedAt": "2026-10-25T19:16:12.882Z",
+  "fetchedAt": "2026-10-28T05:33:36.693Z",
   "team": {
     "name": "SV Planegg-Krailling",
     "url": "https://www.bfv.de/mannschaften/sv-planegg-krailling/016PAD8FHK000000VV0AG811VTE5EA5R",
@@ -56,6 +56,16 @@
       "competition": "Meisterschaften",
       "league": "U 17 (B-Jun.) Landesliga Bayern Süd",
       "location": "Georg Heide Stadion Planegg, Hofmarkstr. 51, 82152 Planegg",
+      "status": "geplant"
+    },
+    {
+      "id": "032H38BONC000000VS5489BUVSGKI48U",
+      "kickoff": "2026-11-10T18:00:00Z",
+      "home": false,
+      "opponent": "TSV Neuried U17",
+      "competition": "Pokale",
+      "league": "U17 (B-Jun.) Kreissparkassenfussballcup",
+      "location": "Sportanlage Neuried, Kunstrasen, Am Sportpark 8, 82061 Neuried",
       "status": "geplant"
     },
     {
