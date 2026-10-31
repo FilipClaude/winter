@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "fetchedAt": "2026-10-28T05:33:36.693Z",
+  "fetchedAt": "2026-10-31T05:31:50.814Z",
   "team": {
     "name": "SV Planegg-Krailling",
     "url": "https://www.bfv.de/mannschaften/sv-planegg-krailling/016PAD8FHK000000VV0AG811VTE5EA5R",
@@ -336,6 +336,18 @@
     },
     {
       "position": 8,
+      "team": "SV Wacker Burghausen",
+      "played": 10,
+      "won": 3,
+      "drawn": 3,
+      "lost": 4,
+      "goals": "17:25",
+      "diff": -8,
+      "points": 12,
+      "own": false
+    },
+    {
+      "position": 9,
       "team": "SV Olympiadorf München",
       "played": 9,
       "won": 4,
@@ -347,7 +359,7 @@
       "own": false
     },
     {
-      "position": 9,
+      "position": 10,
       "team": "SpVgg Ansbach",
       "played": 9,
       "won": 3,
@@ -359,26 +371,14 @@
       "own": false
     },
     {
-      "position": 10,
-      "team": "SV Wacker Burghausen",
-      "played": 9,
-      "won": 2,
-      "drawn": 3,
-      "lost": 4,
-      "goals": "13:24",
-      "diff": -11,
-      "points": 9,
-      "own": false
-    },
-    {
       "position": 11,
       "team": "JFG Straubing-Bogen",
-      "played": 9,
+      "played": 10,
       "won": 2,
       "drawn": 2,
-      "lost": 5,
-      "goals": "19:28",
-      "diff": -9,
+      "lost": 6,
+      "goals": "20:32",
+      "diff": -12,
       "points": 8,
       "own": false
     },
