@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "fetchedAt": "2026-11-01T05:39:03.945Z",
+  "fetchedAt": "2026-11-01T19:27:36.980Z",
   "team": {
     "name": "SV Planegg-Krailling",
     "url": "https://www.bfv.de/mannschaften/sv-planegg-krailling/016PAD8FHK000000VV0AG811VTE5EA5R",
@@ -46,17 +46,7 @@
       "competition": "Meisterschaften",
       "league": "U 17 (B-Jun.) Landesliga Bayern Süd",
       "location": "Sportanlage Ansbach Am Stadion, Kunstrasenplatz 1, Am Stadion, 91522 Ansbach",
-      "status": "geplant"
-    },
-    {
-      "id": "031HDE9KPG000000VS5489BUVSJ4CRAP",
-      "kickoff": "2026-11-07T11:30:00Z",
-      "home": true,
-      "opponent": "SpVgg Landshut",
-      "competition": "Meisterschaften",
-      "league": "U 17 (B-Jun.) Landesliga Bayern Süd",
-      "location": "Georg Heide Stadion Planegg, Hofmarkstr. 51, 82152 Planegg",
-      "status": "geplant"
+      "status": "vorbei"
     },
     {
       "id": "032H38BONC000000VS5489BUVSGKI48U",
@@ -103,6 +93,16 @@
       "kickoff": "2026-12-05T11:30:00Z",
       "home": true,
       "opponent": "TSV 1861 Nördlingen",
+      "competition": "Meisterschaften",
+      "league": "U 17 (B-Jun.) Landesliga Bayern Süd",
+      "location": "Georg Heide Stadion Planegg, Hofmarkstr. 51, 82152 Planegg",
+      "status": "geplant"
+    },
+    {
+      "id": "031HDE9KPG000000VS5489BUVSJ4CRAP",
+      "kickoff": "2026-12-12T10:30:00Z",
+      "home": true,
+      "opponent": "SpVgg Landshut",
       "competition": "Meisterschaften",
       "league": "U 17 (B-Jun.) Landesliga Bayern Süd",
       "location": "Georg Heide Stadion Planegg, Hofmarkstr. 51, 82152 Planegg",
@@ -264,6 +264,18 @@
     },
     {
       "position": 2,
+      "team": "Kirchheimer SC",
+      "played": 10,
+      "won": 8,
+      "drawn": 0,
+      "lost": 2,
+      "goals": "25:9",
+      "diff": 16,
+      "points": 24,
+      "own": false
+    },
+    {
+      "position": 3,
       "team": "SpVgg Landshut",
       "played": 10,
       "won": 7,
@@ -272,18 +284,6 @@
       "goals": "28:10",
       "diff": 18,
       "points": 23,
-      "own": false
-    },
-    {
-      "position": 3,
-      "team": "Kirchheimer SC",
-      "played": 9,
-      "won": 7,
-      "drawn": 0,
-      "lost": 2,
-      "goals": "22:8",
-      "diff": 14,
-      "points": 21,
       "own": false
     },
     {
@@ -325,12 +325,12 @@
     {
       "position": 7,
       "team": "FC Stätzling",
-      "played": 9,
+      "played": 10,
       "won": 3,
       "drawn": 4,
-      "lost": 2,
-      "goals": "13:12",
-      "diff": 1,
+      "lost": 3,
+      "goals": "14:15",
+      "diff": -1,
       "points": 13,
       "own": false
     },
