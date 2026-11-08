@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "fetchedAt": "2026-11-08T05:41:52.294Z",
+  "fetchedAt": "2026-11-08T19:29:04.540Z",
   "team": {
     "name": "SV Planegg-Krailling",
     "url": "https://www.bfv.de/mannschaften/sv-planegg-krailling/016PAD8FHK000000VV0AG811VTE5EA5R",
@@ -288,18 +288,6 @@
     },
     {
       "position": 4,
-      "team": "SV Planegg-Krailling",
-      "played": 10,
-      "won": 5,
-      "drawn": 3,
-      "lost": 2,
-      "goals": "21:15",
-      "diff": 6,
-      "points": 18,
-      "own": true
-    },
-    {
-      "position": 5,
       "team": "SpVgg Greuther Fürth 2",
       "played": 11,
       "won": 5,
@@ -311,7 +299,31 @@
       "own": false
     },
     {
+      "position": 5,
+      "team": "SV Planegg-Krailling",
+      "played": 10,
+      "won": 5,
+      "drawn": 3,
+      "lost": 2,
+      "goals": "21:15",
+      "diff": 6,
+      "points": 18,
+      "own": true
+    },
+    {
       "position": 6,
+      "team": "FV Illertissen",
+      "played": 11,
+      "won": 6,
+      "drawn": 0,
+      "lost": 5,
+      "goals": "21:19",
+      "diff": 2,
+      "points": 18,
+      "own": false
+    },
+    {
+      "position": 7,
       "team": "SpVgg Ansbach",
       "played": 11,
       "won": 5,
@@ -320,18 +332,6 @@
       "goals": "19:17",
       "diff": 2,
       "points": 17,
-      "own": false
-    },
-    {
-      "position": 7,
-      "team": "FV Illertissen",
-      "played": 10,
-      "won": 5,
-      "drawn": 0,
-      "lost": 5,
-      "goals": "18:17",
-      "diff": 1,
-      "points": 15,
       "own": false
     },
     {
@@ -397,12 +397,12 @@
     {
       "position": 13,
       "team": "TSV 1860 Rosenheim 3",
-      "played": 10,
+      "played": 11,
       "won": 2,
       "drawn": 2,
-      "lost": 6,
-      "goals": "11:29",
-      "diff": -18,
+      "lost": 7,
+      "goals": "13:32",
+      "diff": -19,
       "points": 8,
       "own": false
     },
