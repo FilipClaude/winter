@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "fetchedAt": "2026-11-08T19:29:04.540Z",
+  "fetchedAt": "2026-11-10T13:16:22.263Z",
   "team": {
     "name": "SV Planegg-Krailling",
     "url": "https://www.bfv.de/mannschaften/sv-planegg-krailling/016PAD8FHK000000VV0AG811VTE5EA5R",
@@ -55,7 +55,7 @@
       "opponent": "TSV Neuried U17",
       "competition": "Pokale",
       "league": "U17 (B-Jun.) Kreissparkassenfussballcup",
-      "location": "Sportanlage Neuried, Kunstrasen, Am Sportpark 8, 82061 Neuried",
+      "location": "",
       "status": "geplant"
     },
     {
