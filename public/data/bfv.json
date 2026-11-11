@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "fetchedAt": "2026-11-10T13:16:22.263Z",
+  "fetchedAt": "2026-11-11T12:28:33.195Z",
   "team": {
     "name": "SV Planegg-Krailling",
     "url": "https://www.bfv.de/mannschaften/sv-planegg-krailling/016PAD8FHK000000VV0AG811VTE5EA5R",
@@ -56,7 +56,7 @@
       "competition": "Pokale",
       "league": "U17 (B-Jun.) Kreissparkassenfussballcup",
       "location": "",
-      "status": "geplant"
+      "status": "vorbei"
     },
     {
       "id": "031HDE9K88000000VS5489BUVSJ4CRAP",
@@ -106,6 +106,16 @@
       "competition": "Meisterschaften",
       "league": "U 17 (B-Jun.) Landesliga Bayern Süd",
       "location": "Georg Heide Stadion Planegg, Hofmarkstr. 51, 82152 Planegg",
+      "status": "geplant"
+    },
+    {
+      "id": "032LUKB6BG000000VS5489BTVSIO88SN",
+      "kickoff": "2027-01-30T14:00:00Z",
+      "home": false,
+      "opponent": "SV Waldeck-Obermenzing U17",
+      "competition": "Freundschaftsspiele",
+      "league": "FS/BJ/B-FS/B-OB/1",
+      "location": "BSA Meyerbeerstraße, Kunstrasen, Meyerbeerstr. 115, 81247 München",
       "status": "geplant"
     },
     {
