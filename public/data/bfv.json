@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "fetchedAt": "2026-11-12T13:34:24.852Z",
+  "fetchedAt": "2026-11-14T11:57:14.523Z",
   "team": {
     "name": "SV Planegg-Krailling",
     "url": "https://www.bfv.de/mannschaften/sv-planegg-krailling/016PAD8FHK000000VV0AG811VTE5EA5R",
@@ -284,6 +284,18 @@
     },
     {
       "position": 2,
+      "team": "SpVgg Landshut",
+      "played": 11,
+      "won": 8,
+      "drawn": 2,
+      "lost": 1,
+      "goals": "31:11",
+      "diff": 20,
+      "points": 26,
+      "own": false
+    },
+    {
+      "position": 3,
       "team": "Kirchheimer SC",
       "played": 11,
       "won": 8,
@@ -292,18 +304,6 @@
       "goals": "26:12",
       "diff": 14,
       "points": 24,
-      "own": false
-    },
-    {
-      "position": 3,
-      "team": "SpVgg Landshut",
-      "played": 10,
-      "won": 7,
-      "drawn": 2,
-      "lost": 1,
-      "goals": "28:10",
-      "diff": 18,
-      "points": 23,
       "own": false
     },
     {
@@ -357,12 +357,12 @@
     {
       "position": 8,
       "team": "FC Stätzling",
-      "played": 11,
+      "played": 12,
       "won": 3,
       "drawn": 4,
-      "lost": 4,
-      "goals": "14:17",
-      "diff": -3,
+      "lost": 5,
+      "goals": "15:20",
+      "diff": -5,
       "points": 13,
       "own": false
     },
