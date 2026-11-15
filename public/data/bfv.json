@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "fetchedAt": "2026-11-14T11:57:14.523Z",
+  "fetchedAt": "2026-11-15T12:31:35.153Z",
   "team": {
     "name": "SV Planegg-Krailling",
     "url": "https://www.bfv.de/mannschaften/sv-planegg-krailling/016PAD8FHK000000VV0AG811VTE5EA5R",
@@ -66,7 +66,7 @@
       "competition": "Meisterschaften",
       "league": "U 17 (B-Jun.) Landesliga Bayern Süd",
       "location": "Illertissen, Kunstrasen, Gottfried-Hart-Str., 89257 Illertissen",
-      "status": "geplant"
+      "status": "vorbei"
     },
     {
       "id": "031HDE9K5C000000VS5489BUVSJ4CRAP",
@@ -308,6 +308,18 @@
     },
     {
       "position": 4,
+      "team": "SV Planegg-Krailling",
+      "played": 11,
+      "won": 6,
+      "drawn": 3,
+      "lost": 2,
+      "goals": "23:16",
+      "diff": 7,
+      "points": 21,
+      "own": true
+    },
+    {
+      "position": 5,
       "team": "SpVgg Greuther Fürth 2",
       "played": 11,
       "won": 5,
@@ -319,26 +331,14 @@
       "own": false
     },
     {
-      "position": 5,
-      "team": "SV Planegg-Krailling",
-      "played": 10,
-      "won": 5,
-      "drawn": 3,
-      "lost": 2,
-      "goals": "21:15",
-      "diff": 6,
-      "points": 18,
-      "own": true
-    },
-    {
       "position": 6,
       "team": "FV Illertissen",
-      "played": 11,
+      "played": 12,
       "won": 6,
       "drawn": 0,
-      "lost": 5,
-      "goals": "21:19",
-      "diff": 2,
+      "lost": 6,
+      "goals": "22:21",
+      "diff": 1,
       "points": 18,
       "own": false
     },
