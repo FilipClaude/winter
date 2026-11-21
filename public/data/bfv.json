@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "fetchedAt": "2026-11-15T23:14:00.153Z",
+  "fetchedAt": "2026-11-21T13:15:44.203Z",
   "team": {
     "name": "SV Planegg-Krailling",
     "url": "https://www.bfv.de/mannschaften/sv-planegg-krailling/016PAD8FHK000000VV0AG811VTE5EA5R",
@@ -76,7 +76,7 @@
       "competition": "Meisterschaften",
       "league": "U 17 (B-Jun.) Landesliga Bayern Süd",
       "location": "Georg Heide Stadion Planegg, Hofmarkstr. 51, 82152 Planegg",
-      "status": "geplant"
+      "status": "vorbei"
     },
     {
       "id": "031HDE9VJC000000VS5489BUVSJ4CRAP",
@@ -296,6 +296,18 @@
     },
     {
       "position": 3,
+      "team": "SV Planegg-Krailling",
+      "played": 12,
+      "won": 7,
+      "drawn": 3,
+      "lost": 2,
+      "goals": "25:17",
+      "diff": 8,
+      "points": 24,
+      "own": true
+    },
+    {
+      "position": 4,
       "team": "Kirchheimer SC",
       "played": 11,
       "won": 8,
@@ -305,18 +317,6 @@
       "diff": 14,
       "points": 24,
       "own": false
-    },
-    {
-      "position": 4,
-      "team": "SV Planegg-Krailling",
-      "played": 11,
-      "won": 6,
-      "drawn": 3,
-      "lost": 2,
-      "goals": "23:16",
-      "diff": 7,
-      "points": 21,
-      "own": true
     },
     {
       "position": 5,
@@ -405,12 +405,12 @@
     {
       "position": 12,
       "team": "TSV 1860 Rosenheim 3",
-      "played": 12,
+      "played": 13,
       "won": 3,
       "drawn": 2,
-      "lost": 7,
-      "goals": "16:34",
-      "diff": -18,
+      "lost": 8,
+      "goals": "17:36",
+      "diff": -19,
       "points": 11,
       "own": false
     },
