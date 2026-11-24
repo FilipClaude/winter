@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "fetchedAt": "2026-11-22T23:56:22.707Z",
+  "fetchedAt": "2026-11-24T15:34:36.821Z",
   "team": {
     "name": "SV Planegg-Krailling",
     "url": "https://www.bfv.de/mannschaften/sv-planegg-krailling/016PAD8FHK000000VV0AG811VTE5EA5R",
@@ -119,16 +119,6 @@
       "status": "geplant"
     },
     {
-      "id": "032EUEA3IG000000VS5489BUVSGKI48U",
-      "kickoff": "2027-02-06T10:30:00Z",
-      "home": true,
-      "opponent": "DJK Ingolstadt U17",
-      "competition": "Freundschaftsspiele",
-      "league": "FS/BJ/L-FS/BAY/1",
-      "location": "Sportanlage Planegg, Kunstrasen, Hofmarkstr. 51, 82152 Planegg",
-      "status": "geplant"
-    },
-    {
       "id": "032M884N6C000000VS5489BTVSIO88SN",
       "kickoff": "2027-02-06T16:00:00Z",
       "home": false,
@@ -136,6 +126,16 @@
       "competition": "Freundschaftsspiele",
       "league": "FS/BJ/B-FS/B-OB/1",
       "location": "Sportanlage Kirchheim, Kunstrasen, Florianstr. 26, 85551 Kirchheim b. München",
+      "status": "geplant"
+    },
+    {
+      "id": "032EUEA3IG000000VS5489BUVSGKI48U",
+      "kickoff": "2027-02-07T10:30:00Z",
+      "home": true,
+      "opponent": "DJK Ingolstadt U17",
+      "competition": "Freundschaftsspiele",
+      "league": "FS/BJ/L-FS/BAY/1",
+      "location": "Sportanlage Planegg, Kunstrasen, Hofmarkstr. 51, 82152 Planegg",
       "status": "geplant"
     },
     {
