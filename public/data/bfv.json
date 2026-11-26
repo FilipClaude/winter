@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "fetchedAt": "2026-11-25T15:19:48.568Z",
+  "fetchedAt": "2026-11-26T14:45:32.773Z",
   "team": {
     "name": "SV Planegg-Krailling",
     "url": "https://www.bfv.de/mannschaften/sv-planegg-krailling/016PAD8FHK000000VV0AG811VTE5EA5R",
@@ -85,7 +85,7 @@
       "opponent": "FC Stätzling",
       "competition": "Meisterschaften",
       "league": "U 17 (B-Jun.) Landesliga Bayern Süd",
-      "location": "Sportanlagen des FC Stätzling Feld 1, St.-Anton-Str. 46, 86316 Friedberg",
+      "location": "",
       "status": "geplant"
     },
     {
@@ -210,7 +210,7 @@
     },
     {
       "id": "031HDE9S2G000000VS5489BUVSJ4CRAP",
-      "kickoff": "2027-03-29T11:30:00Z",
+      "kickoff": "2027-03-29T14:00:00Z",
       "home": false,
       "opponent": "SV Wacker Burghausen",
       "competition": "Meisterschaften",
@@ -294,6 +294,18 @@
     },
     {
       "position": 2,
+      "team": "Kirchheimer SC",
+      "played": 13,
+      "won": 9,
+      "drawn": 0,
+      "lost": 4,
+      "goals": "33:17",
+      "diff": 16,
+      "points": 27,
+      "own": false
+    },
+    {
+      "position": 3,
       "team": "SpVgg Landshut",
       "played": 12,
       "won": 8,
@@ -305,7 +317,7 @@
       "own": false
     },
     {
-      "position": 3,
+      "position": 4,
       "team": "SV Planegg-Krailling",
       "played": 12,
       "won": 7,
@@ -315,18 +327,6 @@
       "diff": 8,
       "points": 24,
       "own": true
-    },
-    {
-      "position": 4,
-      "team": "Kirchheimer SC",
-      "played": 12,
-      "won": 8,
-      "drawn": 0,
-      "lost": 4,
-      "goals": "30:17",
-      "diff": 13,
-      "points": 24,
-      "own": false
     },
     {
       "position": 5,
@@ -427,12 +427,12 @@
     {
       "position": 13,
       "team": "JFG Straubing-Bogen",
-      "played": 12,
+      "played": 13,
       "won": 2,
       "drawn": 2,
-      "lost": 8,
-      "goals": "21:39",
-      "diff": -18,
+      "lost": 9,
+      "goals": "21:42",
+      "diff": -21,
       "points": 8,
       "own": false
     },
