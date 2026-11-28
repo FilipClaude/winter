@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "fetchedAt": "2026-11-26T14:45:32.773Z",
+  "fetchedAt": "2026-11-28T13:55:55.425Z",
   "team": {
     "name": "SV Planegg-Krailling",
     "url": "https://www.bfv.de/mannschaften/sv-planegg-krailling/016PAD8FHK000000VV0AG811VTE5EA5R",
@@ -86,7 +86,7 @@
       "competition": "Meisterschaften",
       "league": "U 17 (B-Jun.) Landesliga Bayern Süd",
       "location": "",
-      "status": "geplant"
+      "status": "vorbei"
     },
     {
       "id": "031HDE9UP4000000VS5489BUVSJ4CRAP",
@@ -367,13 +367,13 @@
     {
       "position": 8,
       "team": "SV Wacker Burghausen",
-      "played": 13,
+      "played": 14,
       "won": 5,
-      "drawn": 3,
+      "drawn": 4,
       "lost": 5,
       "goals": "24:29",
       "diff": -5,
-      "points": 18,
+      "points": 19,
       "own": false
     },
     {
@@ -402,6 +402,18 @@
     },
     {
       "position": 11,
+      "team": "TSV 1860 Rosenheim 3",
+      "played": 14,
+      "won": 3,
+      "drawn": 3,
+      "lost": 8,
+      "goals": "17:36",
+      "diff": -19,
+      "points": 12,
+      "own": false
+    },
+    {
+      "position": 12,
       "team": "SV Olympiadorf München",
       "played": 13,
       "won": 4,
@@ -410,18 +422,6 @@
       "goals": "14:35",
       "diff": -21,
       "points": 12,
-      "own": false
-    },
-    {
-      "position": 12,
-      "team": "TSV 1860 Rosenheim 3",
-      "played": 13,
-      "won": 3,
-      "drawn": 2,
-      "lost": 8,
-      "goals": "17:36",
-      "diff": -19,
-      "points": 11,
       "own": false
     },
     {
